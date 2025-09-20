@@ -133,7 +133,8 @@ export async function GET(
         }
         
         return {
-          id: item.id,
+          // Use the underlying product id for routing to /shop/[handle]/product/[id]
+          id: product?.id,
           title: product?.title ?? 'Untitled',
           customTitle: item.custom_title,
           price: item.sale_price ?? product?.price ?? 0,
