@@ -1,4 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { getCurrentUser } from "@/lib/auth-helpers"
+import { supabaseAdmin } from "@/lib/supabase/admin"
 
 const simulateNetworkDelay = () => new Promise((resolve) => setTimeout(resolve, Math.random() * 1000 + 300))
 
@@ -8,6 +11,16 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const { name, displayName, country, phone, preferredLanguage, marketingOptIn } = body
+
+    // Authenticate user
+    const supabase = createServerSupabaseClient(request)
+    const user = await getCurrentUser(supabase)
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 },
+      )
+    }
 
     // Validate required fields
     if (!name || !displayName || !country || !phone || !preferredLanguage) {
@@ -39,6 +52,48 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 },
       )
+    }
+
+    // Persist partial progress (non-breaking; also keep localStorage behavior on frontend)
+    try {
+      const safeData = {
+        name,
+        displayName,
+        country,
+        phone,
+        preferredLanguage,
+        marketingOptIn: Boolean(marketingOptIn),
+        phoneVerified: Boolean(body.phoneVerified),
+        role: body.role,
+      }
+
+      // Determine current/completed steps from body if present
+      const currentStep = Number(body.currentStep) || 1
+      const completedSteps: number[] = Array.isArray(body.completedSteps) ? body.completedSteps : []
+
+      // Upsert into onboarding_progress (unique per user_id + step)
+      const { error: upsertError } = await (supabaseAdmin
+        .from("onboarding_progress" as any)
+        .upsert(
+          {
+            user_id: user.id,
+            role: body.role === "brand" ? "brand" : "influencer",
+            step: 1,
+            current_step: currentStep,
+            completed_steps: completedSteps,
+            data: safeData as any,
+            status: "draft",
+            updated_at: new Date().toISOString(),
+          } as any,
+          { onConflict: "user_id,step" } as any,
+        ))
+
+      if (upsertError) {
+        // Log but do not break UX
+        console.error("onboarding_progress upsert error (step-1):", upsertError)
+      }
+    } catch (e) {
+      console.error("Unexpected error saving onboarding progress (step-1):", e)
     }
 
     return NextResponse.json({

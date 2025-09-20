@@ -124,6 +124,52 @@ export default function OnboardingPage() {
     }
   }, [])
 
+  // Also try to restore progress from backend if available (non-blocking, merges with local state)
+  useEffect(() => {
+    let cancelled = false
+    const loadServerProgress = async () => {
+      try {
+        const res = await fetch("/api/onboarding/progress", { cache: "no-store" })
+        if (!res.ok) return
+        const json = await res.json()
+        if (!json?.ok || cancelled) return
+
+        // Merge step data in order, latest wins
+        const serverSteps: Array<{ step: number; data: Record<string, any> }> = json.data?.steps || []
+        const merged: Partial<OnboardingData> = {}
+        for (const s of serverSteps) {
+          Object.assign(merged, s.data || {})
+        }
+
+        const serverRole = json.data?.role as UserRole | undefined
+        const serverCurrent = Number(json.data?.currentStep) || undefined
+        const serverCompleted: number[] = Array.isArray(json.data?.completedSteps) ? json.data.completedSteps : []
+
+        setData((prev) => {
+          const next = {
+            ...prev,
+            ...merged,
+            ...(serverRole ? { role: serverRole } : {}),
+            ...(serverCurrent ? { currentStep: serverCurrent } : {}),
+            ...(serverCompleted.length ? { completedSteps: serverCompleted } : {}),
+          }
+          // Persist merged data locally to preserve offline UX
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+          } catch {}
+          return next
+        })
+      } catch (e) {
+        // Silent failure to avoid breaking UX
+        console.debug("onboarding: no server progress or fetch failed", e)
+      }
+    }
+    loadServerProgress()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   // Save data to localStorage (debounced)
   const saveToStorage = useCallback((newData: OnboardingData) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newData))
