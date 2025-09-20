@@ -1,49 +1,67 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Heart, ShoppingCart, Star, Eye, Zap, Truck } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { Eye, Heart, ShoppingCart, Star, Truck, Zap } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 
 interface EnhancedProductCardProps {
-  product: any
-  size?: "sm" | "md" | "lg"
-  showSupplier?: boolean
-  onQuickView?: (product: any) => void
-  onAddToCart?: (product: any) => void
+  product: any;
+  size?: "sm" | "md" | "lg";
+  showSupplier?: boolean;
+  onQuickView?: (product: any) => void;
+  onAddToCart?: (product: any) => void;
 }
 
-export function EnhancedProductCard({ 
-  product, 
-  size = "md", 
+export function EnhancedProductCard({
+  product,
+  size = "md",
   showSupplier = false,
   onQuickView,
-  onAddToCart 
+  onAddToCart,
 }: EnhancedProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
-  const hasDiscount = product.original_price && product.original_price > product.price
-  const discountPercentage = hasDiscount 
-    ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
-    : 0
+  const hasDiscount =
+    product.original_price && product.original_price > product.price;
+  const discountPercentage = hasDiscount
+    ? Math.round(
+        ((product.original_price - product.price) / product.original_price) *
+          100
+      )
+    : 0;
 
   const sizeClasses = {
     sm: "h-64",
-    md: "h-80", 
-    lg: "h-96"
-  }
+    md: "h-80",
+    lg: "h-96",
+  };
 
   // Use a fixed aspect ratio so the fill image always has a non-zero height
   // This avoids Next.js warning: Image has "fill" and a height value of 0
   // The card width determines the height via the aspect ratio
 
+  const primaryImageSrc = useMemo(() => {
+    const raw = Array.isArray(product?.images)
+      ? product.images[0]
+      : product?.images;
+    if (!raw || typeof raw !== "string") return "/placeholder.jpg";
+    const cleaned = raw.trim().replace(/^"|"$/g, "");
+    // Normalize common relative patterns (e.g., "public/foo.png" → "/foo.png")
+    if (/^(public\/|images\/)/.test(cleaned)) {
+      return "/" + cleaned.replace(/^public\//, "");
+    }
+    return cleaned;
+  }, [product?.images]);
+
   return (
-    <Card 
+    <Card
       data-testid="product-card"
       className={cn(
         "group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1",
@@ -54,15 +72,25 @@ export function EnhancedProductCard({
     >
       <CardContent className="p-0 h-full flex flex-col">
         {/* Image Container */}
-        <div className={cn("relative overflow-hidden bg-gray-100 w-full aspect-[4/3]")}> 
+        <div
+          className={cn(
+            "relative overflow-hidden bg-gray-100 w-full aspect-[4/3]"
+          )}
+        >
           <Image
-            src={product.images?.[0] || "/placeholder.jpg"}
+            src={
+              !imageError && primaryImageSrc
+                ? primaryImageSrc
+                : "/placeholder.jpg"
+            }
             alt={product.title}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={() => setImageError(true)}
+            priority={false}
           />
-          
+
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {hasDiscount && (
@@ -89,10 +117,12 @@ export function EnhancedProductCard({
             className="absolute top-2 right-2 h-8 w-8 p-0 bg-white/80 hover:bg-white"
             onClick={() => setIsWishlisted(!isWishlisted)}
           >
-            <Heart className={cn(
-              "h-4 w-4",
-              isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"
-            )} />
+            <Heart
+              className={cn(
+                "h-4 w-4",
+                isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"
+              )}
+            />
           </Button>
 
           {/* Quick View Overlay */}
@@ -133,7 +163,9 @@ export function EnhancedProductCard({
                   key={star}
                   className={cn(
                     "h-3 w-3",
-                    star <= (product.rating || 4.5) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                    star <= (product.rating || 4.5)
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-300"
                   )}
                 />
               ))}
@@ -213,5 +245,5 @@ export function EnhancedProductCard({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

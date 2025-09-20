@@ -29,6 +29,24 @@ const nextConfig = {
         hostname: SUPABASE_HOST,
         pathname: '/storage/v1/object/public/**',
       },
+      SUPABASE_HOST && {
+        protocol: 'http',
+        hostname: SUPABASE_HOST,
+        pathname: '/storage/v1/object/public/**',
+      },
+      // Dev: local Supabase storage emulator
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '54321',
+        pathname: '/storage/v1/object/public/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '54321',
+        pathname: '/storage/v1/object/public/**',
+      },
     ].filter(Boolean),
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     formats: ['image/avif', 'image/webp'],
