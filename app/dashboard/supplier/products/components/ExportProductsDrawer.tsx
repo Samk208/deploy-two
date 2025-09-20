@@ -61,9 +61,15 @@ export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawe
           clearInterval(progressInterval)
           setIsExporting(false)
           setExportComplete(true)
-          // Simulate file download
+          // Build query params to pass filters to the API
+          const params = new URLSearchParams()
+          if (selectedCategory && selectedCategory !== "All") params.set("category", selectedCategory)
+          if (selectedStatus.length === 1) params.set("status", selectedStatus[0])
+          if (selectedRegions.length && !selectedRegions.includes("All")) params.set("regions", selectedRegions.join(","))
+
+          // Trigger real download from API with filters
           const link = document.createElement("a")
-          link.href = "/api/products/export"
+          link.href = `/api/products/export?${params.toString()}`
           link.download = `products-export-${new Date().toISOString().split("T")[0]}.csv`
           document.body.appendChild(link)
           link.click()

@@ -98,24 +98,26 @@
     "@tailwindcss/postcss": "^4.1.9",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22",
+    "@types/papaparse": "^5.3.16",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",
     "artillery": "^2.0.9",
+    "cross-env": "^7.0.3",
     "env-cmd": "^11.0.0",
     "eslint": "^9.34.0",
     "eslint-config-next": "^15.5.2",
     "newman": "^6.2.1",
     "newman-reporter-htmlextra": "^1.23.1",
+    "papaparse": "^5.5.3",
     "postcss": "^8.5",
     "prettier": "^3.3.3",
     "supabase": "^2.40.7",
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "^1.3.3",
     "typescript": "^5",
-    "wait-on": "^8.0.2",
-    "cross-env": "^7.0.3"
+    "wait-on": "^8.0.2"
   }
 }
