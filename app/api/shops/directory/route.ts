@@ -53,11 +53,19 @@ export async function GET(_request: NextRequest) {
 
     const agg: Record<string, { count: number; categories: string[] }> = {};
     for (const row of links || []) {
-      const inf = row.influencer_id;
-      const cat = row.products?.category || null;
+      const inf = row.influencer_id as string;
+      const productData = row.products as any;
+      const categoriesFromRow: string[] = Array.isArray(productData)
+        ? productData
+            .map((p: any) => p?.category)
+            .filter((c: unknown): c is string => typeof c === "string")
+        : typeof productData?.category === "string"
+          ? [productData.category]
+          : [];
+
       if (!agg[inf]) agg[inf] = { count: 0, categories: [] };
       agg[inf].count += 1;
-      if (typeof cat === "string") {
+      for (const cat of categoriesFromRow) {
         if (!agg[inf].categories.includes(cat)) agg[inf].categories.push(cat);
       }
     }

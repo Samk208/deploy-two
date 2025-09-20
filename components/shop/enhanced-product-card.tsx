@@ -54,10 +54,12 @@ export function EnhancedProductCard({
   const [imageError, setImageError] = useState(false);
 
   const hasDiscount =
-    product.original_price && product.original_price > product.price;
+    typeof product.original_price === "number" &&
+    product.original_price > product.price;
   const discountPercentage = hasDiscount
     ? Math.round(
-        ((product.original_price - product.price) / product.original_price) *
+        (((product.original_price as number) - product.price) /
+          (product.original_price as number)) *
           100
       )
     : 0;

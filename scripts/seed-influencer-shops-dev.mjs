@@ -11,10 +11,10 @@
 */
 
 import { createClient } from '@supabase/supabase-js'
+import crypto from 'crypto'
 import { config as dotenvConfig } from 'dotenv'
 import fs from 'fs'
 import path from 'path'
-import crypto from 'crypto'
 
 const root = process.cwd()
 const envLocal = path.join(root, '.env.local')
