@@ -19,6 +19,8 @@
     "test:api:contract": "swagger-cli validate tests/api/openapi.yml",
     "test:api:perf": "artillery run tests/api/perf/artillery.yml -o artifacts/api-tests/artillery-report.json",
     "ci:api": "mkdir -p artifacts/api-tests && pnpm test:api:contract && pnpm test:api:smoke && pnpm test:api:security && pnpm test:api:perf",
+    "seed:influencer-shops": "node scripts/seed-influencer-shops-dev.mjs",
+    "seed:influencer-shops:allow": "cross-env ALLOW_DEV_SEEDING=true NODE_ENV=development node scripts/seed-influencer-shops-dev.mjs",
     "db:verify": "node scripts/verify-db.mjs",
     "format:check": "prettier -c ."
   },

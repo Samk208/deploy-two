@@ -1,31 +1,34 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { ProductImage } from "@/components/ui/product-image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ProductImage } from "@/components/ui/product-image";
 import {
-  Search,
-  Star,
-  Shield,
-  Users,
-  TrendingUp,
-  Filter,
-  Grid3X3,
-  List,
-  Instagram,
-  Twitter,
-  Youtube,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   ExternalLink,
-} from "lucide-react"
+  Grid3X3,
+  Instagram,
+  List,
+  Search,
+  Shield,
+  Star,
+  TrendingUp,
+  Twitter,
+  Users,
+  Youtube,
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
-// Mock influencer shops data
+// Mock influencer shops data (fallback if API not available)
 const mockShops = [
   {
     id: "1",
@@ -143,51 +146,111 @@ const mockShops = [
       youtube: "https://youtube.com/@foodieadventures",
     },
   },
-]
+];
 
-const categories = ["All", "Fashion", "Technology", "Health & Beauty", "Home & Garden", "Sports & Fitness", "Food & Kitchen"]
+const categories = [
+  "All",
+  "Fashion",
+  "Technology",
+  "Health & Beauty",
+  "Home & Garden",
+  "Sports & Fitness",
+  "Food & Kitchen",
+];
 const sortOptions = [
   { value: "popular", label: "Most Popular" },
   { value: "newest", label: "Newest" },
   { value: "followers", label: "Most Followers" },
   { value: "rating", label: "Highest Rated" },
   { value: "products", label: "Most Products" },
-]
+];
 
 export default function ShopsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("All")
-  const [sortBy, setSortBy] = useState("popular")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("popular");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [shops, setShops] = useState<any[]>(mockShops);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch("/api/shops/directory", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to load directory");
+        const json = await res.json();
+        const list = json?.data?.shops;
+        if (!cancelled && Array.isArray(list) && list.length > 0) {
+          // Map API shape to UI expected fields (keep banner/avatar optional)
+          setShops(
+            list.map((s: any) => ({
+              id: s.id,
+              handle: s.handle,
+              name: s.name,
+              bio: s.description || "",
+              avatar: s.influencer_avatar || "/brand-manager-avatar.png",
+              banner: s.banner || "/fashion-banner.png",
+              followers: s.followers_count ? String(s.followers_count) : "0",
+              verified: !!s.verified,
+              category: s.categories?.[0] || "General",
+              rating: 4.8,
+              totalProducts: s.product_count || 0,
+              totalSales: 0,
+              badges: s.verified ? ["Verified"] : [],
+              socialLinks: {},
+            }))
+          );
+        }
+      } catch (e) {
+        // Keep mock data on failure
+        console.warn(
+          "Using mock shops; directory API unavailable.",
+          (e as any)?.message || e
+        );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Filter and sort shops
   const filteredShops = useMemo(() => {
-    const filtered = mockShops.filter((shop) => {
-      const matchesSearch = 
+    const filtered = shops.filter((shop) => {
+      const matchesSearch =
         shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         shop.handle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        shop.bio.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesCategory = selectedCategory === "All" || shop.category === selectedCategory
+        shop.bio.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "All" || shop.category === selectedCategory;
 
-      return matchesSearch && matchesCategory
-    })
+      return matchesSearch && matchesCategory;
+    });
 
     // Sort shops
     switch (sortBy) {
       case "newest":
-        return filtered.sort((a, b) => b.id.localeCompare(a.id))
+        return filtered.sort((a, b) => b.id.localeCompare(a.id));
       case "followers":
-        return filtered.sort((a, b) => parseInt(b.followers.replace('K', '')) - parseInt(a.followers.replace('K', '')))
+        return filtered.sort(
+          (a, b) =>
+            parseInt(b.followers.replace("K", "")) -
+            parseInt(a.followers.replace("K", ""))
+        );
       case "rating":
-        return filtered.sort((a, b) => b.rating - a.rating)
+        return filtered.sort((a, b) => b.rating - a.rating);
       case "products":
-        return filtered.sort((a, b) => b.totalProducts - a.totalProducts)
+        return filtered.sort((a, b) => b.totalProducts - a.totalProducts);
       default:
-        return filtered.sort((a, b) => b.totalSales - a.totalSales)
+        return filtered.sort((a, b) => b.totalSales - a.totalSales);
     }
-  }, [searchQuery, selectedCategory, sortBy])
+  }, [shops, searchQuery, selectedCategory, sortBy]);
 
-  const ShopCard = ({ shop }: { shop: typeof mockShops[0] }) => (
+  const ShopCard = ({ shop }: { shop: (typeof mockShops)[0] }) => (
     <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300">
       <div className="relative h-32 overflow-hidden">
         <ProductImage
@@ -202,7 +265,13 @@ export default function ShopsPage() {
           {shop.badges.map((badge) => (
             <Badge
               key={badge}
-              variant={badge === "Verified" ? "default" : badge === "Top Seller" ? "destructive" : "secondary"}
+              variant={
+                badge === "Verified"
+                  ? "default"
+                  : badge === "Top Seller"
+                    ? "destructive"
+                    : "secondary"
+              }
               className="text-xs"
             >
               {badge}
@@ -237,12 +306,17 @@ export default function ShopsPage() {
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-900 truncate">
-              <Link href={`/shop/${shop.handle}`} className="hover:text-indigo-600">
+              <Link
+                href={`/shop/${shop.handle}`}
+                className="hover:text-indigo-600"
+              >
                 {shop.name}
               </Link>
             </h3>
             <p className="text-sm text-gray-600">@{shop.handle}</p>
-            <p className="text-xs text-gray-500 line-clamp-2 mt-1">{shop.bio}</p>
+            <p className="text-xs text-gray-500 line-clamp-2 mt-1">
+              {shop.bio}
+            </p>
           </div>
         </div>
 
@@ -260,22 +334,35 @@ export default function ShopsPage() {
         <div className="flex items-center justify-between">
           <div className="flex gap-1">
             {shop.socialLinks.instagram && (
-              <Link href={shop.socialLinks.instagram} className="text-gray-400 hover:text-pink-500">
+              <Link
+                href={shop.socialLinks.instagram}
+                className="text-gray-400 hover:text-pink-500"
+              >
                 <Instagram className="h-4 w-4" />
               </Link>
             )}
             {shop.socialLinks.twitter && (
-              <Link href={shop.socialLinks.twitter} className="text-gray-400 hover:text-blue-500">
+              <Link
+                href={shop.socialLinks.twitter}
+                className="text-gray-400 hover:text-blue-500"
+              >
                 <Twitter className="h-4 w-4" />
               </Link>
             )}
             {shop.socialLinks.youtube && (
-              <Link href={shop.socialLinks.youtube} className="text-gray-400 hover:text-red-500">
+              <Link
+                href={shop.socialLinks.youtube}
+                className="text-gray-400 hover:text-red-500"
+              >
                 <Youtube className="h-4 w-4" />
               </Link>
             )}
           </div>
-          <Button size="sm" asChild className="bg-indigo-600 hover:bg-indigo-700">
+          <Button
+            size="sm"
+            asChild
+            className="bg-indigo-600 hover:bg-indigo-700"
+          >
             <Link href={`/shop/${shop.handle}`}>
               Visit Shop
               <ExternalLink className="h-3 w-3 ml-1" />
@@ -284,7 +371,7 @@ export default function ShopsPage() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -294,7 +381,8 @@ export default function ShopsPage() {
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl font-bold mb-4">Discover Amazing Shops</h1>
             <p className="text-xl text-indigo-100 mb-8">
-              Explore curated collections from your favorite influencers and creators
+              Explore curated collections from your favorite influencers and
+              creators
             </p>
             <div className="relative max-w-md mx-auto">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -317,10 +405,16 @@ export default function ShopsPage() {
               {categories.map((category) => (
                 <Button
                   key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
+                  variant={
+                    selectedCategory === category ? "default" : "outline"
+                  }
                   size="sm"
                   onClick={() => setSelectedCategory(category)}
-                  className={selectedCategory === category ? "bg-indigo-600 hover:bg-indigo-700" : ""}
+                  className={
+                    selectedCategory === category
+                      ? "bg-indigo-600 hover:bg-indigo-700"
+                      : ""
+                  }
                 >
                   {category}
                 </Button>
@@ -363,18 +457,22 @@ export default function ShopsPage() {
           </div>
 
           <div className="mt-4 text-sm text-gray-600">
-            {filteredShops.length} shop{filteredShops.length !== 1 ? 's' : ''} found
+            {filteredShops.length} shop{filteredShops.length !== 1 ? "s" : ""}{" "}
+            found
           </div>
         </div>
       </section>
 
       {/* Shops Grid */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8" id="main-content">
+      <main
+        className="container mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        id="main-content"
+      >
         {filteredShops.length > 0 ? (
           <div
             className={`grid gap-6 ${
-              viewMode === "grid" 
-                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+              viewMode === "grid"
+                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                 : "grid-cols-1 max-w-4xl mx-auto"
             }`}
           >
@@ -387,11 +485,15 @@ export default function ShopsPage() {
             <div className="text-gray-400 mb-4">
               <Search className="h-12 w-12 mx-auto" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No shops found</h3>
-            <p className="text-gray-600">Try adjusting your search or category filters</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No shops found
+            </h3>
+            <p className="text-gray-600">
+              Try adjusting your search or category filters
+            </p>
           </div>
         )}
       </main>
     </div>
-  )
+  );
 }
