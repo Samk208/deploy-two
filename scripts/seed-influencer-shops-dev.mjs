@@ -14,6 +14,7 @@ import { createClient } from '@supabase/supabase-js'
 import { config as dotenvConfig } from 'dotenv'
 import fs from 'fs'
 import path from 'path'
+import crypto from 'crypto'
 
 const root = process.cwd()
 const envLocal = path.join(root, '.env.local')
@@ -48,9 +49,12 @@ async function ensureInfluencer(email, name) {
   } catch {}
 
   if (!id) {
+    const generatedPassword = process.env.SAMPLE_PASSWORD ||
+      crypto.randomBytes(16).toString('base64url') + '1!Aa'
+
     const res = await admin.auth.admin.createUser({
       email,
-      password: process.env.SAMPLE_PASSWORD || 'DevSeed_ChangeMe_1234!',
+      password: generatedPassword,
       email_confirm: true,
       user_metadata: { role: 'influencer', name, test: true }
     })
