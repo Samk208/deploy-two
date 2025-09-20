@@ -72,8 +72,10 @@ export async function GET(request: NextRequest) {
         .map((r) => r.trim())
         .filter(Boolean);
       if (regionList.length > 0) {
-        // Filter products that are available in ALL of the selected regions
-        query = query.contains("region", regionList as any);
+        // Match products that are available in ANY of the selected regions.
+        // Supabase (Postgres) supports array overlap via the "overlaps" filter,
+        // which checks that arrays share at least one common element.
+        query = query.overlaps("region", regionList);
       }
     }
 
