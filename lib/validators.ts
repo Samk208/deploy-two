@@ -87,6 +87,11 @@ export const checkoutSchema = z.object({
   items: z.array(z.object({
     productId: z.string().uuid(),
     quantity: z.number().int().min(1),
+    // Optional influencer/referral context (additive)
+    influencerId: z.string().uuid().optional(),
+    shopHandle: z.string().min(1).optional(),
+    effectivePrice: z.number().min(0).optional(),
+    price: z.number().min(0).optional(),
   })).min(1),
   shippingAddress: z.object({
     street: z.string().min(1),

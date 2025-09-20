@@ -5,6 +5,7 @@ import { type ApiResponse } from "@/lib/types"
 
 export interface PublicShopData {
   influencer: {
+    id: string
     handle: string
     name: string
     bio?: string
@@ -105,6 +106,7 @@ export async function GET(
 
     // Format influencer data (limited to available fields)
     const formattedInfluencer = {
+      id: influencerProfile.id,
       handle: shop.handle,
       name: influencerProfile.name,
       // bio/banner/socialLinks not in current typed schema; keep undefined

@@ -9,12 +9,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/lib/auth-context";
 import { UserRole } from "@/lib/types";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useCartStore } from "@/lib/store/cart";
+import { CartSidebar } from "@/components/shop/cart-sidebar";
 
 // Custom SVG icons to replace lucide-react
 const SearchIcon = () => (
@@ -167,6 +170,53 @@ const LogoutIcon = () => (
   </svg>
 );
 
+// Minimal Shopping Cart icon (SVG) for header
+const ShoppingCartIcon = () => (
+  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13L6 6M7 13l-2 8h14m-8-8v8m4-8v8" />
+  </svg>
+);
+
+// Cart icon with badge, safe for SSR (mount+subscribe)
+function CartIcon() {
+  const [mounted, setMounted] = useState(false);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setMounted(true);
+    try {
+      const state = useCartStore.getState();
+      const initial = state.items.reduce((t, i) => t + i.quantity, 0);
+      setCount(initial);
+      const unsub = useCartStore.subscribe((s) => {
+        const next = s.items.reduce((t, i) => t + i.quantity, 0);
+        setCount(next);
+      });
+      return () => unsub();
+    } catch (_) {
+      // no-op for SSR
+    }
+  }, []);
+
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <button className="relative inline-flex items-center" aria-label="Cart" type="button">
+          <ShoppingCartIcon />
+          {mounted && count > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-5 min-w-[1.25rem] px-1 text-[10px] leading-5 text-center font-bold">
+              {count}
+            </span>
+          )}
+        </button>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-full sm:w-96 p-0">
+        <CartSidebar />
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 const navigation = [
   { name: "Shop", href: "/shop" },
   // Directory of influencer shops
@@ -304,6 +354,8 @@ export function Header() {
           <div className="flex items-center space-x-4">
             {/* Google Translate Widget */}
             <GoogleTranslate />
+            {/* Cart Icon */}
+            <CartIcon />
             {/* Language Toggle (EN / KO / 中文) */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

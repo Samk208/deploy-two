@@ -22,6 +22,8 @@ import {
   Twitter,
   Youtube
 } from 'lucide-react'
+import { useCartStore, type CartItem } from '@/lib/store/cart'
+import { toast } from 'sonner'
 
 interface Product {
   id: string
@@ -64,6 +66,7 @@ export function InfluencerShopClient({ influencer, products, handle }: Influence
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedRegion, setSelectedRegion] = useState('All')
   const [sortBy, setSortBy] = useState('featured')
+  const { addItem } = useCartStore()
 
   // Get unique categories and regions
   const categories = useMemo(() => {
@@ -106,6 +109,29 @@ export function InfluencerShopClient({ influencer, products, handle }: Influence
 
     return filtered
   }, [products, searchQuery, selectedCategory, selectedRegion, sortBy])
+
+  const handleAddToCart = (product: Product) => {
+    try {
+      console.debug('[InfluencerShop] Add to cart clicked:', { product, influencer, handle })
+    } catch (_) {}
+    const cartItem: Omit<CartItem, 'quantity'> & { quantity?: number } = {
+      id: String(product.id),
+      title: product.title,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.image,
+      category: product.category,
+      maxQuantity: product.stockCount,
+      supplierId: '',
+      supplierName: 'Unknown Supplier',
+      supplierVerified: false,
+      shopHandle: handle,
+      influencerHandle: influencer.handle,
+      quantity: 1,
+    }
+    addItem(cartItem)
+    toast.success(`${product.title} added to cart!`)
+  }
 
   const getSocialIcon = (platform: string) => {
     switch (platform) {
@@ -328,12 +354,21 @@ export function InfluencerShopClient({ influencer, products, handle }: Influence
                       </div>
                     </div>
 
-                    <Link href={`/shop/${handle}/product/${product.id}`}>
-                      <Button className="w-full mt-3" disabled={!product.inStock}>
+                    <div className="grid grid-cols-2 gap-2 mt-3">
+                      <Button
+                        className="w-full"
+                        disabled={!product.inStock}
+                        onClick={() => handleAddToCart(product)}
+                      >
                         <ShoppingCart className="h-4 w-4 mr-2" />
-                        {product.inStock ? 'View Product' : 'Out of Stock'}
+                        Add to Cart
                       </Button>
-                    </Link>
+                      <Link href={`/shop/${handle}/product/${product.id}`}>
+                        <Button variant="outline" className="w-full">
+                          View
+                        </Button>
+                      </Link>
+                    </div>
                   </CardContent>
                 </Card>
               ))}

@@ -18,6 +18,8 @@ export async function middleware(req: NextRequest) {
   const publicRoutes = [
     '/',
     '/shop',
+    '/cart',
+    '/checkout',
     '/demo', // Add demo routes as public
     '/terms',
     '/privacy',

@@ -132,7 +132,13 @@ export function CheckoutPage() {
         items: items.map(item => ({
           productId: item.id,
           quantity: item.quantity,
-          price: item.price
+          // Preserve client-observed pricing for audit; server will re-validate
+          price: item.price,
+          // Optional influencer context
+          influencerId: item.influencerId,
+          shopHandle: item.shopHandle,
+          // If present, effective sale price from influencer shop
+          effectivePrice: item.effectivePrice
         })),
         shippingAddress: {
           firstName: formData.firstName,
