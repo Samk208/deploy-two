@@ -1,0 +1,86 @@
+import { render, screen } from '@testing-library/react'
+import { Heart, Star, ShoppingCart } from 'lucide-react'
+import type { Icon } from '@/lib/types'
+
+// Test component that uses the Icon type
+interface FeatureProps {
+  icon: Icon
+  title: string
+  description: string
+}
+
+function Feature({ icon: Icon, title, description }: FeatureProps) {
+  return (
+    <div className="flex items-start space-x-3">
+      <Icon className="w-6 h-6 text-blue-600 mt-1" />
+      <div>
+        <h3 className="font-semibold text-gray-900">{title}</h3>
+        <p className="text-gray-600">{description}</p>
+      </div>
+    </div>
+  )
+}
+
+describe('Icon Type Safety', () => {
+  it('should render Lucide icons with className prop without type errors', () => {
+    const features = [
+      {
+        icon: Heart,
+        title: 'Favorites',
+        description: 'Save your favorite products'
+      },
+      {
+        icon: Star,
+        title: 'Reviews',
+        description: 'Read customer reviews'
+      },
+      {
+        icon: ShoppingCart,
+        title: 'Shopping',
+        description: 'Add items to your cart'
+      }
+    ]
+
+    render(
+      <div className="space-y-4">
+        {features.map((feature, index) => (
+          <Feature
+            key={index}
+            icon={feature.icon}
+            title={feature.title}
+            description={feature.description}
+          />
+        ))}
+      </div>
+    )
+
+    // Verify all features are rendered
+    expect(screen.getByText('Favorites')).toBeInTheDocument()
+    expect(screen.getByText('Reviews')).toBeInTheDocument()
+    expect(screen.getByText('Shopping')).toBeInTheDocument()
+
+    // Verify icons are present (they should be rendered as SVGs)
+    const icons = document.querySelectorAll('svg')
+    expect(icons).toHaveLength(3)
+  })
+
+  it('should accept Icon type with optional className and size props', () => {
+    // This test ensures the Icon type is correctly defined
+    const testIcon: Icon = ({ className, size }) => (
+      <div className={className} style={{ width: size, height: size }}>
+        Test Icon
+      </div>
+    )
+
+    render(
+      <Feature
+        icon={testIcon}
+        title="Test Feature"
+        description="Testing icon type safety"
+      />
+    )
+
+    expect(screen.getByText('Test Feature')).toBeInTheDocument()
+    expect(screen.getByText('Test Icon')).toBeInTheDocument()
+  })
+})

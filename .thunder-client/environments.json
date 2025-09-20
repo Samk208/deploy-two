@@ -1,0 +1,12 @@
+[
+  {
+    "name": "local-supabase",
+    "default": true,
+    "variables": [
+      { "name": "SUPABASE_URL", "value": "https://YOUR-PROJECT.supabase.co" },
+      { "name": "SUPABASE_REST", "value": "{{SUPABASE_URL}}/rest/v1" },
+      { "name": "SUPABASE_ANON_KEY", "value": "<paste-anon-key-here>" },
+      { "name": "SUPABASE_SERVICE_ROLE_KEY", "value": "<paste-service-role-key-here (local only)>" }
+    ]
+  }
+]

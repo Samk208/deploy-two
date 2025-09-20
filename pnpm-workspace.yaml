@@ -1,0 +1,8 @@
+packages:
+  - '.'
+
+ignoredBuiltDependencies:
+  - '@playwright/browser-chromium'
+  - aws-sdk
+  - protobufjs
+  - unix-dgram

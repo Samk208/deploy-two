@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: One-Link API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/products:
+    get:
+      summary: List products
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+  /api/admin/auth:
+    get:
+      summary: Admin auth health
+      responses:
+        '401':
+          description: Unauthorized when not authenticated
+        '403':
+          description: Forbidden when lacking admin role
+  /api/orders:
+    get:
+      summary: List orders
+      responses:
+        '200':
+          description: Successful response

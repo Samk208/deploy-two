@@ -1,0 +1,3 @@
+
+app\api\products\route.ts:66:    type ProductWithSupplier = QueryData<typeof query>[number]
+

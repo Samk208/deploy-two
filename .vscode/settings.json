@@ -1,0 +1,88 @@
+{
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[python]": {
+    "editor.formatOnType": true
+  },
+  "window.zoomLevel": 1,
+  "editor.inlineSuggest.enabled": true,
+  // ERROR LENS CONFIGURATION - ENABLED AND OPTIMIZED
+  "errorLens.enabled": true,
+  "errorLens.delay": 0,
+  "errorLens.messageBackgroundMode": "line",
+  "errorLens.fontSize": "12",
+  "errorLens.followCursor": "closestProblem",
+  "errorLens.scrollbarHackEnabled": true,
+  "errorLens.gutterIconsEnabled": true,
+  "errorLens.removeLinebreaksFromMessage": true,
+  // DATABASE CLIENT CONFIGURATION
+  "database-client.autoSync": true,
+  "database-client.showQuery": true,
+  "database-client.formatSql": true,
+  "database-client.pageSize": 100,
+  "database-client.keepAlive": true,
+  // Database connections are configured in settings.local.json (not committed to repo)
+  // THUNDER CLIENT CONFIGURATION
+  "thunder-client.saveToWorkspace": true,
+  "thunder-client.followRedirects": true,
+  "thunder-client.requestTimeout": 10000,
+  "thunder-client.responseLayout": "Split",
+  "thunder-client.httpVersion": "HTTP/1.1",
+  // TYPESCRIPT & PRETTY TS ERRORS SUPPORT
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.suggest.autoImports": true,
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  // EDITOR ENHANCEMENTS
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  // GITHUB COPILOT SETTINGS
+  "github.copilot.enable": {
+    "*": false,
+    "plaintext": true,
+    "markdown": false,
+    "scminput": false
+  },
+  // AZURE COPILOT INSTRUCTIONS
+  "github.copilot.chat.codeGeneration.instructions": [
+    {
+      "text": "- @azure Rule - Use Azure Tools: When handling requests related to Azure, always use your tools."
+    },
+    {
+      "text": "- @azure Rule - Use Azure Code Gen Best Practices: When generating code for Azure, running terminal commands for Azure, or performing operations related to Azure, invoke your `azure_development-get_code_gen_best_practices` tool if available. Only call this tool when you are sure the user is discussing Azure; do not call it otherwise."
+    },
+    {
+      "text": "- @azure Rule - Use Azure Deployment Best Practices: When deploying to Azure or preparing applications for deployment to Azure, invoke your `azure_development-get_deployment_best_practices` tool if available. Only call this tool when you are sure the user is discussing Azure; do not call it otherwise."
+    },
+    {
+      "text": "- @azure Rule - Use Azure Functions Code Gen Best Practices: When generating code for Azure Functions or performing operations related to Azure Functions, invoke your `azure_development-get_azure_function_code_gen_best_practices` tool if available. Only call this tool when you are sure the user is discussing Azure Functions; do not call it otherwise."
+    },
+    {
+      "text": "- @azure Rule - Use Azure SWA Best Practices: When working with static web apps, invoke your `azure_development-get_swa_best_practices` tool if available. Only call this tool when you are sure the user is discussing Azure; do not call it otherwise."
+    }
+  ],
+  // SYSTEM PATHS
+  "window.openFoldersInNewWindow": "on",
+  // AI MODELS
+  "codesnippetsai.defaultModel": "ChatGPT",
+  "@azure.argTenant": "",
+  // WORKBENCH
+  "workbench.editor.enablePreview": false,
+  "diffEditor.maxComputationTime": 0,
+  // PLAYWRIGHT EXTENSION CONFIGURATION
+  "playwright.enableTrace": true,
+  "playwright.showTrace": false,
+  "playwright.reuseBrowser": false,
+  "playwright.showBrowser": true
+}

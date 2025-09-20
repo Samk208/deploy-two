@@ -1,0 +1,17 @@
+/* ESLint configuration to temporarily suppress less critical warnings */
+{
+  "extends": [
+    "next/core-web-vitals",
+    "next/typescript"
+  ],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-explicit-any": "error", 
+    "@typescript-eslint/explicit-function-return-type": "off", // Temporarily disabled
+    "prefer-const": "error",
+    "no-var": "error",
+    "react/no-unescaped-entities": "off", // Temporarily disabled 
+    "@next/next/no-img-element": "off", // Temporarily disabled
+    "react-hooks/exhaustive-deps": "warn" // Downgrade to warning
+  }
+}

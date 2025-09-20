@@ -1,0 +1,6 @@
+# Ignore generated files and SQL
+lib/supabase/database.types.ts
+supabase/**/*.sql
+sql/**/*.sql
+# Ignore Thunder Client workspace artifacts (already gitignored but safe here too)
+.thunder-client/**

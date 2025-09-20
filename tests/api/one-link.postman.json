@@ -1,0 +1,112 @@
+{
+  "info": {
+    "name": "One-Link API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "d1f0b1a4-1111-4f1a-b2b3-000000000001"
+  },
+  "item": [
+    {
+      "name": "Products - List",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/products",
+        "header": [{ "key": "Content-Type", "value": "application/json" }]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+              "pm.test('JSON body', function () { pm.response.to.be.withBody; pm.response.to.be.json; });",
+              "// Basic schema check",
+              "const json = pm.response.json();",
+              "pm.expect(json).to.be.an('object');",
+              "pm.expect(json.ok).to.eql(true);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Auth - Forbidden for anon",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/admin/auth",
+        "header": [{ "key": "Content-Type", "value": "application/json" }]
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Requires auth (401 or 403)', function () { pm.expect([401,403]).to.include(pm.response.code); });",
+              "pm.test('CORS headers present', function () { pm.expect(pm.response.headers.has('access-control-allow-origin')).to.be.true; });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders - Rate limiting",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// build a simple burst to check naive rate-limit (expects 429 or >= one 200)",
+              "pm.variables.set('burstCount', 10);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Response is JSON', function () { pm.response.to.be.json; });",
+              "pm.test('Status is reasonable (200/400/401/429 depending on env)', function () { pm.expect([200,400,401,429]).to.include(pm.response.code); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "item": [
+        {
+          "name": "Orders - GET list",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/orders" }
+        }
+      ]
+    },
+    {
+      "name": "Security - SQLi attempt",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/products?search=' OR '1'='1",
+          "host": ["{{baseUrl}}"],
+          "path": ["api","products"],
+          "query": [{"key":"search","value":"' OR '1'='1"}]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Does not 500 on injection', function () { pm.expect(pm.response.code).to.not.eql(500); });",
+              "pm.test('Reasonable status', function () { pm.expect([200,400]).to.include(pm.response.code); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" }
+  ]
+}

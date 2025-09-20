@@ -1,0 +1,804 @@
+name: CI — Types, Build, E2E
+
+on:
+  pull_request:
+    branches: [main, develop, ci/combined-admin-translate-tests]
+  push:
+    branches: [main, develop, feature/**, ci/combined-admin-translate-tests]
+  workflow_dispatch:
+
+env:
+  # Centralize tool versions for consistency and easy bumping
+  NODE_VERSION: '20'
+  NEXT_TELEMETRY_DISABLED: '1'
+
+concurrency:
+  # Branch-specific concurrency group to avoid cross-branch cancellation
+  # Use head_ref (PR branch) when available, otherwise fallback to ref
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  # Cancel only on PRs to preserve push builds history on default branches
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Default minimal permissions; escalate per-job only when needed
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.set.outputs.code }}
+      tests: ${{ steps.set.outputs.tests }}
+      docs: ${{ steps.set.outputs.docs }}
+      only_docs: ${{ steps.set.outputs.only_docs }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set default outputs (change detection disabled)
+        id: set
+        run: |
+          echo "code=true" >> "$GITHUB_OUTPUT"
+          echo "tests=true" >> "$GITHUB_OUTPUT"
+          echo "docs=false" >> "$GITHUB_OUTPUT"
+          echo "only_docs=false" >> "$GITHUB_OUTPUT"
+
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Least-privilege for this job (only needs to read contents)
+    permissions:
+      contents: read
+    steps:
+      # NOTE: Pin all actions to commit SHAs for supply-chain security.
+      # Replace <CHECKOUT_SHA>, <PNPM_SETUP_SHA>, <SETUP_NODE_SHA> with the exact immutable commit IDs.
+      # See: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions
+      - uses: actions/checkout@v4 # pinned to stable tag
+      - name: Harden runner (egress audit)
+        if: ${{ false }} # disabled
+        uses: step-security/harden-runner@v2.10.1
+        continue-on-error: true
+        with:
+          egress-policy: audit
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: 'true'
+      - name: Show pnpm version
+        run: pnpm -v
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-pw-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pw-
+      - name: ESLint
+        run: pnpm lint
+
+  typecheck:
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Harden runner (egress audit)
+        if: ${{ false }} # disabled
+        uses: step-security/harden-runner@v2.10.1
+        continue-on-error: true
+        with:
+          egress-policy: audit
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: 'true'
+      - name: Show pnpm version
+        run: pnpm -v
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Install dos2unix (for line ending normalization)
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y dos2unix
+      - name: Decide Supabase checks
+        id: decide_supabase
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          if [ -n "${SUPABASE_ACCESS_TOKEN}" ] && [ -n "${SUPABASE_PROJECT_ID}" ]; then
+            echo "run_supabase_checks=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_supabase_checks=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Validate Supabase secrets
+        if: ${{ steps.decide_supabase.outputs.run_supabase_checks == 'true' }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          if [ -z "${SUPABASE_ACCESS_TOKEN}" ]; then
+            echo "::error title=Missing secret::SUPABASE_ACCESS_TOKEN is not set. Create a Personal Access Token from your Supabase account (starts with sbp_)."
+            exit 1
+          fi
+          if ! echo "${SUPABASE_ACCESS_TOKEN}" | grep -q "^sbp_"; then
+            echo "::error title=Invalid token format::SUPABASE_ACCESS_TOKEN must start with 'sbp_'. You likely used a project API key (sb_secret...) instead of a Personal Access Token."
+            exit 1
+          fi
+          if [ -z "${SUPABASE_PROJECT_ID}" ]; then
+            echo "::error title=Missing secret::SUPABASE_PROJECT_ID is not set. Use your project reference from Settings → API."
+            exit 1
+          fi
+      - name: Check Supabase URL present
+        id: check_supabase_url
+        if: ${{ steps.decide_supabase.outputs.run_supabase_checks == 'true' }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        run: |
+          if [ -n "${NEXT_PUBLIC_SUPABASE_URL}" ]; then
+            echo "has_url=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_url=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Validate optional Supabase URL format (if provided)
+        if: ${{ steps.decide_supabase.outputs.run_supabase_checks == 'true' && steps.check_supabase_url.outputs.has_url == 'true' }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        run: |
+          if ! echo "${NEXT_PUBLIC_SUPABASE_URL}" | grep -Eqi '^https://[a-z0-9-]+\.(supabase\.co|supabase\.in)'; then
+            echo "::warning title=Suspicious Supabase URL::NEXT_PUBLIC_SUPABASE_URL does not look like a typical Supabase project URL."
+          fi
+      - name: Check Supabase type drift
+        if: ${{ steps.decide_supabase.outputs.run_supabase_checks == 'true' }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          # Configure git for consistent text handling in this job
+          git config core.autocrlf false
+          git config core.eol lf
+
+          # Trim potential CRLF/whitespace from the token and login explicitly
+          TOKEN_TRIMMED=$(printf "%s" "$SUPABASE_ACCESS_TOKEN" | tr -d '\r' | awk '{$1=$1};1')
+          supabase --version
+          supabase login --token "$TOKEN_TRIMMED"
+          # Use the logged-in token from Supabase CLI config; avoid env override
+          unset SUPABASE_ACCESS_TOKEN
+          # Link the project explicitly to ensure CLI uses correct context
+          supabase link --project-ref "$SUPABASE_PROJECT_ID" --debug || true
+
+          # Generate fresh types to a temp file
+          supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > supabase.types.generated.ts
+
+          # Normalize line endings to LF and strip UTF-8 BOM if present
+          dos2unix -q supabase.types.generated.ts || true
+          sed -i '1s/^\xEF\xBB\xBF//' supabase.types.generated.ts || true
+          # Also normalize the tracked file copy for comparison only
+          cp lib/supabase/database.types.ts lib/supabase/database.types.normalized.ts
+          dos2unix -q lib/supabase/database.types.normalized.ts || true
+          sed -i '1s/^\xEF\xBB\xBF//' lib/supabase/database.types.normalized.ts || true
+
+          # Perform a whitespace-insensitive text diff
+          if ! diff -u -w -B lib/supabase/database.types.normalized.ts supabase.types.generated.ts > types.diff; then
+            echo "::error title=Supabase types drift detected::Types differ beyond whitespace/line-endings."
+            echo "Run 'npx supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > lib/supabase/database.types.ts' and commit." 
+            echo "--- Diff (normalized) ---"
+            sed -n '1,400p' types.diff || true
+            rm -f lib/supabase/database.types.normalized.ts types.diff
+            exit 1
+          else
+            echo "Supabase types are in sync (normalized)."
+            rm -f lib/supabase/database.types.normalized.ts types.diff
+          fi
+      - name: Skip Supabase checks (no secrets)
+        if: ${{ steps.decide_supabase.outputs.run_supabase_checks != 'true' }}
+        run: echo "Supabase secrets not configured; skipping type drift checks."
+
+      - name: Type check (tsc)
+        run: pnpm typecheck
+
+  build:
+    needs: [changes, typecheck]
+    if: ${{ needs.changes.outputs.only_docs != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Harden runner (egress audit)
+        if: ${{ false }} # disabled
+        uses: step-security/harden-runner@v2.10.1
+        continue-on-error: true
+        with:
+          egress-policy: audit
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: 'true'
+      - name: Show pnpm version
+        run: pnpm -v
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-next-cache-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('app/**/*.ts*', 'components/**/*.ts*', 'lib/**/*.ts*', 'styles/**/*.css') }}
+          restore-keys: |
+            ${{ runner.os }}-next-cache-
+      - name: Next.js build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'anon_dummy_key' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Stripe and app URL for server modules imported during build
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '' }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'http://localhost:3000' }}
+          NODE_OPTIONS: --max_old_space_size=4096
+        run: pnpm build
+      - name: Upload Next.js build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: .next
+          retention-days: 3
+
+  db-smoke:
+    needs: [changes, typecheck]
+    if: ${{ needs.changes.outputs.only_docs != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: 'true'
+      - name: Show pnpm version
+        run: pnpm -v
+      - name: Decide DB smoke run
+        id: decide_db
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -n "${NEXT_PUBLIC_SUPABASE_URL}" ] && [ -n "${SUPABASE_SERVICE_ROLE_KEY}" ]; then
+            echo "run_db_smoke=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_db_smoke=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Validate DB smoke inputs
+        if: ${{ steps.decide_db.outputs.run_db_smoke == 'true' }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if ! echo "${NEXT_PUBLIC_SUPABASE_URL}" | grep -Eqi '^https://[a-z0-9-]+\.(supabase\.co|supabase\.in)'; then
+            echo "::error title=Invalid Supabase URL::NEXT_PUBLIC_SUPABASE_URL must be a valid Supabase project URL."
+            exit 1
+          fi
+          if ! echo "${SUPABASE_SERVICE_ROLE_KEY}" | grep -Eq '^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+'; then
+            echo "::error title=Invalid Service Role key format::SUPABASE_SERVICE_ROLE_KEY must be a valid JWT."
+            exit 1
+          fi
+      - name: Supabase DB smoke tests
+        if: ${{ steps.decide_db.outputs.run_db_smoke == 'true' }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/ci-supabase-smoke.mjs
+      - name: Skip DB smoke tests (no secrets)
+        if: ${{ steps.decide_db.outputs.run_db_smoke != 'true' }}
+        run: |
+          echo 'DB smoke tests skipped: missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.'
+
+  db-validate:
+    name: Supabase Schema Validation
+    needs: [changes, typecheck]
+    if: ${{ needs.changes.outputs.only_docs != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js and pnpm (no install)
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install: 'false'
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Decide validation run
+        id: decide_validate
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -n "${SUPABASE_ACCESS_TOKEN}" ] && [ -n "${SUPABASE_PROJECT_ID}" ] && [ -n "${SUPABASE_DB_URL}" ]; then
+            echo "run_validate=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_validate=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Skip schema validation (missing secrets)
+        if: ${{ steps.decide_validate.outputs.run_validate != 'true' }}
+        run: |
+          echo "Schema validation skipped: require SUPABASE_ACCESS_TOKEN, SUPABASE_PROJECT_ID, SUPABASE_DB_URL."
+      - name: Install PostgreSQL client
+        if: ${{ steps.decide_validate.outputs.run_validate == 'true' }}
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y postgresql-client
+      - name: Login and link project
+        if: ${{ steps.decide_validate.outputs.run_validate == 'true' }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          supabase login --token "$SUPABASE_ACCESS_TOKEN"
+          supabase link --project-ref "$SUPABASE_PROJECT_ID" --debug || true
+      - name: Run schema checks (tables, RLS, indexes, FKs)
+        if: ${{ steps.decide_validate.outputs.run_validate == 'true' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/db-validate
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -Atc "SELECT 'tables_ok' WHERE EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('products','shops','orders','commissions'))" > artifacts/db-validate/tables_check.txt || { echo '::error title=Missing tables::Expected core tables (products, shops, orders, commissions) not found.'; exit 1; }
+          # RLS policies active on critical tables
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -F $'\t' -Atc "SELECT relname, relrowsecurity FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND relname IN ('products','orders','commissions') AND relkind='r'" > artifacts/db-validate/rls_status.tsv
+          awk -F '\t' '($2 != "t"){fail=1} END{exit fail?1:0}' artifacts/db-validate/rls_status.tsv || { echo '::error title=RLS disabled::Row Level Security must be enabled on products/orders/commissions.'; exit 1; }
+          # Performance-critical indexes present (adjust names if different)
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -Atc "SELECT 'idx_ok' WHERE EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname ~ '(products_.*_idx|orders_.*_idx|commissions_.*_idx)')" > artifacts/db-validate/indexes_check.txt || { echo '::warning title=Indexes not found::Expected indexes may be missing; review performance indexes.'; }
+          # Foreign keys present between orders -> users/products, commissions -> orders
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -F $'\t' -Atc "SELECT constraint_name, table_name FROM information_schema.table_constraints WHERE constraint_type='FOREIGN KEY' AND table_schema='public' AND table_name IN ('orders','commissions')" > artifacts/db-validate/fk_list.tsv
+          if [ ! -s artifacts/db-validate/fk_list.tsv ]; then echo '::warning title=No FKs detected::Please verify foreign key constraints.'; fi
+      - name: Upload validation artifacts
+        if: ${{ steps.decide_validate.outputs.run_validate == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-schema-validation
+          path: artifacts/db-validate
+          retention-days: 7
+
+  db-integrity:
+    name: Supabase Data Integrity Tests
+    needs: [changes, db-validate]
+    if: ${{ needs.changes.outputs.only_docs != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decide integrity run
+        id: decide_integrity
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -n "${SUPABASE_DB_URL}" ]; then echo run_psql=true >> "$GITHUB_OUTPUT"; else echo run_psql=false >> "$GITHUB_OUTPUT"; fi
+          if [ -n "${NEXT_PUBLIC_SUPABASE_URL}" ] && [ -n "${NEXT_PUBLIC_SUPABASE_ANON_KEY}" ]; then echo run_rest=true >> "$GITHUB_OUTPUT"; else echo run_rest=false >> "$GITHUB_OUTPUT"; fi
+      - name: Install PostgreSQL client
+        if: ${{ steps.decide_integrity.outputs.run_psql == 'true' }}
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y postgresql-client
+      - name: CRUD smoke (transactional, rolled back)
+        if: ${{ steps.decide_integrity.outputs.run_psql == 'true' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/db-integrity
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 \
+            -c "BEGIN;" \
+            -c "INSERT INTO public.products (name, price_cents) VALUES ('__ci_tmp__', 1234);" \
+            -c "SELECT id, name FROM public.products WHERE name='__ci_tmp__';" \
+            -c "UPDATE public.products SET price_cents=2345 WHERE name='__ci_tmp__';" \
+            -c "DELETE FROM public.products WHERE name='__ci_tmp__';" \
+            -c "ROLLBACK;"
+      - name: Verify anon cannot write (RLS via REST)
+        if: ${{ steps.decide_integrity.outputs.run_rest == 'true' }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/db-integrity
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -H 'Content-Type: application/json' \
+            -d '{"name":"__ci_tmp__","price_cents":999}' \
+            "$NEXT_PUBLIC_SUPABASE_URL/rest/v1/products") || true
+          echo "REST insert status: $STATUS" > artifacts/db-integrity/rest_anon_insert_status.txt
+          if [ "$STATUS" -lt 400 ]; then echo '::error title=RLS breach::Anon insert unexpectedly succeeded.'; exit 1; fi
+      - name: Upload integrity artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-data-integrity
+          path: artifacts/db-integrity
+          retention-days: 7
+
+  db-migrations:
+    name: Migration Lint & Dry-Run
+    needs: [changes, typecheck]
+    if: ${{ needs.changes.outputs.only_docs != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Lint migrations
+        run: |
+          # Basic sanity using Supabase CLI
+          supabase --version
+          # If supabase db lint becomes available, call it here; otherwise parse SQL files
+          find supabase/migrations -type f -name '*.sql' -maxdepth 1 -print | tee artifacts_migration_list.txt
+      - name: Optional transactional dry-run against provided NON-PROD DB
+        id: migrate_dry_run
+        env:
+          SUPABASE_DB_URL_NONPROD: ${{ secrets.SUPABASE_DB_URL_NONPROD }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL_NONPROD" ]; then echo "run_dry=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+          echo "run_dry=true" >> "$GITHUB_OUTPUT"
+      - name: Install PostgreSQL client (dry-run)
+        if: ${{ steps.migrate_dry_run.outputs.run_dry == 'true' }}
+        run: sudo apt-get update -y && sudo apt-get install -y postgresql-client
+      - name: Transactional apply & rollback (dry)
+        if: ${{ steps.migrate_dry_run.outputs.run_dry == 'true' }}
+        env:
+          SUPABASE_DB_URL_NONPROD: ${{ secrets.SUPABASE_DB_URL_NONPROD }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/db-migrations
+          {
+            echo "BEGIN;"
+            for f in supabase/migrations/*.sql; do
+              echo "-- Applying $f";
+              cat "$f";
+            done
+            echo "ROLLBACK;"
+          } | psql "$SUPABASE_DB_URL_NONPROD" -v ON_ERROR_STOP=1 | tee artifacts/db-migrations/dry_run_output.txt
+      - name: Upload migration artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-migrations
+          path: |
+            artifacts_migration_list.txt
+            artifacts/db-migrations
+          retention-days: 7
+
+  db-performance:
+    name: DB/API Performance Checks
+    needs: [changes, db-validate]
+    if: ${{ needs.changes.outputs.only_docs != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decide perf run
+        id: decide_perf
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -n "$SUPABASE_DB_URL" ]; then echo run_psql=true >> "$GITHUB_OUTPUT"; else echo run_psql=false >> "$GITHUB_OUTPUT"; fi
+          if [ -n "$NEXT_PUBLIC_SUPABASE_URL" ] && [ -n "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then echo run_api=true >> "$GITHUB_OUTPUT"; else echo run_api=false >> "$GITHUB_OUTPUT"; fi
+      - name: Install PostgreSQL client
+        if: ${{ steps.decide_perf.outputs.run_psql == 'true' }}
+        run: sudo apt-get update -y && sudo apt-get install -y postgresql-client
+      - name: Query benchmarks
+        if: ${{ steps.decide_perf.outputs.run_psql == 'true' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/db-performance
+          psql "$SUPABASE_DB_URL" -Atc "SHOW max_connections;" > artifacts/db-performance/max_connections.txt
+          psql "$SUPABASE_DB_URL" -Atc "EXPLAIN ANALYZE SELECT * FROM public.products ORDER BY created_at DESC LIMIT 50;" > artifacts/db-performance/explain_products.txt || true
+      - name: API latency check (REST)
+        if: ${{ steps.decide_perf.outputs.run_api == 'true' }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/db-performance
+          curl -s -o /dev/null -w 'time_namelookup=%{time_namelookup}\n time_connect=%{time_connect}\n time_starttransfer=%{time_starttransfer}\n time_total=%{time_total}\n' \
+            -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            "$NEXT_PUBLIC_SUPABASE_URL/rest/v1/products?select=id&limit=1" > artifacts/db-performance/api_latency.txt
+      - name: Upload performance artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-performance
+          path: artifacts/db-performance
+          retention-days: 7
+  e2e:
+    needs: [changes, build, db-smoke]
+    if: ${{ needs.changes.outputs.only_docs != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Matrix across browser/device and shards; suite categorization via tags
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        device: [desktop, mobile]
+        shardIndex: [1, 2]
+        shardTotal: [2]
+        suite: [smoke, regression]
+        include:
+          - browser: chromium
+            device: mobile
+            project: chromium-mobile
+          - browser: chromium
+            device: desktop
+            project: chromium
+          - browser: firefox
+            device: desktop
+            project: firefox
+          - browser: webkit
+            device: desktop
+            project: webkit
+    # This job needs to comment on PRs; grant only what is necessary
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      # Optional viewport override for desktop runs; config can read this env
+      PW_VIEWPORT: ${{ matrix.device == 'desktop' && '1280x800' || '' }}
+      PW_SUITE: ${{ matrix.suite }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          pnpm-version: ${{ env.PNPM_VERSION }}
+          install: 'true'
+      - name: Show pnpm version
+        run: pnpm -v
+
+      - name: Decide E2E run
+        id: decide_e2e
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -n "${NEXT_PUBLIC_SUPABASE_URL}" ] && [ -n "${NEXT_PUBLIC_SUPABASE_ANON_KEY}" ]; then
+            echo "run_e2e=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_e2e=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate E2E inputs
+        if: ${{ steps.decide_e2e.outputs.run_e2e == 'true' }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          if ! echo "${NEXT_PUBLIC_SUPABASE_URL}" | grep -Eqi '^https://[a-z0-9-]+\.(supabase\.co|supabase\.in)'; then
+            echo "::error title=Invalid Supabase URL::NEXT_PUBLIC_SUPABASE_URL must be a valid Supabase project URL."
+            exit 1
+          fi
+          # Anon key is a JWT; basic format validation only (do not log contents)
+          if ! echo "${NEXT_PUBLIC_SUPABASE_ANON_KEY}" | grep -Eq '^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+'; then
+            echo "::error title=Invalid anon key format::NEXT_PUBLIC_SUPABASE_ANON_KEY must be a valid JWT."
+            exit 1
+          fi
+
+      - name: Check DB URL present
+        id: check_db_url
+        if: ${{ steps.decide_e2e.outputs.run_e2e == 'true' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -n "${SUPABASE_DB_URL}" ]; then
+            echo "has_db_url=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_db_url=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Seed DB for tests (optional)
+        if: ${{ steps.decide_e2e.outputs.run_e2e == 'true' && steps.check_db_url.outputs.has_db_url == 'true' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y && sudo apt-get install -y postgresql-client
+          # Minimal seed wrapped in a transaction; adjust to your schema
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 \
+            -c "BEGIN;" \
+            -c "INSERT INTO public.products (name, price_cents) VALUES ('__seed_product__', 1999) ON CONFLICT DO NOTHING;" \
+            -c "COMMIT;"
+
+      - name: Install Playwright browsers (with OS deps)
+        if: ${{ steps.decide_e2e.outputs.run_e2e == 'true' }}
+        run: npx playwright install --with-deps
+      - name: Download Next.js build artifact
+        if: ${{ steps.decide_e2e.outputs.run_e2e == 'true' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next
+
+      - name: Run Playwright tests (matrix)
+        if: ${{ steps.decide_e2e.outputs.run_e2e == 'true' }}
+        env:
+          # Force project selection for matrix
+          PW_PROJECT: ${{ matrix.project }}
+        run: |
+          set -euo pipefail
+          # Determine grep by suite; default regression runs the full suite
+          if [ "${{ matrix.suite }}" = "smoke" ]; then GREP='--grep @smoke'; else GREP=''; fi
+          # Visual suite example (not enabled by default): --grep @visual
+          # API suite example (not enabled by default): --grep @api
+          pnpm playwright test --project="$PW_PROJECT" $GREP \
+            --shard="${{ matrix.shardIndex }}/${{ matrix.shardTotal }}"
+        continue-on-error: false
+
+      - name: Upload Playwright HTML report
+        if: ${{ always() && steps.decide_e2e.outputs.run_e2e == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.project }}-shard${{ matrix.shardIndex }}-${{ matrix.suite }}
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload JSON results
+        if: ${{ always() && steps.decide_e2e.outputs.run_e2e == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-json-${{ matrix.project }}-shard${{ matrix.shardIndex }}-${{ matrix.suite }}
+          path: test-results.json
+          retention-days: 7
+
+      - name: Upload JUnit results
+        if: ${{ always() && steps.decide_e2e.outputs.run_e2e == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-${{ matrix.project }}-shard${{ matrix.shardIndex }}-${{ matrix.suite }}
+          path: junit.xml
+          retention-days: 7
+
+      - name: Comment PR with results (single job)
+        # Avoid spamming; only comment for one canonical combination
+        if: ${{ github.event_name == 'pull_request' && steps.decide_e2e.outputs.run_e2e == 'true' && matrix.project == 'chromium' && matrix.suite == 'smoke' && matrix.shardIndex == 1 }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let body = 'Playwright did not produce a JSON results file.';
+            if (fs.existsSync('test-results.json')) {
+              const results = fs.readFileSync('test-results.json', 'utf8');
+              body = `## E2E Smoke (chromium, desktop) Results\n\n\`\`\`json\n${results}\n\`\`\`\n\nArtifacts: check HTML/JUnit for full matrix.`;
+            }
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+      - name: Cleanup DB (optional)
+        if: ${{ always() && steps.check_db_url.outputs.has_db_url == 'true' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y && sudo apt-get install -y postgresql-client
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 \
+            -c "BEGIN;" \
+            -c "DELETE FROM public.products WHERE name IN ('__seed_product__','__ci_tmp__');" \
+            -c "COMMIT;"
+
+      - name: Stop app
+        if: ${{ always() }}
+        run: |
+          if [ -f app.pid ]; then kill $(cat app.pid) || true; fi
+
+  api-tests:
+    name: API Smoke, Contract, Perf & Security
+    needs: [build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Configure pnpm store path
+        run: pnpm config set store-dir ~/.pnpm-store
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+      - name: Install deps
+        run: pnpm install --frozen-lockfile --prefer-offline --strict-peer-dependencies
+      - name: Download Next.js build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next
+      - name: Start app (background)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'anon_dummy_key' }}
+        run: |
+          nohup pnpm start > .next-app.log 2>&1 & echo $! > app.pid
+          sleep 2
+      - name: Wait for app to be ready
+        run: npx wait-on http://localhost:3000 --timeout 30000
+      - name: Run API contract, smoke & security tests
+        run: pnpm ci:api
+      - name: Upload API testing artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-tests
+          path: artifacts/api-tests
+          retention-days: 7
+      - name: Coverage gate check
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          if [ -f coverage/coverage-summary.json ]; then
+            TOTAL=$(cat coverage/coverage-summary.json | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const j=JSON.parse(d);console.log(j.total.lines.pct)})")
+            echo "Total line coverage: ${TOTAL}%"
+            awk -v c="$TOTAL" 'BEGIN{ if (c+0 < 80) { exit 1 } }'
+          else
+            echo "No coverage summary found; skipping coverage gate. Add unit/integration tests to enable this gate."
+          fi
+      - name: Print server logs on failure
+        if: ${{ failure() }}
+        run: |
+          set -euo pipefail
+          if [ -f .next-app.log ]; then
+            echo "=== Server logs ==="
+            tail -100 .next-app.log
+          else
+            echo "No server log file found."
+          fi
+      - name: Technical debt budget placeholder
+        run: |
+          echo "Track debt via ESLint rule counts and TODOs in future iterations."

@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "supabase.vscode-supabase",
+    "cweijan.vscode-database-client2",
+    "rangav.vscode-thunder-client",
+    "dbaeumer.vscode-eslint",
+    "usernamehw.errorlens",
+    "esbenp.prettier-vscode",
+    "ms-playwright.playwright"
+  ]
+}

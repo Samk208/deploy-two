@@ -1,0 +1,28 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: warmup
+    - duration: 60
+      arrivalRate: 15
+      name: load
+  plugins:
+    ensure:
+      thresholds:
+        - http.response_time.p95: 500
+        - http.response_time.p99: 800
+  http:
+    timeout: 10
+
+scenarios:
+  - name: Critical endpoints
+    flow:
+      - get:
+          url: "/api/products"
+      - get:
+          url: "/api/orders"
+      - get:
+          url: "/api/admin/auth"
+          expect:
+            - statusCode: [401, 403]
