@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCartStore, type CartItem } from "@/lib/store/cart";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 // Import the fixed filters component
 import { CartSidebar } from "@/components/shop/cart-sidebar";
 import { EnhancedProductFilters } from "@/components/shop/enhanced-product-filters-fixed";
@@ -119,40 +119,38 @@ export default function EnhancedShopPage() {
   }, []);
 
   // Fetch all products, not just in_stock ones to see what we have
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { supabase } = await import("@/lib/supabase/client");
+
+      // Fetch ALL products to see what's in database
+      const { data, error, count } = await supabase
+        .from("products")
+        .select("*", { count: "exact" })
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      console.log("All products from database:", data);
+      console.log("Total count:", count);
+
+      setProducts(data || []);
+      setTotalCount(count || 0);
+      setHasMore(false); // For now, load all at once
+    } catch (err) {
+      console.error("Direct fetch error:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch products");
+      setProducts([]);
+      setTotalCount(0);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const { supabase } = await import("@/lib/supabase/client");
-
-        // Fetch ALL products to see what's in database
-        const { data, error, count } = await supabase
-          .from("products")
-          .select("*", { count: "exact" })
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-
-        console.log("All products from database:", data);
-        console.log("Total count:", count);
-
-        setProducts(data || []);
-        setTotalCount(count || 0);
-        setHasMore(false); // For now, load all at once
-      } catch (err) {
-        console.error("Direct fetch error:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch products"
-        );
-        setProducts([]);
-        setTotalCount(0);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProducts();
-  }, []); // Only run once on mount
+  }, [fetchProducts]); // run on mount, and whenever fetch function ref changes
 
   // Transform products to match ProductCard interface
   const transformProduct = (product: any) => {
@@ -230,7 +228,7 @@ export default function EnhancedShopPage() {
   };
 
   const refetch = () => {
-    window.location.reload();
+    fetchProducts();
   };
 
   const handleQuickView = (product: any) => {
