@@ -3,6 +3,7 @@
 const SUPABASE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
   : undefined;
+const IS_DEV = process.env.NODE_ENV === 'development'
 
 const nextConfig = {
   eslint: {
@@ -24,24 +25,26 @@ const nextConfig = {
         hostname: 'picsum.photos',
         pathname: '/**',
       },
+      // Always allow HTTPS access to Supabase storage
       SUPABASE_HOST && {
         protocol: 'https',
         hostname: SUPABASE_HOST,
         pathname: '/storage/v1/object/public/**',
       },
-      SUPABASE_HOST && {
+      // Allow HTTP to Supabase host ONLY during local development
+      IS_DEV && SUPABASE_HOST && {
         protocol: 'http',
         hostname: SUPABASE_HOST,
         pathname: '/storage/v1/object/public/**',
       },
-      // Dev: local Supabase storage emulator
-      {
+      // Dev: local Supabase storage emulator patterns
+      IS_DEV && {
         protocol: 'http',
         hostname: 'localhost',
         port: '54321',
         pathname: '/storage/v1/object/public/**',
       },
-      {
+      IS_DEV && {
         protocol: 'http',
         hostname: '127.0.0.1',
         port: '54321',

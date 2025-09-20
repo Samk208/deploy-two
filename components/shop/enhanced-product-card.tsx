@@ -9,12 +9,37 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+// Strongly-typed product interface used throughout this component
+export interface Product {
+  id: string | number;
+  title: string;
+  description?: string;
+  price: number;
+  original_price?: number;
+  images?: string[] | string;
+  category?: string;
+  badges?: string[];
+  in_stock?: boolean;
+  stock_count?: number;
+  rating?: number;
+  reviews?: number;
+  commission?: number;
+  // When present, enables deep-linking to the product detail page
+  shopHandle?: string;
+  supplier?: {
+    id?: string;
+    name?: string;
+    verified?: boolean;
+    avatar_url?: string;
+  };
+}
+
 interface EnhancedProductCardProps {
-  product: any;
+  product: Product;
   size?: "sm" | "md" | "lg";
   showSupplier?: boolean;
-  onQuickView?: (product: any) => void;
-  onAddToCart?: (product: any) => void;
+  onQuickView?: (product: Product) => void;
+  onAddToCart?: (product: Product) => void;
 }
 
 export function EnhancedProductCard({
@@ -59,6 +84,13 @@ export function EnhancedProductCard({
     }
     return cleaned;
   }, [product?.images]);
+
+  const detailHref = useMemo(() => {
+    if (!product?.id) return undefined;
+    if (product?.shopHandle)
+      return `/shop/${product.shopHandle}/product/${product.id}`;
+    return undefined; // Avoid 404 when we don't know the shop handle
+  }, [product]);
 
   return (
     <Card
@@ -144,7 +176,11 @@ export function EnhancedProductCard({
         {/* Content */}
         <div className="flex-1 p-4 flex flex-col">
           {/* Title */}
-          <Link href={`/shop/product/${product.id}`} className="group">
+          <Link
+            href={detailHref ?? "#"}
+            className="group"
+            aria-disabled={!detailHref}
+          >
             <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-2">
               {product.title}
             </h3>
