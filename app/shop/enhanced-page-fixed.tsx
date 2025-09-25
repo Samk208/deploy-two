@@ -27,49 +27,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-// Define product images based on title
-const productImages: { [key: string]: string[] } = {
-  "Wireless Gaming Headset": [
-    "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=500",
-    "https://images.unsplash.com/photo-1545127398-14699f92334b?w=500",
-  ],
-  "Cotton T-Shirt Premium": [
-    "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500",
-    "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=500",
-  ],
-  "Smart Fitness Tracker": [
-    "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=500",
-    "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=500",
-  ],
-  "Organic Face Cream": [
-    "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=500",
-    "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=500",
-  ],
-  "Professional Camera Lens": [
-    "https://images.unsplash.com/photo-1606986628025-35d57e735ae0?w=500",
-    "https://images.unsplash.com/photo-1617638924751-92d272b8d5c0?w=500",
-  ],
-  "Leather Crossbody Bag": [
-    "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500",
-    "https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=500",
-  ],
-  "Stainless Steel Water Bottle": [
-    "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=500",
-    "https://images.unsplash.com/photo-1570831739435-6601aa3fa4fb?w=500",
-  ],
-  "Bluetooth Portable Speaker": [
-    "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500",
-    "https://images.unsplash.com/photo-1589003077984-894e133dabab?w=500",
-  ],
-  "Yoga Mat Premium": [
-    "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=500",
-    "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500",
-  ],
-  "Electric Coffee Grinder": [
-    "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500",
-    "https://images.unsplash.com/photo-1539445709020-951c7e119e75?w=500",
-  ],
-};
+
 
 export default function EnhancedShopPage() {
   const [filters, setFilters] = useState<ProductFiltersType>({
@@ -154,11 +112,10 @@ export default function EnhancedShopPage() {
 
   // Transform products to match ProductCard interface
   const transformProduct = (product: any) => {
-    // Get images from our mapping or use defaults
-    const images = productImages[product.title] ||
-      product.images || [
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
-      ];
+    // Prefer DB-provided images; only fall back when truly missing
+    const images = Array.isArray(product.images)
+      ? product.images
+      : (product.images ? [product.images] : ["/placeholder.jpg"]);
 
     // Deterministic hash for review counts to avoid hydration mismatch
     const stableHash = (s: string) => {

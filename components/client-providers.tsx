@@ -10,7 +10,6 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
     try {
       // Zustand persist API is attached on the store function
       // skipHydration is enabled in the store, so we trigger manual rehydrate here
-      // @ts-ignore - persist may not exist on the type, but is present at runtime when using middleware
       useCartStore.persist?.rehydrate?.()
     } catch (_) {
       // no-op
