@@ -12,8 +12,25 @@ async function ensureLoggedIn(page: import('@playwright/test').Page, email: stri
     await page.fill('input[name="email"]', email);
     await page.fill('input[name="password"]', password);
     await page.click('button[type="submit"]');
+    // Let redirects/SSR settle
+    await page.waitForLoadState('networkidle');
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('user-menu').first()).toBeVisible({ timeout: 15000 });
+  }
+}
+
+async function openUserMenu(page: import('@playwright/test').Page) {
+  // Try desktop user menu first
+  const desktop = page.getByTestId('user-menu').first();
+  try {
+    await expect(desktop).toBeVisible({ timeout: 5000 });
+    await desktop.click();
+    return 'desktop';
+  } catch {
+    // Fallback to mobile: click the hamburger button and open the menu list
+    const mobileToggle = page.getByRole('button', { name: /open menu/i }).first();
+    await mobileToggle.click({ timeout: 5000 });
+    return 'mobile';
   }
 }
 
@@ -67,11 +84,13 @@ test.describe("Authentication Flow", () => {
     await page.goto(`/`, { waitUntil: "domcontentloaded" });
     await ensureLoggedIn(page, email, password);
 
-    // Open user menu via a stable affordance (avatar/menu button)
-    // Try a few common selectors
-    const userMenuButton = page.getByTestId("user-menu").first();
-    await userMenuButton.click();
-    await page.getByTestId("menu-signout").click();
+    // Open menu (desktop first, fallback to mobile)
+    const mode = await openUserMenu(page);
+    if (mode === 'desktop') {
+      await page.getByTestId("menu-signout").click();
+    } else {
+      await page.getByTestId("menu-signout-mobile").click();
+    }
     await page.waitForLoadState("networkidle");
     await expect(page.getByRole("link", { name: /sign in/i })).toBeVisible();
   });
@@ -91,11 +110,16 @@ test.describe("Authentication Flow", () => {
 
     // Sign out
     await page.goto(`/`, { waitUntil: "domcontentloaded" });
-    const userMenuButton2 = page.getByTestId("user-menu").first();
-    await userMenuButton2.click();
-    const signOutItem = page.getByTestId("menu-signout");
-    await expect(signOutItem).toBeVisible({ timeout: 10000 });
-    await signOutItem.click();
+    const mode2 = await openUserMenu(page);
+    if (mode2 === 'desktop') {
+      const signOutItem = page.getByTestId("menu-signout");
+      await expect(signOutItem).toBeVisible({ timeout: 10000 });
+      await signOutItem.click();
+    } else {
+      const signOutMobile = page.getByTestId("menu-signout-mobile");
+      await expect(signOutMobile).toBeVisible({ timeout: 10000 });
+      await signOutMobile.click();
+    }
 
     // Sign in
     await page.goto(`/sign-in`, { waitUntil: "domcontentloaded" });
