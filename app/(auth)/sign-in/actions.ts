@@ -10,7 +10,7 @@ export async function signIn(formData: FormData) {
   const password = formData.get('password') as string;
   const redirectTo = formData.get('redirectTo') as string || '/';
   const cookieStore = cookies();
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,

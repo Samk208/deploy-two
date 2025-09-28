@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const { name, displayName, country, phone, preferredLanguage, marketingOptIn } = body
 
     // Authenticate user
-    const supabase = createServerSupabaseClient(request)
+    const supabase = await createServerSupabaseClient(request)
     const user = await getCurrentUser(supabase)
     if (!user) {
       return NextResponse.json(

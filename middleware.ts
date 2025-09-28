@@ -8,7 +8,7 @@ export async function middleware(req: NextRequest) {
   const res = await updateSession(req);
 
   // Now, create a client to check auth state for the rest of the logic
-  const supabase = createServerSupabaseClient(req);
+  const supabase = await createServerSupabaseClient(req);
 
   const {
     data: { session },

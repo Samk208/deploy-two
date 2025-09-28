@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const cookieStore = cookies();
-    const supabase = createServerSupabaseClient();
+    const supabase = await createServerSupabaseClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {

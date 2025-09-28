@@ -21,7 +21,7 @@ const fileValidationSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerSupabaseClient(request)
+    const supabase = await createServerSupabaseClient(request)
     
     // Get current user
     const user = await getCurrentUser(supabase)
@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
 // GET endpoint to fetch user's documents
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerSupabaseClient(request)
+    const supabase = await createServerSupabaseClient(request)
     
     // Get current user
     const user = await getCurrentUser(supabase)

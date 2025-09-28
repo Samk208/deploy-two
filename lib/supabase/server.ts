@@ -11,7 +11,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // For Pages Router - create server client with request context
-export function createServerSupabaseClient(request?: NextRequest) {
+export async function createServerSupabaseClient(request?: NextRequest) {
   // If we have a request, use its cookies
   if (request) {
     return createServerClient<Database>(
@@ -36,19 +36,16 @@ export function createServerSupabaseClient(request?: NextRequest) {
 
   // Fallback for when no request context is available
   // Use Next.js App Router cookies store to properly read/write auth cookies.
+  const store = await (nextCookies as unknown as () => Promise<any>)()
   return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name: string) {
-        // Call cookies() inline to avoid Promise typing in some TS setups
-        const store = (nextCookies as unknown as () => any)()
         return store?.get?.(name)?.value
       },
       set(name: string, value: string, options?: any) {
-        const store = (nextCookies as unknown as () => any)()
         store?.set?.(name, value, options)
       },
       remove(name: string, options?: any) {
-        const store = (nextCookies as unknown as () => any)()
         store?.set?.(name, '', { ...(options || {}), maxAge: 0 })
       },
     },

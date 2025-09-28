@@ -136,7 +136,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Immediately sign the user in to create a session cookie
     try {
-      const supabase = createServerSupabaseClient(request)
+      const supabase = await createServerSupabaseClient(request)
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
       if (signInError) {
         console.warn('Sign-in after sign-up failed; user must sign in manually:', signInError)
