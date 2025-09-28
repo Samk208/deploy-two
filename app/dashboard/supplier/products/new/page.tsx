@@ -1,44 +1,60 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
-import { Slider } from '@/components/ui/slider'
-import { Separator } from '@/components/ui/separator'
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import Link from 'next/link'
-import Image from 'next/image'
-import { 
-  Upload, X, GripVertical, Save, Eye, AlertCircle, CheckCircle, 
-  DollarSign, Package, Globe, ArrowLeft 
-} from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle,
+  DollarSign,
+  Eye,
+  Globe,
+  GripVertical,
+  Package,
+  Save,
+  Upload,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
-const categories = ["Clothing", "Beauty", "Jewelry", "Home", "Electronics"]
-const regions = ["Global", "KR", "JP", "CN"]
+const categories = ["Clothing", "Beauty", "Jewelry", "Home", "Electronics"];
+const regions = ["Global", "KR", "JP", "CN"];
 
 interface ProductFormData {
-  title: string
-  description: string
-  category: string
-  basePrice: number
-  commissionPct: number
-  inventory: number
-  regions: string[]
-  active: boolean
-  images: string[]
+  title: string;
+  description: string;
+  category: string;
+  basePrice: number;
+  commissionPct: number;
+  inventory: number;
+  regions: string[];
+  active: boolean;
+  images: string[];
 }
 
 export default function NewProductPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [successMessage, setSuccessMessage] = useState<string>("");
 
   const [formData, setFormData] = useState<ProductFormData>({
     title: "",
@@ -50,88 +66,119 @@ export default function NewProductPage() {
     regions: [],
     active: true,
     images: [],
-  })
+  });
 
-  const [draggedImage, setDraggedImage] = useState<number | null>(null)
+  const [draggedImage, setDraggedImage] = useState<number | null>(null);
 
-  const updateField = (field: keyof ProductFormData, value: string | number | boolean | string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+  const updateField = (
+    field: keyof ProductFormData,
+    value: string | number | boolean | string[]
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }))
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-  }
+  };
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
-    if (!formData.title.trim()) newErrors.title = "Product title is required"
-    if (!formData.description.trim()) newErrors.description = "Product description is required"
-    if (!formData.category) newErrors.category = "Category is required"
-    if (formData.basePrice <= 0) newErrors.basePrice = "Base price must be greater than 0"
-    if (formData.inventory < 0) newErrors.inventory = "Inventory cannot be negative"
-    if (formData.regions.length === 0) newErrors.regions = "At least one region must be selected"
-    if (formData.images.length === 0) newErrors.images = "At least one product image is required"
+    if (!formData.title.trim()) newErrors.title = "Product title is required";
+    if (!formData.description.trim())
+      newErrors.description = "Product description is required";
+    if (!formData.category) newErrors.category = "Category is required";
+    if (formData.basePrice <= 0)
+      newErrors.basePrice = "Base price must be greater than 0";
+    if (formData.inventory < 0)
+      newErrors.inventory = "Inventory cannot be negative";
+    if (formData.regions.length === 0)
+      newErrors.regions = "At least one region must be selected";
+    if (formData.images.length === 0)
+      newErrors.images = "At least one product image is required";
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSaveDraft = async () => {
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsLoading(false)
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsLoading(false);
 
     // Show success toast and redirect
-    router.push("/dashboard/supplier/products")
-  }
+    router.push("/dashboard/supplier/products");
+  };
 
   const handlePublish = async () => {
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsLoading(false)
+    if (formData.commissionPct < 0 || formData.commissionPct > 95) {
+      // surface validation error
+      return;
+    }
 
-    // Show success toast and redirect
-    router.push("/dashboard/supplier/products")
-  }
+    setIsLoading(true);
+    try {
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        price: formData.basePrice,
+        commission: formData.commissionPct,
+        stockCount: formData.inventory,
+        category: formData.category,
+        region: formData.regions,
+        images: formData.images,
+      };
+      const res = await fetch("/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Failed to create product");
+      setSuccessMessage("Product created successfully");
+    } catch (e) {
+      setErrors((prev) => ({ ...prev, submit: "Failed to create product" }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
+    const files = Array.from(e.target.files || []);
     // In real app, upload to storage and get URLs
     const newImages = files.map(
-      (file, index) => `/placeholder.svg?height=300&width=300&text=Image${formData.images.length + index + 1}`,
-    )
-    updateField("images", [...formData.images, ...newImages])
-  }
+      (file, index) =>
+        `/placeholder.svg?height=300&width=300&text=Image${formData.images.length + index + 1}`
+    );
+    updateField("images", [...formData.images, ...newImages]);
+  };
 
   const removeImage = (index: number) => {
     updateField(
       "images",
-      formData.images.filter((_, i) => i !== index),
-    )
-  }
+      formData.images.filter((_, i) => i !== index)
+    );
+  };
 
   const reorderImages = (fromIndex: number, toIndex: number) => {
-    const newImages = [...formData.images]
-    const [removed] = newImages.splice(fromIndex, 1)
-    newImages.splice(toIndex, 0, removed)
-    updateField("images", newImages)
-  }
+    const newImages = [...formData.images];
+    const [removed] = newImages.splice(fromIndex, 1);
+    newImages.splice(toIndex, 0, removed);
+    updateField("images", newImages);
+  };
 
   const toggleRegion = (region: string) => {
     const newRegions = formData.regions.includes(region)
       ? formData.regions.filter((r) => r !== region)
-      : [...formData.regions, region]
-    updateField("regions", newRegions)
-  }
+      : [...formData.regions, region];
+    updateField("regions", newRegions);
+  };
 
-  const finalPrice = formData.basePrice * (1 + formData.commissionPct / 100)
+  const finalPrice = formData.basePrice * (1 + formData.commissionPct / 100);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -145,7 +192,9 @@ export default function NewProductPage() {
         </Link>
         <div>
           <h1 className="text-3xl font-bold text-gray-900">New Product</h1>
-          <p className="text-gray-600 mt-1">Create a new product for your catalog</p>
+          <p className="text-gray-600 mt-1">
+            Create a new product for your catalog
+          </p>
         </div>
       </div>
 
@@ -166,6 +215,7 @@ export default function NewProductPage() {
                   onChange={(e) => updateField("title", e.target.value)}
                   placeholder="Enter product title"
                   className={errors.title ? "border-red-500" : ""}
+                  data-testid="product-title"
                 />
                 {errors.title && (
                   <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -184,6 +234,7 @@ export default function NewProductPage() {
                   placeholder="Describe your product in detail..."
                   rows={4}
                   className={errors.description ? "border-red-500" : ""}
+                  data-testid="product-description"
                 />
                 {errors.description && (
                   <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -195,8 +246,14 @@ export default function NewProductPage() {
 
               <div>
                 <Label htmlFor="category">Category *</Label>
-                <Select value={formData.category} onValueChange={(value) => updateField("category", value)}>
-                  <SelectTrigger className={errors.category ? "border-red-500" : ""}>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => updateField("category", value)}
+                >
+                  <SelectTrigger
+                    className={errors.category ? "border-red-500" : ""}
+                    data-testid="product-category"
+                  >
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -234,12 +291,21 @@ export default function NewProductPage() {
                     className="hidden"
                     id="image-upload"
                   />
-                  <label htmlFor="image-upload" className="cursor-pointer">
+                  <label
+                    htmlFor="image-upload"
+                    className="cursor-pointer"
+                    data-testid="product-images"
+                  >
                     <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium text-indigo-600">Click to upload</span> or drag and drop
+                      <span className="font-medium text-indigo-600">
+                        Click to upload
+                      </span>{" "}
+                      or drag and drop
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      PNG, JPG, GIF up to 10MB
+                    </p>
                   </label>
                 </div>
 
@@ -254,10 +320,10 @@ export default function NewProductPage() {
                         onDragStart={() => setDraggedImage(index)}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={(e) => {
-                          e.preventDefault()
+                          e.preventDefault();
                           if (draggedImage !== null) {
-                            reorderImages(draggedImage, index)
-                            setDraggedImage(null)
+                            reorderImages(draggedImage, index);
+                            setDraggedImage(null);
                           }
                         }}
                       >
@@ -278,7 +344,11 @@ export default function NewProductPage() {
                             <GripVertical className="h-3 w-3" />
                           </div>
                         </div>
-                        {index === 0 && <Badge className="absolute bottom-2 left-2 bg-indigo-600">Primary</Badge>}
+                        {index === 0 && (
+                          <Badge className="absolute bottom-2 left-2 bg-indigo-600">
+                            Primary
+                          </Badge>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -309,9 +379,15 @@ export default function NewProductPage() {
                     min="0"
                     step="0.01"
                     value={formData.basePrice || ""}
-                    onChange={(e) => updateField("basePrice", Number.parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      updateField(
+                        "basePrice",
+                        Number.parseFloat(e.target.value) || 0
+                      )
+                    }
                     placeholder="0.00"
                     className={errors.basePrice ? "border-red-500" : ""}
+                    data-testid="product-price"
                   />
                   {errors.basePrice && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -328,9 +404,15 @@ export default function NewProductPage() {
                     type="number"
                     min="0"
                     value={formData.inventory || ""}
-                    onChange={(e) => updateField("inventory", Number.parseInt(e.target.value) || 0)}
+                    onChange={(e) =>
+                      updateField(
+                        "inventory",
+                        Number.parseInt(e.target.value) || 0
+                      )
+                    }
                     placeholder="0"
                     className={errors.inventory ? "border-red-500" : ""}
+                    data-testid="product-stock"
                   />
                   {errors.inventory && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -344,9 +426,27 @@ export default function NewProductPage() {
               <div>
                 <Label>Commission Percentage: {formData.commissionPct}%</Label>
                 <div className="mt-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    max={95}
+                    value={formData.commissionPct}
+                    onChange={(e) =>
+                      updateField(
+                        "commissionPct",
+                        Number.parseInt(e.target.value) || 0
+                      )
+                    }
+                    className="w-28"
+                    data-testid="product-commission"
+                  />
+                </div>
+                <div className="mt-2">
                   <Slider
                     value={[formData.commissionPct]}
-                    onValueChange={([value]) => updateField("commissionPct", value)}
+                    onValueChange={([value]) =>
+                      updateField("commissionPct", value)
+                    }
                     max={95}
                     min={0}
                     step={1}
@@ -357,6 +457,14 @@ export default function NewProductPage() {
                     <span>95%</span>
                   </div>
                 </div>
+                {formData.commissionPct < 0 || formData.commissionPct > 95 ? (
+                  <p
+                    className="text-sm text-red-600 mt-1"
+                    data-testid="commission-error"
+                  >
+                    Commission must be between 0-95%
+                  </p>
+                ) : null}
               </div>
             </CardContent>
           </Card>
@@ -371,18 +479,20 @@ export default function NewProductPage() {
                 <Label>Available Regions *</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {regions.map((region) => (
-                    <button
+                    <label
                       key={region}
-                      onClick={() => toggleRegion(region)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
-                        formData.regions.includes(region)
-                          ? "bg-indigo-100 border-indigo-300 text-indigo-700"
-                          : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                      }`}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors cursor-pointer"
                     >
+                      <input
+                        type="checkbox"
+                        checked={formData.regions.includes(region)}
+                        onChange={() => toggleRegion(region)}
+                        className="accent-indigo-600"
+                        data-testid={`region-${region.toLowerCase()}`}
+                      />
                       {region === "Global" && <Globe className="h-4 w-4" />}
                       {region}
-                    </button>
+                    </label>
                   ))}
                 </div>
                 {errors.regions && (
@@ -397,7 +507,9 @@ export default function NewProductPage() {
                 <div>
                   <Label htmlFor="active">Product Status</Label>
                   <p className="text-sm text-gray-600">
-                    {formData.active ? "Active - visible to influencers" : "Inactive - hidden from influencers"}
+                    {formData.active
+                      ? "Active - visible to influencers"
+                      : "Inactive - hidden from influencers"}
                   </p>
                 </div>
                 <Switch
@@ -425,7 +537,9 @@ export default function NewProductPage() {
                   ) : (
                     <AlertCircle className="h-4 w-4 text-gray-400" />
                   )}
-                  <span className={`text-sm ${formData.title ? "text-green-600" : "text-gray-500"}`}>
+                  <span
+                    className={`text-sm ${formData.title ? "text-green-600" : "text-gray-500"}`}
+                  >
                     Product title
                   </span>
                 </div>
@@ -435,7 +549,9 @@ export default function NewProductPage() {
                   ) : (
                     <AlertCircle className="h-4 w-4 text-gray-400" />
                   )}
-                  <span className={`text-sm ${formData.description ? "text-green-600" : "text-gray-500"}`}>
+                  <span
+                    className={`text-sm ${formData.description ? "text-green-600" : "text-gray-500"}`}
+                  >
                     Description
                   </span>
                 </div>
@@ -445,7 +561,9 @@ export default function NewProductPage() {
                   ) : (
                     <AlertCircle className="h-4 w-4 text-gray-400" />
                   )}
-                  <span className={`text-sm ${formData.images.length > 0 ? "text-green-600" : "text-gray-500"}`}>
+                  <span
+                    className={`text-sm ${formData.images.length > 0 ? "text-green-600" : "text-gray-500"}`}
+                  >
                     Product images
                   </span>
                 </div>
@@ -455,7 +573,9 @@ export default function NewProductPage() {
                   ) : (
                     <AlertCircle className="h-4 w-4 text-gray-400" />
                   )}
-                  <span className={`text-sm ${formData.basePrice > 0 ? "text-green-600" : "text-gray-500"}`}>
+                  <span
+                    className={`text-sm ${formData.basePrice > 0 ? "text-green-600" : "text-gray-500"}`}
+                  >
                     Base price
                   </span>
                 </div>
@@ -465,7 +585,9 @@ export default function NewProductPage() {
                   ) : (
                     <AlertCircle className="h-4 w-4 text-gray-400" />
                   )}
-                  <span className={`text-sm ${formData.regions.length > 0 ? "text-green-600" : "text-gray-500"}`}>
+                  <span
+                    className={`text-sm ${formData.regions.length > 0 ? "text-green-600" : "text-gray-500"}`}
+                  >
                     Regions selected
                   </span>
                 </div>
@@ -487,12 +609,20 @@ export default function NewProductPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Commission ({formData.commissionPct}%):</span>
-                  <span>${((formData.basePrice * formData.commissionPct) / 100).toFixed(2)}</span>
+                  <span>
+                    $
+                    {(
+                      (formData.basePrice * formData.commissionPct) /
+                      100
+                    ).toFixed(2)}
+                  </span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-medium">
                   <span>Final Price:</span>
-                  <span className="text-indigo-600">${finalPrice.toFixed(2)}</span>
+                  <span className="text-indigo-600">
+                    ${finalPrice.toFixed(2)}
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -507,7 +637,9 @@ export default function NewProductPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">{formData.inventory}</div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {formData.inventory}
+                  </div>
                   <div className="text-sm text-gray-600">units available</div>
                   {formData.inventory <= 10 && formData.inventory > 0 && (
                     <Badge variant="destructive" className="mt-2">
@@ -534,20 +666,37 @@ export default function NewProductPage() {
             <span>Draft saved automatically</span>
           </div>
           <div className="flex items-center gap-3">
+            {successMessage && (
+              <span
+                className="text-green-600 text-sm"
+                data-testid="success-message"
+              >
+                {successMessage}
+              </span>
+            )}
             <Button variant="outline" disabled={isLoading}>
               <Eye className="h-4 w-4 mr-2" />
               Preview
             </Button>
-            <Button variant="outline" onClick={handleSaveDraft} disabled={isLoading}>
+            <Button
+              variant="outline"
+              onClick={handleSaveDraft}
+              disabled={isLoading}
+            >
               <Save className="h-4 w-4 mr-2" />
               Save Draft
             </Button>
-            <Button onClick={handlePublish} disabled={isLoading} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button
+              onClick={handlePublish}
+              disabled={isLoading}
+              className="bg-indigo-600 hover:bg-indigo-700"
+              data-testid="submit-product"
+            >
               {isLoading ? "Publishing..." : "Publish Product"}
             </Button>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

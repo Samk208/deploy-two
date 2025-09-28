@@ -1,0 +1,28 @@
+{
+  "$schema": "https://design-tokens.org/schema.json",
+  "$description": "One-Link Brand Tokens (seed). Updated by scripts/extract-brand-palette.mjs",
+  "color": {
+    "brand": {
+      "600": { "value": "#4F46E5", "type": "color", "$description": "Primary brand" },
+      "700": { "value": "#4338CA", "type": "color" },
+      "500": { "value": "#6366F1", "type": "color" },
+      "400": { "value": "#818CF8", "type": "color" },
+      "300": { "value": "#A5B4FC", "type": "color" },
+      "200": { "value": "#C7D2FE", "type": "color" },
+      "100": { "value": "#E0E7FF", "type": "color" }
+    },
+    "accent": {
+      "500": { "value": "#F59E0B", "type": "color" },
+      "400": { "value": "#FBBF24", "type": "color" }
+    },
+    "foreground": {
+      "900": { "value": "#111827", "type": "color" },
+      "700": { "value": "#374151", "type": "color" },
+      "600": { "value": "#4B5563", "type": "color" }
+    },
+    "background": {
+      "soft": { "value": "#F9FAFB", "type": "color" },
+      "base": { "value": "#FFFFFF", "type": "color" }
+    }
+  }
+}

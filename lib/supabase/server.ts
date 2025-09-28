@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import type { Database } from './database.types'
 import type { NextRequest } from 'next/server'
+import { cookies as nextCookies } from 'next/headers'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -24,30 +25,34 @@ export function createServerSupabaseClient(request?: NextRequest) {
               value: cookie.value
             }))
           },
-          setAll() {
-            // No-op for server-side operations in Pages Router
-          },
+          // In middleware/request context we cannot mutate request cookies here.
+          // Session refresh in middleware is handled by lib/supabase/middleware.updateSession.
+          // Provide a no-op to satisfy the interface.
+          setAll() {},
         },
       }
     )
   }
 
   // Fallback for when no request context is available
-  return createServerClient<Database>(
-    supabaseUrl,
-    supabaseAnonKey,
-    {
-      cookies: {
-        getAll() {
-          // Return empty array when no request context
-          return []
-        },
-        setAll() {
-          // No-op for server-side operations
-        },
+  // Use Next.js App Router cookies store to properly read/write auth cookies.
+  return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get(name: string) {
+        // Call cookies() inline to avoid Promise typing in some TS setups
+        const store = (nextCookies as unknown as () => any)()
+        return store?.get?.(name)?.value
       },
-    }
-  )
+      set(name: string, value: string, options?: any) {
+        const store = (nextCookies as unknown as () => any)()
+        store?.set?.(name, value, options)
+      },
+      remove(name: string, options?: any) {
+        const store = (nextCookies as unknown as () => any)()
+        store?.set?.(name, '', { ...(options || {}), maxAge: 0 })
+      },
+    },
+  })
 }
 
 // Type helpers

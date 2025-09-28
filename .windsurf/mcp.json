@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "C:\\Program Files\\nodejs\\npm.cmd",
+      "args": ["exec", "-y", "@playwright/mcp@0.0.39"],
+      "env": {
+        "PLAYWRIGHT_HEADLESS": "1",
+        "PLAYWRIGHT_LAUNCH_ARGS": "--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu --window-size=1366,768",
+        "PLAYWRIGHT_TIMEOUT": "30000",
+        "PLAYWRIGHT_NAVIGATION_TIMEOUT": "30000",
+        "PLAYWRIGHT_ACTION_TIMEOUT": "10000"
+      }
+    },
+    "filesystem": {
+      "command": "C:\\Program Files\\nodejs\\npm.cmd",
+      "args": [
+        "exec",
+        "-y",
+        "@modelcontextprotocol/server-filesystem@0.6.2",
+        "C:\\Users\\Lenovo\\Local Sites",
+        "C:\\Users\\Lenovo\\Desktop\\Workspce",
+        "C:\\Users\\Lenovo\\Desktop"
+      ]
+    }
+  }
+}

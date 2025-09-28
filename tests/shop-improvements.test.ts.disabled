@@ -187,7 +187,8 @@ test.describe('Onboarding Improvements', () => {
     // Fill in basic information
     await page.locator('[data-testid="name-input"]').fill('Test User')
     await page.locator('[data-testid="display-name-input"]').fill('testuser')
-    await page.locator('[data-testid="country-select"]').selectOption('US')
+    await page.locator('[data-testid="country-select"]').click()
+    await page.getByRole('option', { name: 'US' }).click()
     await page.locator('[data-testid="phone-input"]').fill('+1234567890')
     
     // Click next
@@ -198,7 +199,8 @@ test.describe('Onboarding Improvements', () => {
     
     // Fill in influencer profile
     await page.locator('[data-testid="bio-input"]').fill('Test bio')
-    await page.locator('[data-testid="audience-size-select"]').selectOption('1000-10000')
+    await page.locator('[data-testid="audience-size-select"]').click()
+    await page.getByRole('option', { name: '1000-10000' }).click()
     
     // Click next
     await page.locator('[data-testid="next-button"]').click()

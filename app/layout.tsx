@@ -1,19 +1,19 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import { Header } from "@/components/layout/header"
-import { Footer } from "@/components/layout/footer"
-import { CookieBanner } from "@/components/layout/cookie-banner"
-import { AuthProvider } from "@/lib/auth-context"
-import "./globals.css"
-import { Suspense } from "react"
-import { ClientProviders } from "@/components/client-providers"
+import { ClientProviders } from "@/components/client-providers";
+import { CookieBanner } from "@/components/layout/cookie-banner";
+import { Footer } from "@/components/layout/footer";
+import { Header } from "@/components/layout/header";
+import { AuthProvider } from "@/lib/auth-context";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import type React from "react";
+import { Suspense } from "react";
+import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
-})
+});
 
 export const metadata: Metadata = {
   title: {
@@ -22,7 +22,12 @@ export const metadata: Metadata = {
   },
   description:
     "Connect suppliers, influencers, and customers in one seamless commerce platform. Build your shop, discover products, and grow your business.",
-  keywords: ["influencer marketing", "e-commerce", "affiliate marketing", "social commerce"],
+  keywords: [
+    "influencer marketing",
+    "e-commerce",
+    "affiliate marketing",
+    "social commerce",
+  ],
   authors: [{ name: "One-Link Team" }],
   creator: "One-Link",
   publisher: "One-Link",
@@ -36,21 +41,23 @@ export const metadata: Metadata = {
     url: "https://onelink.com",
     siteName: "One-Link",
     title: "One-Link - Influencer Commerce Platform",
-    description: "Connect suppliers, influencers, and customers in one seamless commerce platform.",
+    description:
+      "Connect suppliers, influencers, and customers in one seamless commerce platform.",
   },
   twitter: {
     card: "summary_large_image",
     title: "One-Link - Influencer Commerce Platform",
-    description: "Connect suppliers, influencers, and customers in one seamless commerce platform.",
+    description:
+      "Connect suppliers, influencers, and customers in one seamless commerce platform.",
     creator: "@onelink",
   },
   generator: "v0.app",
-}
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" className={inter.variable}>
@@ -67,7 +74,11 @@ export default function RootLayout({
             <Suspense fallback={<div>Loading...</div>}>
               <Header />
 
-              <main id="main-content" className="flex-1">
+              <main
+                id="main-content"
+                data-testid="primary-main"
+                className="flex-1"
+              >
                 {children}
               </main>
 
@@ -78,5 +89,5 @@ export default function RootLayout({
         </AuthProvider>
       </body>
     </html>
-  )
+  );
 }

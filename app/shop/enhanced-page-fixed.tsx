@@ -27,8 +27,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-
-
 export default function EnhancedShopPage() {
   const [filters, setFilters] = useState<ProductFiltersType>({
     search: "",
@@ -115,7 +113,9 @@ export default function EnhancedShopPage() {
     // Prefer DB-provided images; only fall back when truly missing
     const images = Array.isArray(product.images)
       ? product.images
-      : (product.images ? [product.images] : ["/placeholder.jpg"]);
+      : product.images
+        ? [product.images]
+        : ["/placeholder.jpg"];
 
     // Deterministic hash for review counts to avoid hydration mismatch
     const stableHash = (s: string) => {
@@ -281,7 +281,7 @@ export default function EnhancedShopPage() {
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1">
+          <main className="flex-1" data-testid="shop-main">
             {/* Mobile Filter Button */}
             <div className="lg:hidden mb-6">
               <Sheet>

@@ -1,17 +1,5 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
-import { Slider } from "@/components/ui/slider"
-import { Separator } from "@/components/ui/separator"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,120 +10,174 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  Upload,
-  X,
-  GripVertical,
-  Eye,
-  Trash2,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import {
   AlertCircle,
+  ArrowLeft,
   CheckCircle,
   DollarSign,
-  Package,
+  Eye,
   Globe,
-  ArrowLeft,
-} from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+  GripVertical,
+  Package,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useState } from "react";
 
-const categories = ["Clothing", "Beauty", "Jewelry", "Home", "Electronics"]
-const regions = ["Global", "KR", "JP", "CN"]
+const categories = ["Clothing", "Beauty", "Jewelry", "Home", "Electronics"];
+const regions = ["Global", "KR", "JP", "CN"];
 
 interface ProductFormData {
-  title: string
-  description: string
-  category: string
-  basePrice: number
-  commissionPct: number
-  inventory: number
-  regions: string[]
-  active: boolean
-  images: string[]
+  title: string;
+  description: string;
+  category: string;
+  basePrice: number;
+  commissionPct: number;
+  inventory: number;
+  regions: string[];
+  active: boolean;
+  images: string[];
 }
 
 interface EditProductClientProps {
-  product: ProductFormData
+  product: ProductFormData;
 }
 
-export function EditProductClient({ product: initialProduct }: EditProductClientProps) {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [formData, setFormData] = useState<ProductFormData>(initialProduct)
-  const [draggedImage, setDraggedImage] = useState<number | null>(null)
+export function EditProductClient({
+  product: initialProduct,
+}: EditProductClientProps) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<ProductFormData>(initialProduct);
+  const [draggedImage, setDraggedImage] = useState<number | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const updateField = (field: keyof ProductFormData, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-  }
+  };
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
-    if (!formData.title.trim()) newErrors.title = "Product title is required"
-    if (!formData.description.trim()) newErrors.description = "Product description is required"
-    if (!formData.category) newErrors.category = "Category is required"
-    if (formData.basePrice <= 0) newErrors.basePrice = "Base price must be greater than 0"
-    if (formData.inventory < 0) newErrors.inventory = "Inventory cannot be negative"
-    if (formData.regions.length === 0) newErrors.regions = "At least one region must be selected"
-    if (formData.images.length === 0) newErrors.images = "At least one product image is required"
+    if (!formData.title.trim()) newErrors.title = "Product title is required";
+    if (!formData.description.trim())
+      newErrors.description = "Product description is required";
+    if (!formData.category) newErrors.category = "Category is required";
+    if (formData.basePrice <= 0)
+      newErrors.basePrice = "Base price must be greater than 0";
+    if (formData.inventory < 0)
+      newErrors.inventory = "Inventory cannot be negative";
+    if (formData.regions.length === 0)
+      newErrors.regions = "At least one region must be selected";
+    if (formData.images.length === 0)
+      newErrors.images = "At least one product image is required";
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSave = async () => {
-    if (!validateForm()) return
-
-    setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsLoading(false)
-
-    router.push("/dashboard/supplier/products")
-  }
+    if (!validateForm()) return;
+    setIsLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+    try {
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        price: formData.basePrice,
+        commission: formData.commissionPct,
+        stockCount: formData.inventory,
+        category: formData.category,
+        region: formData.regions,
+        images: formData.images,
+      };
+      const res = await fetch(
+        `/api/products/${(initialProduct as any).id || "product-1"}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to update product");
+      }
+      setSuccessMessage("Product updated successfully");
+    } catch (e: any) {
+      setErrorMessage(e?.message || "Failed to update product");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDelete = async () => {
-    setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsLoading(false)
+    setIsLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setIsLoading(false);
 
-    router.push("/dashboard/supplier/products")
-  }
+    router.push("/dashboard/supplier/products");
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
+    const files = Array.from(e.target.files || []);
     const newImages = files.map(
-      (file, index) => `/placeholder.svg?height=300&width=300&text=Image${formData.images.length + index + 1}`,
-    )
-    updateField("images", [...formData.images, ...newImages])
-  }
+      (file, index) =>
+        `/placeholder.svg?height=300&width=300&text=Image${formData.images.length + index + 1}`
+    );
+    updateField("images", [...formData.images, ...newImages]);
+  };
 
   const removeImage = (index: number) => {
     updateField(
       "images",
-      formData.images.filter((_, i) => i !== index),
-    )
-  }
+      formData.images.filter((_, i) => i !== index)
+    );
+  };
 
   const reorderImages = (fromIndex: number, toIndex: number) => {
-    const newImages = [...formData.images]
-    const [removed] = newImages.splice(fromIndex, 1)
-    newImages.splice(toIndex, 0, removed)
-    updateField("images", newImages)
-  }
+    const newImages = [...formData.images];
+    const [removed] = newImages.splice(fromIndex, 1);
+    newImages.splice(toIndex, 0, removed);
+    updateField("images", newImages);
+  };
 
   const toggleRegion = (region: string) => {
     const newRegions = formData.regions.includes(region)
       ? formData.regions.filter((r) => r !== region)
-      : [...formData.regions, region]
-    updateField("regions", newRegions)
-  }
+      : [...formData.regions, region];
+    updateField("regions", newRegions);
+  };
 
-  const finalPrice = formData.basePrice * (1 + formData.commissionPct / 100)
+  const finalPrice = formData.basePrice * (1 + formData.commissionPct / 100);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -170,6 +212,7 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                   onChange={(e) => updateField("title", e.target.value)}
                   placeholder="Enter product title"
                   className={errors.title ? "border-red-500" : ""}
+                  data-testid="product-title"
                 />
                 {errors.title && (
                   <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -188,6 +231,7 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                   placeholder="Describe your product in detail..."
                   rows={4}
                   className={errors.description ? "border-red-500" : ""}
+                  data-testid="product-description"
                 />
                 {errors.description && (
                   <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -199,8 +243,14 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
 
               <div>
                 <Label htmlFor="category">Category *</Label>
-                <Select value={formData.category} onValueChange={(value) => updateField("category", value)}>
-                  <SelectTrigger className={errors.category ? "border-red-500" : ""}>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) => updateField("category", value)}
+                >
+                  <SelectTrigger
+                    className={errors.category ? "border-red-500" : ""}
+                    data-testid="product-category"
+                  >
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -241,9 +291,14 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                   <label htmlFor="image-upload" className="cursor-pointer">
                     <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium text-indigo-600">Click to upload</span> or drag and drop
+                      <span className="font-medium text-indigo-600">
+                        Click to upload
+                      </span>{" "}
+                      or drag and drop
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      PNG, JPG, GIF up to 10MB
+                    </p>
                   </label>
                 </div>
 
@@ -258,10 +313,10 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                         onDragStart={() => setDraggedImage(index)}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={(e) => {
-                          e.preventDefault()
+                          e.preventDefault();
                           if (draggedImage !== null) {
-                            reorderImages(draggedImage, index)
-                            setDraggedImage(null)
+                            reorderImages(draggedImage, index);
+                            setDraggedImage(null);
                           }
                         }}
                       >
@@ -282,7 +337,11 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                             <GripVertical className="h-3 w-3" />
                           </div>
                         </div>
-                        {index === 0 && <Badge className="absolute bottom-2 left-2 bg-indigo-600">Primary</Badge>}
+                        {index === 0 && (
+                          <Badge className="absolute bottom-2 left-2 bg-indigo-600">
+                            Primary
+                          </Badge>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -313,9 +372,15 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                     min="0"
                     step="0.01"
                     value={formData.basePrice || ""}
-                    onChange={(e) => updateField("basePrice", Number.parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      updateField(
+                        "basePrice",
+                        Number.parseFloat(e.target.value) || 0
+                      )
+                    }
                     placeholder="0.00"
                     className={errors.basePrice ? "border-red-500" : ""}
+                    data-testid="product-price"
                   />
                   {errors.basePrice && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -332,9 +397,15 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                     type="number"
                     min="0"
                     value={formData.inventory || ""}
-                    onChange={(e) => updateField("inventory", Number.parseInt(e.target.value) || 0)}
+                    onChange={(e) =>
+                      updateField(
+                        "inventory",
+                        Number.parseInt(e.target.value) || 0
+                      )
+                    }
                     placeholder="0"
                     className={errors.inventory ? "border-red-500" : ""}
+                    data-testid="product-stock"
                   />
                   {errors.inventory && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
@@ -348,9 +419,27 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
               <div>
                 <Label>Commission Percentage: {formData.commissionPct}%</Label>
                 <div className="mt-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    max={95}
+                    value={formData.commissionPct}
+                    onChange={(e) =>
+                      updateField(
+                        "commissionPct",
+                        Number.parseInt(e.target.value) || 0
+                      )
+                    }
+                    className="w-28"
+                    data-testid="product-commission"
+                  />
+                </div>
+                <div className="mt-2">
                   <Slider
                     value={[formData.commissionPct]}
-                    onValueChange={([value]) => updateField("commissionPct", value)}
+                    onValueChange={([value]) =>
+                      updateField("commissionPct", value)
+                    }
                     max={95}
                     min={0}
                     step={1}
@@ -401,7 +490,9 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                 <div>
                   <Label htmlFor="active">Product Status</Label>
                   <p className="text-sm text-gray-600">
-                    {formData.active ? "Active - visible to influencers" : "Inactive - hidden from influencers"}
+                    {formData.active
+                      ? "Active - visible to influencers"
+                      : "Inactive - hidden from influencers"}
                   </p>
                 </div>
                 <Switch
@@ -429,7 +520,9 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                   ) : (
                     <AlertCircle className="h-4 w-4 text-gray-400" />
                   )}
-                  <span className={`text-sm ${formData.title ? "text-green-600" : "text-gray-500"}`}>
+                  <span
+                    className={`text-sm ${formData.title ? "text-green-600" : "text-gray-500"}`}
+                  >
                     Product title
                   </span>
                 </div>
@@ -439,7 +532,9 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                   ) : (
                     <AlertCircle className="h-4 w-4 text-gray-400" />
                   )}
-                  <span className={`text-sm ${formData.description ? "text-green-600" : "text-gray-500"}`}>
+                  <span
+                    className={`text-sm ${formData.description ? "text-green-600" : "text-gray-500"}`}
+                  >
                     Description
                   </span>
                 </div>
@@ -449,7 +544,9 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                   ) : (
                     <AlertCircle className="h-4 w-4 text-gray-400" />
                   )}
-                  <span className={`text-sm ${formData.images.length > 0 ? "text-green-600" : "text-gray-500"}`}>
+                  <span
+                    className={`text-sm ${formData.images.length > 0 ? "text-green-600" : "text-gray-500"}`}
+                  >
                     Product images
                   </span>
                 </div>
@@ -459,7 +556,9 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                   ) : (
                     <AlertCircle className="h-4 w-4 text-gray-400" />
                   )}
-                  <span className={`text-sm ${formData.basePrice > 0 ? "text-green-600" : "text-gray-500"}`}>
+                  <span
+                    className={`text-sm ${formData.basePrice > 0 ? "text-green-600" : "text-gray-500"}`}
+                  >
                     Base price
                   </span>
                 </div>
@@ -469,7 +568,9 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                   ) : (
                     <AlertCircle className="h-4 w-4 text-gray-400" />
                   )}
-                  <span className={`text-sm ${formData.regions.length > 0 ? "text-green-600" : "text-gray-500"}`}>
+                  <span
+                    className={`text-sm ${formData.regions.length > 0 ? "text-green-600" : "text-gray-500"}`}
+                  >
                     Regions selected
                   </span>
                 </div>
@@ -491,12 +592,20 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Commission ({formData.commissionPct}%):</span>
-                  <span>${((formData.basePrice * formData.commissionPct) / 100).toFixed(2)}</span>
+                  <span>
+                    $
+                    {(
+                      (formData.basePrice * formData.commissionPct) /
+                      100
+                    ).toFixed(2)}
+                  </span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-medium">
                   <span>Final Price:</span>
-                  <span className="text-indigo-600">${finalPrice.toFixed(2)}</span>
+                  <span className="text-indigo-600">
+                    ${finalPrice.toFixed(2)}
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -511,7 +620,9 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">{formData.inventory}</div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {formData.inventory}
+                  </div>
                   <div className="text-sm text-gray-600">units available</div>
                   {formData.inventory <= 10 && formData.inventory > 0 && (
                     <Badge variant="destructive" className="mt-2">
@@ -538,6 +649,22 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
             <span>Changes saved automatically</span>
           </div>
           <div className="flex items-center gap-3">
+            {errorMessage && (
+              <span
+                className="text-red-600 text-sm"
+                data-testid="error-message"
+              >
+                {errorMessage}
+              </span>
+            )}
+            {successMessage && (
+              <span
+                className="text-green-600 text-sm"
+                data-testid="success-message"
+              >
+                {successMessage}
+              </span>
+            )}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" disabled={isLoading}>
@@ -549,13 +676,17 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Product</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete this product? This action cannot be undone and will remove the
-                    product from all influencer shops.
+                    Are you sure you want to delete this product? This action
+                    cannot be undone and will remove the product from all
+                    influencer shops.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
                     Delete Product
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -565,12 +696,17 @@ export function EditProductClient({ product: initialProduct }: EditProductClient
               <Eye className="h-4 w-4 mr-2" />
               Preview
             </Button>
-            <Button onClick={handleSave} disabled={isLoading} className="bg-indigo-600 hover:bg-indigo-700">
+            <Button
+              onClick={handleSave}
+              disabled={isLoading}
+              className="bg-indigo-600 hover:bg-indigo-700"
+              data-testid="save-product"
+            >
               {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

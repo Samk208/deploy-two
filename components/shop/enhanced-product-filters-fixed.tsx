@@ -226,6 +226,7 @@ export function EnhancedProductFilters({ onFiltersChange, totalProducts, classNa
               value={filters.search}
               onChange={(e) => handleFilterChange("search", e.target.value)}
               className="w-full"
+              data-testid="filters-search"
             />
           </div>
 

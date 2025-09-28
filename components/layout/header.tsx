@@ -1,6 +1,7 @@
 "use client";
 
 import GoogleTranslate from "@/components/global/GoogleTranslate";
+import { CartSidebar } from "@/components/shop/cart-sidebar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,15 +10,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/lib/auth-context";
+import { useCartStore } from "@/lib/store/cart";
 import { UserRole } from "@/lib/types";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useCartStore } from "@/lib/store/cart";
-import { CartSidebar } from "@/components/shop/cart-sidebar";
 
 // Custom SVG icons to replace lucide-react
 const SearchIcon = () => (
@@ -172,8 +172,18 @@ const LogoutIcon = () => (
 
 // Minimal Shopping Cart icon (SVG) for header
 const ShoppingCartIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13L6 6M7 13l-2 8h14m-8-8v8m4-8v8" />
+  <svg
+    className="h-5 w-5"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13L6 6M7 13l-2 8h14m-8-8v8m4-8v8"
+    />
   </svg>
 );
 
@@ -201,7 +211,11 @@ function CartIcon() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <button className="relative inline-flex items-center" aria-label="Cart" type="button">
+        <button
+          className="relative inline-flex items-center"
+          aria-label="Cart"
+          type="button"
+        >
           <ShoppingCartIcon />
           {mounted && count > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-5 min-w-[1.25rem] px-1 text-[10px] leading-5 text-center font-bold">
@@ -237,12 +251,14 @@ export function Header() {
 
   const getDashboardUrl = (role: UserRole) => {
     switch (role) {
+      case UserRole.ADMIN:
+        return "/admin/dashboard";
       case UserRole.SUPPLIER:
         return "/dashboard/supplier";
       case UserRole.INFLUENCER:
         return "/dashboard/influencer";
       case UserRole.CUSTOMER:
-        return "/shop/example-handle";
+        return "/shop";
       default:
         return "/";
     }
@@ -346,6 +362,7 @@ export function Header() {
                 placeholder="Search products, influencers..."
                 className="pl-10 pr-4 py-2 w-full rounded-lg border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
                 aria-label="Search products and influencers"
+                data-testid="primary-search"
               />
             </div>
           </div>
@@ -509,6 +526,7 @@ export function Header() {
               placeholder="Search products, influencers..."
               className="pl-10 pr-4 py-2 w-full rounded-lg border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
               aria-label="Search products and influencers"
+              data-testid="mobile-search"
             />
           </div>
         </div>

@@ -1,13 +1,13 @@
-import { Suspense } from "react"
-import { EditProductClient } from "./EditProductClient"
+import { Suspense } from "react";
+import { EditProductClient } from "./EditProductClient";
 
 interface PageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }
 
 export default async function EditProductPage({ params }: PageProps) {
-  const { id } = await params
-  
+  const { id } = await params;
+
   // Mock product data - in real app, fetch from API based on id
   const mockProduct = {
     id: "1",
@@ -20,12 +20,16 @@ export default async function EditProductPage({ params }: PageProps) {
     inventory: 15,
     regions: ["Global", "KR", "JP"],
     active: true,
-    images: ["/cotton-tee.png", "/cotton-tee-back.png", "/cotton-tee-detail.png"],
-  }
+    images: [
+      "/cotton-tee.png",
+      "/cotton-tee-back.png",
+      "/cotton-tee-detail.png",
+    ],
+  };
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <EditProductClient product={mockProduct} />
+      <EditProductClient product={{ ...mockProduct, id }} />
     </Suspense>
-  )
+  );
 }
