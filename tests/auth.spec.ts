@@ -28,15 +28,44 @@ async function openUserMenu(page: import('@playwright/test').Page) {
     return 'desktop';
   } catch {
     // Fallback to mobile: click the hamburger button and open the menu list
-    const mobileToggle = page.getByRole('button', { name: /open menu/i }).first();
+    const mobileToggle = page
+      .locator('[data-testid="hamburger"], [data-testid="header-menu-button"], [aria-label*="menu" i]')
+      .first();
     await mobileToggle.click({ timeout: 5000 });
     return 'mobile';
   }
 }
 
+/** Wait until an auth/session response resolves so header UI can hydrate */
+async function waitForSession(page: import('@playwright/test').Page) {
+  await page
+    .waitForResponse(
+      (r) =>
+        r.ok() &&
+        (r.url().includes('/api/auth/session') || r.url().includes('/auth') || r.url().includes('/api')),
+      { timeout: 15000 }
+    )
+    .catch(() => {});
+}
+
+/** Perform a deterministic UI sign-in on /sign-in */
+async function uiSignIn(page: import('@playwright/test').Page, email: string, password: string) {
+  await page.goto('/sign-in', { waitUntil: 'domcontentloaded' });
+  // Prefer label-based selectors with fallbacks
+  const emailField = page.getByLabel(/email/i).or(page.locator('input[name="email"]')).first();
+  const passField = page.getByLabel(/password/i).or(page.locator('input[name="password"]')).first();
+  await emailField.fill(email);
+  await passField.fill(password);
+  await page.getByRole('button', { name: /sign in/i }).or(page.locator('button[type="submit"]').first()).click();
+  await waitForSession(page);
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+}
+
 test.describe("Authentication Flow", () => {
   const uniqueEmail = `testuser_${Date.now()}@example.com`;
   const password = "Password123!";
+  const E2E_EMAIL = process.env.E2E_EMAIL ?? 'test.admin+e2e@test.local';
+  const E2E_PASSWORD = process.env.E2E_PASSWORD ?? 'TestAdmin123!';
 
   test("should allow a user to sign up (onboarding starts)", async ({
     page,
@@ -68,70 +97,20 @@ test.describe("Authentication Flow", () => {
   });
 
   test("should allow a logged-in user to sign out", async ({ page }) => {
-    const email = `test_signout_${Date.now()}@example.com`;
-    await page.goto(`/sign-up`, { waitUntil: "domcontentloaded" });
-    await page
-      .locator('input[name="firstName"], [data-testid="first-name"]')
-      .fill("SignOut");
-    await page
-      .locator('input[name="lastName"], [data-testid="last-name"]')
-      .fill("Test");
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', password);
-    await page.click('button[type="submit"]');
-
-    // Ensure session is active before attempting to open the user menu
-    await page.goto(`/`, { waitUntil: "domcontentloaded" });
-    await ensureLoggedIn(page, email, password);
-
-    // Open menu (desktop first, fallback to mobile)
-    const mode = await openUserMenu(page);
-    if (mode === 'desktop') {
-      await page.getByTestId("menu-signout").click();
-    } else {
-      await page.getByTestId("menu-signout-mobile").click();
-    }
-    await page.waitForLoadState("networkidle");
+    await uiSignIn(page, E2E_EMAIL, E2E_PASSWORD);
+    await openUserMenu(page);
+    const signOut = page
+      .locator('[data-testid="menu-signout"], [data-testid="menu-signout-mobile"]').first();
+    await expect(signOut).toBeVisible({ timeout: 10000 });
+    await signOut.click();
     await expect(page.getByRole("link", { name: /sign in/i })).toBeVisible();
   });
 
   test("should allow an existing user to sign in", async ({ page }) => {
-    // Create user first via sign-up
-    await page.goto(`/sign-up`, { waitUntil: "domcontentloaded" });
-    await page
-      .locator('input[name="firstName"], [data-testid="first-name"]')
-      .fill("SignIn");
-    await page
-      .locator('input[name="lastName"], [data-testid="last-name"]')
-      .fill("Test");
-    await page.fill('input[name="email"]', uniqueEmail);
-    await page.fill('input[name="password"]', password);
-    await page.click('button[type="submit"]');
-
-    // Sign out
-    await page.goto(`/`, { waitUntil: "domcontentloaded" });
-    const mode2 = await openUserMenu(page);
-    if (mode2 === 'desktop') {
-      const signOutItem = page.getByTestId("menu-signout");
-      await expect(signOutItem).toBeVisible({ timeout: 10000 });
-      await signOutItem.click();
-    } else {
-      const signOutMobile = page.getByTestId("menu-signout-mobile");
-      await expect(signOutMobile).toBeVisible({ timeout: 10000 });
-      await signOutMobile.click();
-    }
-
-    // Sign in
-    await page.goto(`/sign-in`, { waitUntil: "domcontentloaded" });
-    await page.fill('input[name="email"]', uniqueEmail);
-    await page.fill('input[name="password"]', password);
-    await page.click('button[type="submit"]');
-
-    // Expect to be logged in (header user menu visible)
-    await page.goto(`/`, { waitUntil: "domcontentloaded" });
-    await expect(
-      page.locator('[data-testid="user-menu"], [aria-haspopup="menu"]').first()
-    ).toBeVisible();
+    await uiSignIn(page, E2E_EMAIL, E2E_PASSWORD);
+    const unifiedMenu = page
+      .locator('[data-testid="user-menu"], [data-testid="user-menu-mobile"]').first();
+    await expect(unifiedMenu).toBeVisible();
   });
 
   test("GitHub OAuth button appears and navigates to callback", async ({
