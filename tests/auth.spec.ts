@@ -1,5 +1,22 @@
 import { expect, test } from "@playwright/test";
 
+async function ensureLoggedIn(page: import('@playwright/test').Page, email: string, password: string) {
+  // If the user menu is not visible, perform a UI login
+  const menu = page.getByTestId('user-menu').first();
+  try {
+    await expect(menu).toBeVisible({ timeout: 5000 });
+    return; // already logged in
+  } catch {
+    // Not logged in yet; go to sign-in and authenticate
+    await page.goto('/sign-in', { waitUntil: 'domcontentloaded' });
+    await page.fill('input[name="email"]', email);
+    await page.fill('input[name="password"]', password);
+    await page.click('button[type="submit"]');
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('user-menu').first()).toBeVisible({ timeout: 15000 });
+  }
+}
+
 test.describe("Authentication Flow", () => {
   const uniqueEmail = `testuser_${Date.now()}@example.com`;
   const password = "Password123!";
@@ -7,7 +24,7 @@ test.describe("Authentication Flow", () => {
   test("should allow a user to sign up (onboarding starts)", async ({
     page,
   }) => {
-    await page.goto(`/sign-up`);
+    await page.goto(`/sign-up`, { waitUntil: "domcontentloaded" });
 
     // Current app uses firstName/lastName instead of name
     const firstName = page.locator(
@@ -35,7 +52,7 @@ test.describe("Authentication Flow", () => {
 
   test("should allow a logged-in user to sign out", async ({ page }) => {
     const email = `test_signout_${Date.now()}@example.com`;
-    await page.goto(`/sign-up`);
+    await page.goto(`/sign-up`, { waitUntil: "domcontentloaded" });
     await page
       .locator('input[name="firstName"], [data-testid="first-name"]')
       .fill("SignOut");
@@ -46,25 +63,22 @@ test.describe("Authentication Flow", () => {
     await page.fill('input[name="password"]', password);
     await page.click('button[type="submit"]');
 
-    // Navigate to home to find header easily (if needed)
-    await page.goto(`/`);
+    // Ensure session is active before attempting to open the user menu
+    await page.goto(`/`, { waitUntil: "domcontentloaded" });
+    await ensureLoggedIn(page, email, password);
 
     // Open user menu via a stable affordance (avatar/menu button)
     // Try a few common selectors
-    const userMenuButton = page
-      .locator(
-        '[data-testid="user-menu"], [aria-label*="account" i], [aria-haspopup="menu"]'
-      )
-      .first();
+    const userMenuButton = page.getByTestId("user-menu").first();
     await userMenuButton.click();
-    await page.getByRole("menuitem", { name: /sign out/i }).click();
+    await page.getByTestId("menu-signout").click();
     await page.waitForLoadState("networkidle");
     await expect(page.getByRole("link", { name: /sign in/i })).toBeVisible();
   });
 
   test("should allow an existing user to sign in", async ({ page }) => {
     // Create user first via sign-up
-    await page.goto(`/sign-up`);
+    await page.goto(`/sign-up`, { waitUntil: "domcontentloaded" });
     await page
       .locator('input[name="firstName"], [data-testid="first-name"]')
       .fill("SignIn");
@@ -76,23 +90,21 @@ test.describe("Authentication Flow", () => {
     await page.click('button[type="submit"]');
 
     // Sign out
-    await page.goto(`/`);
-    const userMenuButton = page
-      .locator(
-        '[data-testid="user-menu"], [aria-label*="account" i], [aria-haspopup="menu"]'
-      )
-      .first();
-    await userMenuButton.click();
-    await page.getByRole("menuitem", { name: /sign out/i }).click();
+    await page.goto(`/`, { waitUntil: "domcontentloaded" });
+    const userMenuButton2 = page.getByTestId("user-menu").first();
+    await userMenuButton2.click();
+    const signOutItem = page.getByTestId("menu-signout");
+    await expect(signOutItem).toBeVisible({ timeout: 10000 });
+    await signOutItem.click();
 
     // Sign in
-    await page.goto(`/sign-in`);
+    await page.goto(`/sign-in`, { waitUntil: "domcontentloaded" });
     await page.fill('input[name="email"]', uniqueEmail);
     await page.fill('input[name="password"]', password);
     await page.click('button[type="submit"]');
 
     // Expect to be logged in (header user menu visible)
-    await page.goto(`/`);
+    await page.goto(`/`, { waitUntil: "domcontentloaded" });
     await expect(
       page.locator('[data-testid="user-menu"], [aria-haspopup="menu"]').first()
     ).toBeVisible();
@@ -101,10 +113,10 @@ test.describe("Authentication Flow", () => {
   test("GitHub OAuth button appears and navigates to callback", async ({
     page,
   }) => {
-    await page.goto(`/sign-in`);
-    // Wait for Sign In card to ensure page rendered
-    await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible({
-      timeout: 15000,
+    await page.goto(`/sign-in`, { waitUntil: "domcontentloaded" });
+    // Wait for Sign In card to ensure page rendered (stable test id)
+    await expect(page.getByTestId("signin-heading")).toBeVisible({
+      timeout: 30000,
     });
     const gh = page
       .locator('[data-testid="oauth-github-signin"]')

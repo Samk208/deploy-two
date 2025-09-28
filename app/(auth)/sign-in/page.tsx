@@ -33,7 +33,10 @@ export default function SignInPage() {
 
                 <Card className="shadow-lg border-0 bg-white dark:bg-gray-800">
                     <CardHeader className="space-y-1 pb-6">
-                        <CardTitle className="text-xl font-semibold text-center">
+                        <CardTitle
+                            className="text-xl font-semibold text-center"
+                            data-testid="signin-heading"
+                        >
                             Sign In
                         </CardTitle>
                         <CardDescription className="text-center">

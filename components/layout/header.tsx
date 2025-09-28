@@ -428,6 +428,7 @@ export function Header() {
                       size="sm"
                       className="flex items-center space-x-2"
                       aria-label="User menu"
+                      data-testid="user-menu"
                     >
                       <img
                         src={
@@ -480,6 +481,7 @@ export function Header() {
                     <DropdownMenuItem
                       onClick={handleSignOut}
                       className="flex items-center space-x-2 text-red-600"
+                      data-testid="menu-signout"
                     >
                       <LogoutIcon />
                       <span>Sign Out</span>
@@ -592,6 +594,7 @@ export function Header() {
                       size="sm"
                       onClick={handleSignOut}
                       className="text-red-600"
+                      data-testid="menu-signout-mobile"
                     >
                       Sign Out
                     </Button>
