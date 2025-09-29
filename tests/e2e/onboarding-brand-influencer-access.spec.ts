@@ -40,8 +40,7 @@ test.describe("Onboarding access and document uploads", () => {
       await page
         .getByRole("button", { name: /^Continue|Submit|Save/i })
         .first()
-        .click({ trial: true })
-        .catch(() => {});
+        .click();
     }
 
     // Ensure influencer dashboard access

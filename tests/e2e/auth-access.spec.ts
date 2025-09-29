@@ -29,8 +29,9 @@ test.describe("Auth Access - Email/Password and Role Redirects", () => {
       "NewTestPassword123!"
     );
     await page.waitForLoadState("networkidle");
-    // customers should land on home or remain non-dashboard
-    expect(page.url()).toMatch(/\/?$/);
+    // customers should land on site root
+    const pathname = new URL(page.url()).pathname;
+    expect(pathname).toBe("/");
   });
 
   test("brand/supplier redirects to /dashboard/supplier", async ({ page }) => {
