@@ -4,6 +4,8 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "scripts": {
+    "check:env": "cross-env DOTENV_CONFIG_PATH=.env.local node -r dotenv/config scripts/check-env.mjs",
+    "db:health": "cross-env DOTENV_CONFIG_PATH=.env.local node -r dotenv/config scripts/supabase-health.mjs",
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint --no-inline-config",

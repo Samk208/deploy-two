@@ -40,12 +40,13 @@ export default async function globalSetup(_config: FullConfig) {
   const adminEmail = "test.admin+e2e@test.local";
   const customerEmail = "test.customer+e2e@test.local";
   const ADMIN_PASSWORD = "TestAdmin123!";
-  const DEFAULT_PASSWORD = "Password123!";
+  const CUSTOMER_PASSWORD = "NewTestPassword123!";
+  const BRAND_PASSWORD = "NewBrandPassword123!";
+  const INFLUENCER_PASSWORD = "NewInfluencerPassword123!";
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500";
 
   const tables = [
-    "order_items",
     "orders",
     "commissions",
     "verification_documents",
@@ -85,7 +86,7 @@ export default async function globalSetup(_config: FullConfig) {
   const { data: influencerUser, error: inflErr } =
     await supabaseAdmin.auth.admin.createUser({
       email: influencerEmail,
-      password: DEFAULT_PASSWORD,
+      password: INFLUENCER_PASSWORD,
       email_confirm: true,
       user_metadata: { role: "influencer", full_name: "Test Influencer" },
     });
@@ -94,7 +95,7 @@ export default async function globalSetup(_config: FullConfig) {
   const { data: brandUser, error: brandErr } =
     await supabaseAdmin.auth.admin.createUser({
       email: brandEmail,
-      password: DEFAULT_PASSWORD,
+      password: BRAND_PASSWORD,
       email_confirm: true,
       // Use 'supplier' to match app roles (dashboard/supplier)
       user_metadata: { role: "supplier", full_name: "Test Brand" },
@@ -105,7 +106,7 @@ export default async function globalSetup(_config: FullConfig) {
   const { data: customerUser, error: custErr } =
     await supabaseAdmin.auth.admin.createUser({
       email: customerEmail,
-      password: DEFAULT_PASSWORD,
+      password: CUSTOMER_PASSWORD,
       email_confirm: true,
       user_metadata: { role: "customer", full_name: "Test Customer" },
     });
@@ -117,35 +118,30 @@ export default async function globalSetup(_config: FullConfig) {
       id: string;
       role: string;
       name?: string | null;
-      email?: string | null;
     }> = [];
     if (adminUser?.user?.id)
       rows.push({
         id: adminUser.user.id,
         role: "admin",
         name: "Test Admin",
-        email: adminEmail,
       });
     if (influencerUser?.user?.id)
       rows.push({
         id: influencerUser.user.id,
         role: "influencer",
         name: "Test Influencer",
-        email: influencerEmail,
       });
     if (brandUser?.user?.id)
       rows.push({
         id: brandUser.user.id,
         role: "supplier",
         name: "Test Brand",
-        email: brandEmail,
       });
     if (customerUser?.user?.id)
       rows.push({
         id: customerUser.user.id,
         role: "customer",
         name: "Test Customer",
-        email: customerEmail,
       });
 
     if (rows.length > 0) {
@@ -161,69 +157,45 @@ export default async function globalSetup(_config: FullConfig) {
   if (brandUser?.user?.id) {
     const products = [
       {
-        name: "E2E Test Product A",
+        title: "E2E Test Product A",
         description: "Seeded by global-setup",
         price: 19.99,
         original_price: 24.99,
         images: [DEFAULT_IMAGE],
+        category: "general",
+        region: [],
         in_stock: true,
+        stock_count: 100,
         supplier_id: brandUser.user.id,
         commission: 10,
         active: true,
       },
       {
-        name: "E2E Test Product B",
+        title: "E2E Test Product B",
         description: "Seeded by global-setup",
         price: 29.99,
         original_price: 39.99,
         images: [DEFAULT_IMAGE],
+        category: "general",
+        region: [],
         in_stock: true,
+        stock_count: 100,
         supplier_id: brandUser.user.id,
         commission: 15,
         active: true,
       },
       {
-        name: "E2E Test Product C",
+        title: "E2E Test Product C",
         description: "Seeded by global-setup",
         price: 9.99,
         original_price: 12.99,
         images: [DEFAULT_IMAGE],
+        category: "general",
+        region: [],
         in_stock: true,
+        stock_count: 100,
         supplier_id: brandUser.user.id,
         commission: 5,
-        active: true,
-      },
-      {
-        name: "E2E Test Product D",
-        description: "Seeded by global-setup",
-        price: 49.99,
-        original_price: 59.99,
-        images: [DEFAULT_IMAGE],
-        in_stock: true,
-        supplier_id: brandUser.user.id,
-        commission: 12.5,
-        active: true,
-      },
-      {
-        name: "E2E Test Product E",
-        description: "Seeded by global-setup",
-        price: 15.0,
-        original_price: 18.0,
-        images: [DEFAULT_IMAGE],
-        in_stock: true,
-        supplier_id: brandUser.user.id,
-        commission: 8,
-        active: true,
-      },
-      {
-        name: "E2E Test Product F",
-        description: "Seeded by global-setup",
-        price: 75.0,
-        original_price: 95.0,
-        images: [DEFAULT_IMAGE],
-        in_stock: true,
-        supplier_id: brandUser.user.id,
-        commission: 20,
         active: true,
       },
     ];
