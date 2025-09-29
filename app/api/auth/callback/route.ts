@@ -17,27 +17,36 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const cookieStore = cookies();
-    const supabase = await createServerSupabaseClient();
+    const supabase = await createServerSupabaseClient({ cookies: cookieStore });
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
         if (user) {
           // Check if the user is new. A small buffer is used to account for minor clock differences.
-          const isNewUser = user.created_at && user.last_sign_in_at && 
-                            Math.abs(new Date(user.created_at).getTime() - new Date(user.last_sign_in_at).getTime()) < 2000;
+          const isNewUser =
+            user.created_at &&
+            user.last_sign_in_at &&
+            Math.abs(
+              new Date(user.created_at).getTime() -
+                new Date(user.last_sign_in_at).getTime()
+            ) < 2000;
 
           if (isNewUser) {
             // This is a new user, create their profile before redirecting
-            await supabase.from('profiles').insert({
-                id: user.id,
-                name: user.user_metadata.full_name || user.email,
-                role: 'customer' // Default role
+            await supabase.from("profiles").insert({
+              id: user.id,
+              name: user.user_metadata.full_name || user.email,
+              role: "customer", // Default role
             } as any);
             // New users should go to onboarding
-            return NextResponse.redirect(new URL('/auth/onboarding', request.url));
+            return NextResponse.redirect(
+              new URL("/auth/onboarding", request.url)
+            );
           }
 
           // For existing users, redirect based on their role or the 'next' param
@@ -65,7 +74,7 @@ export async function GET(request: NextRequest) {
         }
       } catch (e) {
         // fall through to default redirect
-        console.error('Error in auth callback:', e);
+        console.error("Error in auth callback:", e);
       }
 
       // Default redirect if anything goes wrong
