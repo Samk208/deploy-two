@@ -45,6 +45,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
+import supabase from "@/lib/supabase/client";
 
 const categories = ["Clothing", "Beauty", "Jewelry", "Home", "Electronics"];
 const regions = ["Global", "KR", "JP", "CN"];
@@ -76,6 +77,8 @@ export function EditProductClient({
   const [draggedImage, setDraggedImage] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0); // 0-100
 
   const updateField = (field: keyof ProductFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -110,6 +113,12 @@ export function EditProductClient({
     setSuccessMessage("");
     setErrorMessage("");
     try {
+      const id = (initialProduct?.id || formData?.id || "").toString().trim();
+      if (!id) {
+        setErrorMessage("Missing product id. Please refresh and try again.");
+        setIsLoading(false);
+        return;
+      }
       const payload = {
         title: formData.title,
         description: formData.description,
@@ -120,14 +129,11 @@ export function EditProductClient({
         region: formData.regions,
         images: formData.images,
       };
-      const res = await fetch(
-        `/api/products/${(initialProduct as any).id || "product-1"}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch(`/api/products/${encodeURIComponent(id)}` , {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
       if (!res.ok) {
         const text = await res.text();
         throw new Error(text || "Failed to update product");
@@ -148,13 +154,84 @@ export function EditProductClient({
     router.push("/dashboard/supplier/products");
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Helper: basic client-side resize to max 1600px and convert to webp (except gifs)
+  const maybeResizeImage = async (file: File): Promise<{ blob: Blob; contentType: string; ext: string }> => {
+    const isGif = file.type === "image/gif";
+    const canProcess = file.type.startsWith("image/") && !isGif;
+    if (!canProcess) return { blob: file, contentType: file.type, ext: file.name.split(".").pop() || "bin" };
+
+    const img = document.createElement("img");
+    const reader = new FileReader();
+    const dataUrl: string = await new Promise((resolve, reject) => {
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    await new Promise((res, rej) => { img.onload = () => res(null); img.onerror = rej; img.src = dataUrl; });
+
+    const max = 1600;
+    let { width, height } = img;
+    const scale = Math.min(1, max / Math.max(width, height));
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return { blob: file, contentType: file.type, ext: file.name.split(".").pop() || "bin" };
+    ctx.drawImage(img, 0, 0, width, height);
+
+    const blob: Blob = await new Promise((resolve) => canvas.toBlob(b => resolve(b as Blob), "image/webp", 0.85));
+    return { blob, contentType: "image/webp", ext: "webp" };
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const newImages = files.map(
-      (file, index) =>
-        `/placeholder.svg?height=300&width=300&text=Image${formData.images.length + index + 1}`
-    );
-    updateField("images", [...formData.images, ...newImages]);
+    if (!files.length) return;
+
+    // Validate
+    const MAX_MB = 10;
+    const valid = files.filter(f => f.type.startsWith("image/") && f.size <= MAX_MB * 1024 * 1024);
+    if (valid.length !== files.length) {
+      setErrorMessage("Some files were skipped (invalid type or >10MB)");
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    try {
+      const productId = (initialProduct?.id || formData?.id || "temp").toString();
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < valid.length; i++) {
+        const file = valid[i];
+        // Optional resize/compress
+        const processed = await maybeResizeImage(file);
+        const timestamp = Date.now();
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `${productId}/${timestamp}-${i}-${safeName}.${processed.ext}`.replace(/\.+\./, ".");
+
+        const { error: upErr } = await supabase.storage
+          .from("products")
+          .upload(path, processed.blob, {
+            upsert: true,
+            contentType: processed.contentType,
+          });
+        if (upErr) {
+          throw new Error(`Upload failed for ${file.name}: ${upErr.message}`);
+        }
+        const { data } = supabase.storage.from("products").getPublicUrl(path);
+        if (!data?.publicUrl) throw new Error(`Could not resolve URL for ${file.name}`);
+        uploadedUrls.push(data.publicUrl);
+        setUploadProgress(Math.round(((i + 1) / valid.length) * 100));
+      }
+      if (uploadedUrls.length) {
+        updateField("images", [...formData.images, ...uploadedUrls]);
+      }
+      setSuccessMessage("Images uploaded successfully");
+    } catch (err: any) {
+      setErrorMessage(err?.message || "Image upload failed");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const removeImage = (index: number) => {
@@ -293,7 +370,7 @@ export function EditProductClient({
                     <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">
                       <span className="font-medium text-indigo-600">
-                        Click to upload
+                        {isUploading ? `Uploading... ${uploadProgress}%` : "Click to upload"}
                       </span>{" "}
                       or drag and drop
                     </p>
@@ -699,11 +776,11 @@ export function EditProductClient({
             </Button>
             <Button
               onClick={handleSave}
-              disabled={isLoading}
+              disabled={isLoading || isUploading}
               className="bg-indigo-600 hover:bg-indigo-700"
               data-testid="save-product"
             >
-              {isLoading ? "Saving..." : "Save Changes"}
+              {isLoading ? "Saving..." : isUploading ? `Uploading ${uploadProgress}%` : "Save Changes"}
             </Button>
           </div>
         </div>
