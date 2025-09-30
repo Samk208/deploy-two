@@ -49,3 +49,9 @@ builderror.md
 *error.txt
 tsc-errors.txt
 build-errors.log
+
+# analysis and test artifacts
+analysis-cache/
+**/playwright-artifacts/
+*.last-run.json
+**/.last-run.json

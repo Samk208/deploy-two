@@ -2,6 +2,8 @@
 // Extracted, testable diagnostics logic (no process.exit calls)
 
 import Stripe from 'stripe';
+import fs from 'fs';
+import path from 'path';
 
 export const stripeKey = process.env.STRIPE_SECRET_KEY || process.env.TEST_STRIPE_SECRET_KEY;
 export const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
@@ -125,10 +127,10 @@ export async function testStripeConnection() {
 
   try {
     const stripe = new Stripe(stripeKey, {
-      apiVersion: '2024-11-20.acacia',
+      apiVersion: '2023-10-16',
     });
 
-    const account = await stripe.account.retrieve();
+    const account = await stripe.accounts.retrieve();
 
     addResult(
       'Stripe Connection',
@@ -175,7 +177,7 @@ export async function testCheckoutSessionCreation() {
 
   try {
     const stripe = new Stripe(stripeKey, {
-      apiVersion: '2024-11-20.acacia',
+      apiVersion: '2023-10-16',
     });
 
     const session = await stripe.checkout.sessions.create({
@@ -349,9 +351,6 @@ export async function testAPIRoute() {
 export function checkClientSideCode() {
   console.log('\n🔍 Step 5: Checking client-side checkout code...\n');
 
-  const fs = require('fs');
-  const path = require('path');
-
   const checkoutPagePath = path.join(process.cwd(), 'app/checkout/page.tsx');
   const checkoutComponentPath = path.join(
     process.cwd(),
@@ -442,9 +441,6 @@ export function checkClientSideCode() {
 export function checkSuccessPage() {
   console.log('\n🔍 Step 6: Checking success page...\n');
 
-  const fs = require('fs');
-  const path = require('path');
-
   const successPagePath = path.join(process.cwd(), 'app/checkout/success/page.tsx');
 
   if (!fs.existsSync(successPagePath)) {
@@ -487,9 +483,6 @@ export function checkSuccessPage() {
 export async function checkCartStore() {
   console.log('\n🔍 Step 7: Checking cart store implementation...\n');
 
-  const fs = require('fs');
-  const path = require('path');
-
   const possiblePaths = [
     path.join(process.cwd(), 'lib/store/cart.ts'),
     path.join(process.cwd(), 'lib/stores/cart.ts'),
@@ -516,7 +509,7 @@ export async function checkCartStore() {
     return false;
   }
 
-  addResult('Cart Store', 'pass', `Cart store found at ${require('path').relative(process.cwd(), cartStorePath)}`);
+  addResult('Cart Store', 'pass', `Cart store found at ${path.relative(process.cwd(), cartStorePath)}`);
 
   const storeCode = fs.readFileSync(cartStorePath, 'utf8');
 
