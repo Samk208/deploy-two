@@ -108,7 +108,7 @@ export function EnhancedProductCard({
         {/* Image Container */}
         <div
           className={cn(
-            "relative overflow-hidden bg-gray-100 w-full aspect-[4/3]"
+            "relative overflow-hidden bg-gray-100 w-full aspect-[4/3] shrink-0 min-h-40 md:min-h-56"
           )}
         >
           <Image
