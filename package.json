@@ -15,7 +15,8 @@
     "test:e2e": "pnpm e2e",
     "verify": "pnpm lint && pnpm typecheck && pnpm build && pnpm e2e",
     "ci:quality": "pnpm lint && pnpm format:check && pnpm typecheck",
-    "test:unit": "echo \"No unit tests defined. Add vitest/jest and replace this script.\" && exit 0",
+    "test:unit": "vitest run",
+    "test": "vitest",
     "test:api:smoke": "newman run tests/api/one-link.postman.json -r cli,htmlextra --reporter-htmlextra-export artifacts/api-tests/newman-smoke.html --timeout-request 10000 --delay-request 50",
     "test:api:security": "newman run tests/api/one-link.postman.json --folder 'Security - SQLi attempt' -r cli,htmlextra --reporter-htmlextra-export artifacts/api-tests/newman-security.html --timeout-request 10000",
     "test:api:contract": "swagger-cli validate tests/api/openapi.yml",
@@ -28,7 +29,9 @@
     "brand:extract": "node scripts/extract-brand-palette.mjs",
     "brand:extract:url": "node scripts/extract-brand-palette.mjs --url=http://localhost:3000",
     "admin:set-password": "node scripts/set-admin-password.mjs",
-    "analyze-failures": "node scripts/analyze-test-failures.js"
+    "analyze-failures": "node scripts/analyze-test-failures.js",
+    "diagnose:images": "cross-env DOTENV_CONFIG_PATH=.env.local tsx scripts/diagnose-image-issues.ts",
+    "diagnose:checkout": "cross-env DOTENV_CONFIG_PATH=.env.local tsx scripts/diagnose-checkout.ts"
   },
   "dependencies": {
     "@hello-pangea/dnd": "latest",
@@ -124,6 +127,8 @@
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "^1.3.3",
     "typescript": "^5",
+    "tsx": "^4.19.2",
+    "vitest": "^2.1.3",
     "wait-on": "^8.0.2"
   },
   "pnpm": {

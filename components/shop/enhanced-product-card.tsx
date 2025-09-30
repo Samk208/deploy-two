@@ -8,6 +8,7 @@ import { Eye, Heart, ShoppingCart, Star, Truck, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { ProductImageGallery } from "@/components/shop/product-image-gallery";
 
 // Strongly-typed product interface used throughout this component
 export interface Product {
@@ -40,6 +41,8 @@ interface EnhancedProductCardProps {
   showSupplier?: boolean;
   onQuickView?: (product: Product) => void;
   onAddToCart?: (product: Product) => void;
+  // New: layout hint from parent grid vs list
+  layout?: "grid" | "list";
 }
 
 export function EnhancedProductCard({
@@ -48,6 +51,7 @@ export function EnhancedProductCard({
   showSupplier = false,
   onQuickView,
   onAddToCart,
+  layout = "grid",
 }: EnhancedProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -105,27 +109,18 @@ export function EnhancedProductCard({
       onMouseLeave={() => setIsHovered(false)}
     >
       <CardContent className="p-0 h-full flex flex-col">
-        {/* Image Container */}
-        <div
-          className={cn(
-            "relative overflow-hidden bg-gray-100 w-full aspect-[4/3] shrink-0 min-h-40 md:min-h-56"
-          )}
-        >
-          <Image
-            src={
-              !imageError && primaryImageSrc
-                ? primaryImageSrc
-                : "/placeholder.jpg"
-            }
-            alt={product.title}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            onError={() => setImageError(true)}
-            priority={false}
-          />
+        {/* Image / Gallery */}
+        <ProductImageGallery
+          images={
+            Array.isArray(product?.images)
+              ? (product.images as string[])
+              : (product?.images ? [String(product.images)] : [])
+          }
+          productName={product.title}
+          layout={layout}
+        />
 
-          {/* Badges */}
+        {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {hasDiscount && (
               <Badge variant="destructive" className="text-xs">
@@ -144,36 +139,35 @@ export function EnhancedProductCard({
             )}
           </div>
 
-          {/* Wishlist Button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute top-2 right-2 h-8 w-8 p-0 bg-white/80 hover:bg-white"
-            onClick={() => setIsWishlisted(!isWishlisted)}
-          >
-            <Heart
-              className={cn(
-                "h-4 w-4",
-                isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"
-              )}
-            />
-          </Button>
+        {/* Wishlist Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-2 right-2 h-8 w-8 p-0 bg-white/80 hover:bg-white"
+          onClick={() => setIsWishlisted(!isWishlisted)}
+        >
+          <Heart
+            className={cn(
+              "h-4 w-4",
+              isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"
+            )}
+          />
+        </Button>
 
-          {/* Quick View Overlay */}
-          {isHovered && onQuickView && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => onQuickView(product)}
-                className="bg-white text-gray-900 hover:bg-gray-100"
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                Quick View
-              </Button>
-            </div>
-          )}
-        </div>
+        {/* Quick View Overlay */}
+        {isHovered && onQuickView && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onQuickView(product)}
+              className="bg-white text-gray-900 hover:bg-gray-100"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Quick View
+            </Button>
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 p-4 flex flex-col">

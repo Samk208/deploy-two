@@ -349,6 +349,7 @@ export default function EnhancedShopPage() {
                     key={product.id}
                     product={product}
                     size={viewMode === "list" ? "lg" : "md"}
+                    layout={viewMode === "list" ? "list" : "grid"}
                     showSupplier={true}
                     onQuickView={handleQuickView}
                     onAddToCart={addToCart}

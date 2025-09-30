@@ -1,0 +1,309 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e6]:
+      - link "OL One-Link" [ref=e8] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e10] [cursor=pointer]: OL
+        - generic [ref=e11] [cursor=pointer]: One-Link
+      - navigation "Main navigation" [ref=e12]:
+        - link "Shop" [ref=e13] [cursor=pointer]:
+          - /url: /shop
+        - link "Influencer Shop" [ref=e14] [cursor=pointer]:
+          - /url: /shops
+        - link "For Influencers" [ref=e15] [cursor=pointer]:
+          - /url: /influencers
+        - link "For Brands" [ref=e16] [cursor=pointer]:
+          - /url: /brands
+        - link "Pricing" [ref=e17] [cursor=pointer]:
+          - /url: /pricing
+        - link "Blog" [ref=e18] [cursor=pointer]:
+          - /url: /blog
+      - generic [ref=e20]:
+        - img [ref=e21]
+        - searchbox "Search products and influencers" [ref=e23]
+      - generic [ref=e24]:
+        - button "Cart" [ref=e26]:
+          - img [ref=e27]
+        - button "Language settings" [ref=e29]:
+          - img [ref=e30]
+          - generic [ref=e32]: EN
+          - img [ref=e33]
+        - generic [ref=e35]:
+          - link "Sign In" [ref=e36] [cursor=pointer]:
+            - /url: /sign-in
+          - link "Get Started" [ref=e37] [cursor=pointer]:
+            - /url: /sign-up
+        - button "Open menu" [ref=e38]:
+          - img [ref=e39]
+  - main [ref=e41]:
+    - generic [ref=e42]:
+      - generic [ref=e45]:
+        - heading "Discover Amazing Shops" [level=1] [ref=e46]
+        - paragraph [ref=e47]: Explore curated collections from your favorite influencers and creators
+        - generic [ref=e48]:
+          - img [ref=e49]
+          - textbox "Search shops, creators, or categories..." [ref=e52]
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - button "All" [ref=e57]
+            - button "Fashion" [ref=e58]
+            - button "Technology" [ref=e59]
+            - button "Health & Beauty" [ref=e60]
+            - button "Home & Garden" [ref=e61]
+            - button "Sports & Fitness" [ref=e62]
+            - button "Food & Kitchen" [ref=e63]
+          - generic [ref=e64]:
+            - combobox [ref=e65]:
+              - generic: Most Popular
+              - img
+            - generic [ref=e66]:
+              - button [ref=e67]:
+                - img [ref=e68]
+              - button [ref=e70]:
+                - img [ref=e71]
+        - generic [ref=e72]: 5 shops found
+      - main [ref=e73]:
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - generic [ref=e76]:
+              - img "Tech Trends's shop banner" [ref=e78]
+              - generic [ref=e80]:
+                - img [ref=e81]
+                - generic [ref=e83]: "4.8"
+            - generic [ref=e84]:
+              - generic [ref=e85]:
+                - img "Tech Trends" [ref=e88]
+                - generic [ref=e89]:
+                  - heading "Tech Trends" [level=3] [ref=e90]:
+                    - link "Tech Trends" [ref=e91] [cursor=pointer]:
+                      - /url: /shop/tech-trends
+                  - paragraph [ref=e92]: "@tech-trends"
+                  - paragraph
+              - generic [ref=e93]:
+                - generic [ref=e94]:
+                  - img [ref=e95]
+                  - generic [ref=e100]: "0"
+                - generic [ref=e101]:
+                  - img [ref=e102]
+                  - generic [ref=e105]: 0 products
+              - link "Visit Shop" [ref=e107] [cursor=pointer]:
+                - /url: /shop/tech-trends
+                - text: Visit Shop
+                - img [ref=e108] [cursor=pointer]
+          - generic [ref=e112]:
+            - generic [ref=e113]:
+              - img "Style Forward's shop banner" [ref=e115]
+              - generic [ref=e117]:
+                - img [ref=e118]
+                - generic [ref=e120]: "4.8"
+            - generic [ref=e121]:
+              - generic [ref=e122]:
+                - img "Style Forward" [ref=e125]
+                - generic [ref=e126]:
+                  - heading "Style Forward" [level=3] [ref=e127]:
+                    - link "Style Forward" [ref=e128] [cursor=pointer]:
+                      - /url: /shop/style-forward
+                  - paragraph [ref=e129]: "@style-forward"
+                  - paragraph [ref=e130]: Curated looks from our E2E influencer.
+              - generic [ref=e131]:
+                - generic [ref=e132]:
+                  - img [ref=e133]
+                  - generic [ref=e138]: "0"
+                - generic [ref=e139]:
+                  - img [ref=e140]
+                  - generic [ref=e143]: 3 products
+              - link "Visit Shop" [ref=e145] [cursor=pointer]:
+                - /url: /shop/style-forward
+                - text: Visit Shop
+                - img [ref=e146] [cursor=pointer]
+          - generic [ref=e150]:
+            - generic [ref=e151]:
+              - img "Alex Tech Essentials's shop banner" [ref=e153]
+              - generic [ref=e155]:
+                - img [ref=e156]
+                - generic [ref=e158]: "4.8"
+            - generic [ref=e159]:
+              - generic [ref=e160]:
+                - img "Alex Tech Essentials" [ref=e163]
+                - generic [ref=e164]:
+                  - heading "Alex Tech Essentials" [level=3] [ref=e165]:
+                    - link "Alex Tech Essentials" [ref=e166] [cursor=pointer]:
+                      - /url: /shop/influencer-alex
+                  - paragraph [ref=e167]: "@influencer-alex"
+                  - paragraph [ref=e168]: Curated tech products for creators and professionals
+              - generic [ref=e169]:
+                - generic [ref=e170]:
+                  - img [ref=e171]
+                  - generic [ref=e176]: "0"
+                - generic [ref=e177]:
+                  - img [ref=e178]
+                  - generic [ref=e181]: 0 products
+              - link "Visit Shop" [ref=e183] [cursor=pointer]:
+                - /url: /shop/influencer-alex
+                - text: Visit Shop
+                - img [ref=e184] [cursor=pointer]
+          - generic [ref=e188]:
+            - generic [ref=e189]:
+              - img "Example Influencer Shop's shop banner" [ref=e191]
+              - generic [ref=e193]:
+                - img [ref=e194]
+                - generic [ref=e196]: "4.8"
+            - generic [ref=e197]:
+              - generic [ref=e198]:
+                - img "Example Influencer Shop" [ref=e201]
+                - generic [ref=e202]:
+                  - heading "Example Influencer Shop" [level=3] [ref=e203]:
+                    - link "Example Influencer Shop" [ref=e204] [cursor=pointer]:
+                      - /url: /shop/example-handle
+                  - paragraph [ref=e205]: "@example-handle"
+                  - paragraph
+              - generic [ref=e206]:
+                - generic [ref=e207]:
+                  - img [ref=e208]
+                  - generic [ref=e213]: "0"
+                - generic [ref=e214]:
+                  - img [ref=e215]
+                  - generic [ref=e218]: 0 products
+              - link "Visit Shop" [ref=e220] [cursor=pointer]:
+                - /url: /shop/example-handle
+                - text: Visit Shop
+                - img [ref=e221] [cursor=pointer]
+          - generic [ref=e225]:
+            - generic [ref=e226]:
+              - img "Main Shop's shop banner" [ref=e228]
+              - generic [ref=e230]:
+                - img [ref=e231]
+                - generic [ref=e233]: "4.8"
+            - generic [ref=e234]:
+              - generic [ref=e235]:
+                - img "Main Shop" [ref=e238]
+                - generic [ref=e239]:
+                  - heading "Main Shop" [level=3] [ref=e240]:
+                    - link "Main Shop" [ref=e241] [cursor=pointer]:
+                      - /url: /shop/main
+                  - paragraph [ref=e242]: "@main"
+                  - paragraph
+              - generic [ref=e243]:
+                - generic [ref=e244]:
+                  - img [ref=e245]
+                  - generic [ref=e250]: "0"
+                - generic [ref=e251]:
+                  - img [ref=e252]
+                  - generic [ref=e255]: 0 products
+              - link "Visit Shop" [ref=e257] [cursor=pointer]:
+                - /url: /shop/main
+                - text: Visit Shop
+                - img [ref=e258] [cursor=pointer]
+  - contentinfo [ref=e262]:
+    - generic [ref=e263]:
+      - generic [ref=e264]:
+        - heading "Stay updated with One-Link" [level=3] [ref=e265]
+        - paragraph [ref=e266]: Get the latest updates on new features, success stories, and tips to grow your business.
+        - generic [ref=e267]:
+          - textbox "Newsletter signup" [ref=e268]
+          - button "Subscribe" [ref=e269]
+      - generic [ref=e270]:
+        - generic [ref=e271]:
+          - heading "Company" [level=4] [ref=e272]
+          - list [ref=e273]:
+            - listitem [ref=e274]:
+              - link "About Us" [ref=e275] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e276]:
+              - link "Careers" [ref=e277] [cursor=pointer]:
+                - /url: /careers
+            - listitem [ref=e278]:
+              - link "Press" [ref=e279] [cursor=pointer]:
+                - /url: /press
+            - listitem [ref=e280]:
+              - link "Blog" [ref=e281] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e282]:
+              - link "Contact" [ref=e283] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e284]:
+          - heading "Legal" [level=4] [ref=e285]
+          - list [ref=e286]:
+            - listitem [ref=e287]:
+              - link "Privacy Policy" [ref=e288] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e289]:
+              - link "Terms of Service" [ref=e290] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e291]:
+              - link "Cookie Policy" [ref=e292] [cursor=pointer]:
+                - /url: /cookies
+            - listitem [ref=e293]:
+              - link "GDPR" [ref=e294] [cursor=pointer]:
+                - /url: /gdpr
+            - listitem [ref=e295]:
+              - link "Compliance" [ref=e296] [cursor=pointer]:
+                - /url: /compliance
+        - generic [ref=e297]:
+          - heading "Support" [level=4] [ref=e298]
+          - list [ref=e299]:
+            - listitem [ref=e300]:
+              - link "Help Center" [ref=e301] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e302]:
+              - link "Community" [ref=e303] [cursor=pointer]:
+                - /url: /community
+            - listitem [ref=e304]:
+              - link "API Documentation" [ref=e305] [cursor=pointer]:
+                - /url: /docs
+            - listitem [ref=e306]:
+              - link "Status" [ref=e307] [cursor=pointer]:
+                - /url: /status
+            - listitem [ref=e308]:
+              - link "Report Issue" [ref=e309] [cursor=pointer]:
+                - /url: /report
+        - generic [ref=e310]:
+          - heading "Follow Us" [level=4] [ref=e311]
+          - generic [ref=e312]:
+            - link "Facebook" [ref=e313] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e314] [cursor=pointer]
+            - link "Twitter" [ref=e316] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e317] [cursor=pointer]
+            - link "Instagram" [ref=e319] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e320] [cursor=pointer]
+            - link "LinkedIn" [ref=e322] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e323] [cursor=pointer]
+            - link "YouTube" [ref=e325] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e326] [cursor=pointer]
+      - generic [ref=e328]:
+        - generic [ref=e329]:
+          - generic [ref=e331]: OL
+          - generic [ref=e332]: One-Link
+        - paragraph [ref=e333]: © 2025 One-Link. All rights reserved.
+  - button "Open Next.js Dev Tools" [ref=e339] [cursor=pointer]:
+    - img [ref=e340] [cursor=pointer]
+  - alert [ref=e343]
+  - banner "Cookie consent" [ref=e344]:
+    - generic [ref=e346]:
+      - generic [ref=e347]:
+        - img [ref=e348]
+        - paragraph [ref=e351]:
+          - text: We use cookies to enhance your experience, analyze site traffic, and personalize content.
+          - link "Learn more about our cookie policy" [ref=e352] [cursor=pointer]:
+            - /url: /cookies
+      - generic [ref=e353]:
+        - button "Decline" [ref=e354]
+        - button "Accept All" [ref=e355]
+        - button "Close cookie banner" [ref=e356]:
+          - img [ref=e357]
+  - img [ref=e361]
+```

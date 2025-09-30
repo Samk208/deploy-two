@@ -205,6 +205,86 @@ export default async function globalSetup(_config: FullConfig) {
       .select("id, price");
     if (seedErr) console.warn("Failed to seed products:", seedErr.message);
 
+    // Seed one influencer shop and link products so /shop/[handle] has data
+    try {
+      if (influencerUser?.user?.id) {
+        const SHOP_HANDLE = "style-forward"; // matches sample cards and your screenshots
+
+        // Upsert shop row (in case it already exists from a prior run)
+        const shopRow = {
+          influencer_id: influencerUser.user.id,
+          handle: SHOP_HANDLE,
+          name: "Style Forward",
+          description: "Curated looks from our E2E influencer.",
+          logo: null,
+          banner: null,
+          active: true,
+        } as any
+
+        // Safe select→insert/update (avoid ON CONFLICT if unique constraint is missing)
+        let existingShop: any = null
+        try {
+          const { data: found } = await supabaseAdmin
+            .from("shops")
+            .select("id, handle")
+            .eq("handle", SHOP_HANDLE)
+            .maybeSingle()
+          existingShop = found
+        } catch (_) {}
+
+        if (existingShop?.id) {
+          const { error: updErr } = await supabaseAdmin
+            .from("shops")
+            .update(shopRow)
+            .eq("id", existingShop.id)
+          if (updErr) console.warn("Failed to update shop:", updErr.message)
+        } else {
+          const { error: insErr } = await supabaseAdmin
+            .from("shops")
+            .insert(shopRow)
+          if (insErr) console.warn("Failed to insert shop:", insErr.message)
+        }
+
+        // Link 1-3 products to the influencer shop as published
+        if (seeded && seeded.length > 0) {
+          const links = seeded.slice(0, 3).map((p: any, i: number) => ({
+            influencer_id: influencerUser.user.id,
+            product_id: p.id,
+            custom_title: undefined,
+            sale_price: i === 0 ? Number((Number(p.price) * 0.8).toFixed(2)) : null,
+            published: true,
+          }))
+          // Upsert links without onConflict using select→insert for each pair
+          for (const link of links) {
+            try {
+              const { data: existing } = await supabaseAdmin
+                .from("influencer_shop_products")
+                .select("id")
+                .eq("influencer_id", link.influencer_id)
+                .eq("product_id", link.product_id)
+                .maybeSingle()
+              if (existing?.id) {
+                const { error: updLinkErr } = await supabaseAdmin
+                  .from("influencer_shop_products")
+                  .update(link as any)
+                  .eq("id", existing.id)
+                if (updLinkErr) console.warn("Failed to update link:", updLinkErr.message)
+              } else {
+                const { error: insLinkErr } = await supabaseAdmin
+                  .from("influencer_shop_products")
+                  .insert(link as any)
+                if (insLinkErr) console.warn("Failed to insert link:", insLinkErr.message)
+              }
+            } catch (e) {
+              console.warn("Link upsert exception:", e)
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Seeding influencer shop exception:", e)
+    }
+
     // Seed one minimal order and commission so supplier dashboard has data
     try {
       if (

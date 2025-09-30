@@ -35,6 +35,7 @@ export async function createServerSupabaseClient(
 
   // If called with an explicit cookie store (e.g. from next/headers cookies())
   if (context && "cookies" in (context as any)) {
+    // In App Router, cookies() is async in Next 15. Callers should pass an awaited store.
     const store = (context as { cookies: any }).cookies;
     return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
       cookies: {
@@ -52,7 +53,8 @@ export async function createServerSupabaseClient(
   }
 
   // Fallback for when no context is provided - use Next.js App Router cookies store
-  const store = nextCookies();
+  // Next 15: cookies() must be awaited when used in a dynamic context
+  const store = await nextCookies();
   return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name: string) {

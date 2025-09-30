@@ -2,14 +2,15 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests',
+  testMatch: ['**/e2e/**/*.spec.ts'],
   timeout: 45_000,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? '50%' : undefined,
   reporter: [
     ['list'],
-    ['json', { outputFile: 'test-results.json' }],
-    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['json', { outputFile: 'test-results/results.json' }],
+    ['html', { outputFolder: 'test-results/playwright-report', open: 'never' }],
   ],
   use: {
     baseURL: 'http://127.0.0.1:3001',
@@ -17,6 +18,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'off',
   },
+  outputDir: 'test-results/playwright-artifacts',
   projects: [
     {
       name: 'chromium',

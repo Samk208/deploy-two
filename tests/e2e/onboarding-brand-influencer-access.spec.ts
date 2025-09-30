@@ -14,7 +14,7 @@ test.describe("Onboarding access and document uploads", () => {
     await page.getByRole("button", { name: "Sign In" }).click();
 
     // Either lands on dashboard or onboarding based on account state
-    await page.waitForLoadState("networkidle");
+    await page.waitForURL(/(\/dashboard\/influencer|\/onboarding\/influencer)/, { timeout: 30000 });
     if (!page.url().includes("/dashboard/influencer")) {
       // Move through onboarding to the verification step
       await page
@@ -38,7 +38,7 @@ test.describe("Onboarding access and document uploads", () => {
           makeFile("address.pdf", "application/pdf"),
         ]);
       await page
-        .getByRole("button", { name: /^Continue|Submit|Save/i })
+        .getByRole("button", { name: /(Continue|Submit|Save)/i })
         .first()
         .click();
     }

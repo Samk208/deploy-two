@@ -1,0 +1,1472 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\playwright.config.ts",
+    "rootDir": "C:/Users/Lenovo/Desktop/Workspce/vo-onelink-google/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\setup\\global-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 8
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "test-results/playwright-report",
+          "open": "never"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/Lenovo/Desktop/Workspce/vo-onelink-google/test-results/playwright-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 8
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/Lenovo/Desktop/Workspce/vo-onelink-google/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/e2e/**/*.spec.ts"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.0",
+    "workers": 8,
+    "webServer": {
+      "command": "pnpm dev --port 3001",
+      "url": "http://127.0.0.1:3001",
+      "reuseExistingServer": true,
+      "timeout": 180000
+    }
+  },
+  "suites": [
+    {
+      "title": "e2e\\auth-access.spec.ts",
+      "file": "e2e/auth-access.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Auth Access - Email/Password and Role Redirects",
+          "file": "e2e/auth-access.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "admin email/password redirects to /admin/dashboard",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 26869,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/dashboard\" until \"load\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/dashboard\" until \"load\"\n============================================================\n    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\auth-access.spec.ts:19:16",
+                        "location": {
+                          "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\auth-access.spec.ts",
+                          "column": 16,
+                          "line": 19
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 17 |\u001b[39m       \u001b[32m\"TestAdmin123!\"\u001b[39m\n \u001b[90m 18 |\u001b[39m     )\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 19 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[32m\"**/admin/dashboard\"\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m15000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 20 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 21 |\u001b[39m       page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"heading\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/Admin Dashboard/i\u001b[39m })\n \u001b[90m 22 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\auth-access.spec.ts",
+                            "column": 16,
+                            "line": 19
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 15000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/dashboard\" until \"load\"\n============================================================\n\n\u001b[0m \u001b[90m 17 |\u001b[39m       \u001b[32m\"TestAdmin123!\"\u001b[39m\n \u001b[90m 18 |\u001b[39m     )\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 19 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[32m\"**/admin/dashboard\"\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m15000\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 20 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 21 |\u001b[39m       page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"heading\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/Admin Dashboard/i\u001b[39m })\n \u001b[90m 22 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\auth-access.spec.ts:19:16\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:23:49.914Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-auth-access-Auth-Acces-0beb7-edirects-to-admin-dashboard-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-auth-access-Auth-Acces-0beb7-edirects-to-admin-dashboard-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-auth-access-Auth-Acces-0beb7-edirects-to-admin-dashboard-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\auth-access.spec.ts",
+                        "column": 16,
+                        "line": 19
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "19fe94397f916d714872-d3da0eb3826150f7b990",
+              "file": "e2e/auth-access.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "customer redirects to home (no dashboard)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10893,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:20.619Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19fe94397f916d714872-b3e64a52904277351a41",
+              "file": "e2e/auth-access.spec.ts",
+              "line": 25,
+              "column": 7
+            },
+            {
+              "title": "brand/supplier redirects to /dashboard/supplier",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11359,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:31.778Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19fe94397f916d714872-cfcebb293f0b7feee46e",
+              "file": "e2e/auth-access.spec.ts",
+              "line": 37,
+              "column": 7
+            },
+            {
+              "title": "influencer redirects to /dashboard/influencer",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 10,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3426,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:43.165Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "19fe94397f916d714872-ef0414f3f85990511d52",
+              "file": "e2e/auth-access.spec.ts",
+              "line": 47,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e\\auth.spec.ts",
+      "file": "e2e/auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Authentication and Authorization Flows",
+          "file": "e2e/auth.spec.ts",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should allow an admin to log in with email and password",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "timedOut",
+                      "duration": 45622,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\auth.spec.ts",
+                            "column": 16,
+                            "line": 23
+                          },
+                          "message": "Error: page.waitForURL: Test timeout of 45000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation to \"**/admin/dashboard\" until \"load\"\n  navigated to \"http://127.0.0.1:3001/sign-in?message=Could%20not%20authenticate%20user\"\n  navigated to \"http://127.0.0.1:3001/sign-in?message=Could%20not%20authenticate%20user\"\n============================================================\n\n\u001b[0m \u001b[90m 21 |\u001b[39m\n \u001b[90m 22 |\u001b[39m     \u001b[90m// Wait for navigation and verify the URL\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 23 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[32m\"**/admin/dashboard\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 24 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[32m\"/admin/dashboard\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m     \u001b[90m// Verify that the dashboard contains admin-specific content\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\auth.spec.ts:23:16\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:23:49.882Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-auth-Authentication-an-fd913--in-with-email-and-password-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-auth-Authentication-an-fd913--in-with-email-and-password-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-auth-Authentication-an-fd913--in-with-email-and-password-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "9563bb343517399bdb94-fd4fce1c9ffc273dd878",
+              "file": "e2e/auth.spec.ts",
+              "line": 10,
+              "column": 7
+            },
+            {
+              "title": "should show Google OAuth button on sign-in and trigger navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 4703,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:38.464Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9563bb343517399bdb94-69f8a6c9c06771917a69",
+              "file": "e2e/auth.spec.ts",
+              "line": 32,
+              "column": 7
+            },
+            {
+              "title": "should show an error for invalid email/password credentials",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 12,
+                      "parallelIndex": 1,
+                      "status": "passed",
+                      "duration": 3130,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:43.435Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9563bb343517399bdb94-1cd680e0d22c89880306",
+              "file": "e2e/auth.spec.ts",
+              "line": 45,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e\\checkout.spec.ts",
+      "file": "e2e/checkout.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Checkout API",
+          "file": "e2e/checkout.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "creates checkout session for influencer shop product",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 15714,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\checkout.spec.ts:42:22",
+                        "location": {
+                          "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\checkout.spec.ts",
+                          "column": 22,
+                          "line": 42
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 40 |\u001b[39m     })\n \u001b[90m 41 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 42 |\u001b[39m     expect(res\u001b[33m.\u001b[39mok())\u001b[33m.\u001b[39mtoBeTruthy()\n \u001b[90m    |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 43 |\u001b[39m     \u001b[36mconst\u001b[39m json \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m res\u001b[33m.\u001b[39mjson() \u001b[36mas\u001b[39m any\n \u001b[90m 44 |\u001b[39m     expect(json\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mok)\u001b[33m.\u001b[39mtoBeTruthy()\n \u001b[90m 45 |\u001b[39m     expect(json\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msessionId)\u001b[33m.\u001b[39mtoBeTruthy()\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\checkout.spec.ts",
+                            "column": 22,
+                            "line": 42
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n\n\u001b[0m \u001b[90m 40 |\u001b[39m     })\n \u001b[90m 41 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 42 |\u001b[39m     expect(res\u001b[33m.\u001b[39mok())\u001b[33m.\u001b[39mtoBeTruthy()\n \u001b[90m    |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 43 |\u001b[39m     \u001b[36mconst\u001b[39m json \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m res\u001b[33m.\u001b[39mjson() \u001b[36mas\u001b[39m any\n \u001b[90m 44 |\u001b[39m     expect(json\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mok)\u001b[33m.\u001b[39mtoBeTruthy()\n \u001b[90m 45 |\u001b[39m     expect(json\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata\u001b[33m?\u001b[39m\u001b[33m.\u001b[39msessionId)\u001b[33m.\u001b[39mtoBeTruthy()\u001b[0m\n\u001b[2m    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\checkout.spec.ts:42:22\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:23:49.937Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-checkout-Checkout-API--c1b97-for-influencer-shop-product-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\checkout.spec.ts",
+                        "column": 22,
+                        "line": 42
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "62a9de636d5ae6278c7c-13a1903c370455797f30",
+              "file": "e2e/checkout.spec.ts",
+              "line": 9,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e\\influencer-shop-page.spec.ts",
+      "file": "e2e/influencer-shop-page.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Influencer shop page",
+          "file": "e2e/influencer-shop-page.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "renders products and images for /shop/[handle]",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 16499,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByTestId('product-card').first()\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('product-card').first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByTestId('product-card').first()\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('product-card').first()\u001b[22m\n\n    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\influencer-shop-page.spec.ts:20:24",
+                        "location": {
+                          "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\influencer-shop-page.spec.ts",
+                          "column": 24,
+                          "line": 20
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 18 |\u001b[39m\n \u001b[90m 19 |\u001b[39m     \u001b[36mconst\u001b[39m card \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'product-card'\u001b[39m)\u001b[33m.\u001b[39mfirst()\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 20 |\u001b[39m     \u001b[36mawait\u001b[39m expect(card)\u001b[33m.\u001b[39mtoBeVisible()\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 21 |\u001b[39m\n \u001b[90m 22 |\u001b[39m     \u001b[36mconst\u001b[39m img \u001b[33m=\u001b[39m card\u001b[33m.\u001b[39mlocator(\u001b[32m'img[alt]'\u001b[39m)\n \u001b[90m 23 |\u001b[39m     \u001b[36mawait\u001b[39m expect(img\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\influencer-shop-page.spec.ts",
+                            "column": 24,
+                            "line": 20
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByTestId('product-card').first()\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('product-card').first()\u001b[22m\n\n\n\u001b[0m \u001b[90m 18 |\u001b[39m\n \u001b[90m 19 |\u001b[39m     \u001b[36mconst\u001b[39m card \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'product-card'\u001b[39m)\u001b[33m.\u001b[39mfirst()\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 20 |\u001b[39m     \u001b[36mawait\u001b[39m expect(card)\u001b[33m.\u001b[39mtoBeVisible()\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 21 |\u001b[39m\n \u001b[90m 22 |\u001b[39m     \u001b[36mconst\u001b[39m img \u001b[33m=\u001b[39m card\u001b[33m.\u001b[39mlocator(\u001b[32m'img[alt]'\u001b[39m)\n \u001b[90m 23 |\u001b[39m     \u001b[36mawait\u001b[39m expect(img\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\u001b[0m\n\u001b[2m    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\influencer-shop-page.spec.ts:20:24\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:23:49.877Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-influencer-shop-page-I-481e1-and-images-for-shop-handle--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-influencer-shop-page-I-481e1-and-images-for-shop-handle--chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-influencer-shop-page-I-481e1-and-images-for-shop-handle--chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\influencer-shop-page.spec.ts",
+                        "column": 24,
+                        "line": 20
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "c36bdd7037258275763d-1884d7ea6afccbdf4414",
+              "file": "e2e/influencer-shop-page.spec.ts",
+              "line": 9,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e\\oauth-admin.spec.ts",
+      "file": "e2e/oauth-admin.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Admin OAuth (GitHub) flow",
+          "file": "e2e/oauth-admin.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "github sign-in reaches callback and grants admin access (manual provider)",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 42010,
+                      "error": {
+                        "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n  navigated to \"https://github.com/login?client_id=Ov23livzr5wXU8qwuyuB&return_to=%2Flogin%2Foauth%2Fauthorize%3Fclient_id%3DOv23livzr5wXU8qwuyuB%26next%3Dundefined%26redirect_to%3Dhttp%253A%252F%252F127.0.0.1%253A3001%252Fapi%252Fauth%252Fcallback%26redirect_uri%3Dhttps%253A%252F%252Fmqnwtfbdgcuvqvnloidt.supabase.co%252Fauth%252Fv1%252Fcallback%26response_type%3Dcode%26scope%3Duser%253Aemail%26state%3DeyJhbGciOiJIUzI1NiIsImtpZCI6IlJTcmMzeXpDQWRkYjczZ3ciLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3NTkxOTU3NDMsInNpdGVfdXJsIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwIiwiaWQiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJmdW5jdGlvbl9ob29rcyI6bnVsbCwicHJvdmlkZXIiOiJnaXRodWIiLCJyZWZlcnJlciI6Imh0dHA6Ly8xMjcuMC4wLjE6MzAwMS9hcGkvYXV0aC9jYWxsYmFjayIsImZsb3dfc3RhdGVfaWQiOiI0MjU3NWRhNC1iOGJiLTQxZjktYTEzMi1lNTY0Zjk4NDVjYjAifQ.XGiP2MMeuYZRzK18DRpcLhz5ohIPwXDPk99KyAvTUKY\"\n  navigated to \"https://github.com/login?client_id=Ov23livzr5wXU8qwuyuB&return_to=%2Flogin%2Foauth%2Fauthorize%3Fclient_id%3DOv23livzr5wXU8qwuyuB%26next%3Dundefined%26redirect_to%3Dhttp%253A%252F%252F127.0.0.1%253A3001%252Fapi%252Fauth%252Fcallback%26redirect_uri%3Dhttps%253A%252F%252Fmqnwtfbdgcuvqvnloidt.supabase.co%252Fauth%252Fv1%252Fcallback%26response_type%3Dcode%26scope%3Duser%253Aemail%26state%3DeyJhbGciOiJIUzI1NiIsImtpZCI6IlJTcmMzeXpDQWRkYjczZ3ciLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3NTkxOTU3NDMsInNpdGVfdXJsIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwIiwiaWQiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJmdW5jdGlvbl9ob29rcyI6bnVsbCwicHJvdmlkZXIiOiJnaXRodWIiLCJyZWZlcnJlciI6Imh0dHA6Ly8xMjcuMC4wLjE6MzAwMS9hcGkvYXV0aC9jYWxsYmFjayIsImZsb3dfc3RhdGVfaWQiOiI0MjU3NWRhNC1iOGJiLTQxZjktYTEzMi1lNTY0Zjk4NDVjYjAifQ.XGiP2MMeuYZRzK18DRpcLhz5ohIPwXDPk99KyAvTUKY\"\n============================================================",
+                        "stack": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n  navigated to \"https://github.com/login?client_id=Ov23livzr5wXU8qwuyuB&return_to=%2Flogin%2Foauth%2Fauthorize%3Fclient_id%3DOv23livzr5wXU8qwuyuB%26next%3Dundefined%26redirect_to%3Dhttp%253A%252F%252F127.0.0.1%253A3001%252Fapi%252Fauth%252Fcallback%26redirect_uri%3Dhttps%253A%252F%252Fmqnwtfbdgcuvqvnloidt.supabase.co%252Fauth%252Fv1%252Fcallback%26response_type%3Dcode%26scope%3Duser%253Aemail%26state%3DeyJhbGciOiJIUzI1NiIsImtpZCI6IlJTcmMzeXpDQWRkYjczZ3ciLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3NTkxOTU3NDMsInNpdGVfdXJsIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwIiwiaWQiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJmdW5jdGlvbl9ob29rcyI6bnVsbCwicHJvdmlkZXIiOiJnaXRodWIiLCJyZWZlcnJlciI6Imh0dHA6Ly8xMjcuMC4wLjE6MzAwMS9hcGkvYXV0aC9jYWxsYmFjayIsImZsb3dfc3RhdGVfaWQiOiI0MjU3NWRhNC1iOGJiLTQxZjktYTEzMi1lNTY0Zjk4NDVjYjAifQ.XGiP2MMeuYZRzK18DRpcLhz5ohIPwXDPk99KyAvTUKY\"\n  navigated to \"https://github.com/login?client_id=Ov23livzr5wXU8qwuyuB&return_to=%2Flogin%2Foauth%2Fauthorize%3Fclient_id%3DOv23livzr5wXU8qwuyuB%26next%3Dundefined%26redirect_to%3Dhttp%253A%252F%252F127.0.0.1%253A3001%252Fapi%252Fauth%252Fcallback%26redirect_uri%3Dhttps%253A%252F%252Fmqnwtfbdgcuvqvnloidt.supabase.co%252Fauth%252Fv1%252Fcallback%26response_type%3Dcode%26scope%3Duser%253Aemail%26state%3DeyJhbGciOiJIUzI1NiIsImtpZCI6IlJTcmMzeXpDQWRkYjczZ3ciLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3NTkxOTU3NDMsInNpdGVfdXJsIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwIiwiaWQiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJmdW5jdGlvbl9ob29rcyI6bnVsbCwicHJvdmlkZXIiOiJnaXRodWIiLCJyZWZlcnJlciI6Imh0dHA6Ly8xMjcuMC4wLjE6MzAwMS9hcGkvYXV0aC9jYWxsYmFjayIsImZsb3dfc3RhdGVfaWQiOiI0MjU3NWRhNC1iOGJiLTQxZjktYTEzMi1lNTY0Zjk4NDVjYjAifQ.XGiP2MMeuYZRzK18DRpcLhz5ohIPwXDPk99KyAvTUKY\"\n============================================================\n    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\oauth-admin.spec.ts:13:16",
+                        "location": {
+                          "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\oauth-admin.spec.ts",
+                          "column": 16,
+                          "line": 13
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 11 |\u001b[39m     \u001b[90m// We expect to land on our callback, then be redirected based on role.\u001b[39m\n \u001b[90m 12 |\u001b[39m     \u001b[90m// To keep this test non-flaky in CI without real GitHub creds, we only assert the callback handoff if provider is mocked.\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[35m/\\/api\\/auth\\/callback|\\/admin\\/dashboard/\u001b[39m\u001b[33m,\u001b[39m {\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 14 |\u001b[39m       timeout\u001b[33m:\u001b[39m \u001b[35m30000\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 15 |\u001b[39m     })\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\oauth-admin.spec.ts",
+                            "column": 16,
+                            "line": 13
+                          },
+                          "message": "TimeoutError: page.waitForURL: Timeout 30000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n  navigated to \"https://github.com/login?client_id=Ov23livzr5wXU8qwuyuB&return_to=%2Flogin%2Foauth%2Fauthorize%3Fclient_id%3DOv23livzr5wXU8qwuyuB%26next%3Dundefined%26redirect_to%3Dhttp%253A%252F%252F127.0.0.1%253A3001%252Fapi%252Fauth%252Fcallback%26redirect_uri%3Dhttps%253A%252F%252Fmqnwtfbdgcuvqvnloidt.supabase.co%252Fauth%252Fv1%252Fcallback%26response_type%3Dcode%26scope%3Duser%253Aemail%26state%3DeyJhbGciOiJIUzI1NiIsImtpZCI6IlJTcmMzeXpDQWRkYjczZ3ciLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3NTkxOTU3NDMsInNpdGVfdXJsIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwIiwiaWQiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJmdW5jdGlvbl9ob29rcyI6bnVsbCwicHJvdmlkZXIiOiJnaXRodWIiLCJyZWZlcnJlciI6Imh0dHA6Ly8xMjcuMC4wLjE6MzAwMS9hcGkvYXV0aC9jYWxsYmFjayIsImZsb3dfc3RhdGVfaWQiOiI0MjU3NWRhNC1iOGJiLTQxZjktYTEzMi1lNTY0Zjk4NDVjYjAifQ.XGiP2MMeuYZRzK18DRpcLhz5ohIPwXDPk99KyAvTUKY\"\n  navigated to \"https://github.com/login?client_id=Ov23livzr5wXU8qwuyuB&return_to=%2Flogin%2Foauth%2Fauthorize%3Fclient_id%3DOv23livzr5wXU8qwuyuB%26next%3Dundefined%26redirect_to%3Dhttp%253A%252F%252F127.0.0.1%253A3001%252Fapi%252Fauth%252Fcallback%26redirect_uri%3Dhttps%253A%252F%252Fmqnwtfbdgcuvqvnloidt.supabase.co%252Fauth%252Fv1%252Fcallback%26response_type%3Dcode%26scope%3Duser%253Aemail%26state%3DeyJhbGciOiJIUzI1NiIsImtpZCI6IlJTcmMzeXpDQWRkYjczZ3ciLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3NTkxOTU3NDMsInNpdGVfdXJsIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwIiwiaWQiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJmdW5jdGlvbl9ob29rcyI6bnVsbCwicHJvdmlkZXIiOiJnaXRodWIiLCJyZWZlcnJlciI6Imh0dHA6Ly8xMjcuMC4wLjE6MzAwMS9hcGkvYXV0aC9jYWxsYmFjayIsImZsb3dfc3RhdGVfaWQiOiI0MjU3NWRhNC1iOGJiLTQxZjktYTEzMi1lNTY0Zjk4NDVjYjAifQ.XGiP2MMeuYZRzK18DRpcLhz5ohIPwXDPk99KyAvTUKY\"\n============================================================\n\n\u001b[0m \u001b[90m 11 |\u001b[39m     \u001b[90m// We expect to land on our callback, then be redirected based on role.\u001b[39m\n \u001b[90m 12 |\u001b[39m     \u001b[90m// To keep this test non-flaky in CI without real GitHub creds, we only assert the callback handoff if provider is mocked.\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 13 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForURL(\u001b[35m/\\/api\\/auth\\/callback|\\/admin\\/dashboard/\u001b[39m\u001b[33m,\u001b[39m {\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 14 |\u001b[39m       timeout\u001b[33m:\u001b[39m \u001b[35m30000\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 15 |\u001b[39m     })\u001b[33m;\u001b[39m\n \u001b[90m 16 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\oauth-admin.spec.ts:13:16\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:23:49.874Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-oauth-admin-Admin-OAut-f4428-min-access-manual-provider--chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-oauth-admin-Admin-OAut-f4428-min-access-manual-provider--chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-oauth-admin-Admin-OAut-f4428-min-access-manual-provider--chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\oauth-admin.spec.ts",
+                        "column": 16,
+                        "line": 13
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e94d09d1d52696dfe612-6fbdcbeeac2e46ff076f",
+              "file": "e2e/oauth-admin.spec.ts",
+              "line": 4,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e\\oauth-signup.spec.ts",
+      "file": "e2e/oauth-signup.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "OAuth buttons on Sign Up",
+          "file": "e2e/oauth-signup.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "GitHub button exists and triggers navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 12746,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:23:50.057Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "330d1690fb4a46984314-768d264d52a794b53544",
+              "file": "e2e/oauth-signup.spec.ts",
+              "line": 4,
+              "column": 7
+            },
+            {
+              "title": "Kakao button exists and triggers navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "passed",
+                      "duration": 6728,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:03.164Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "330d1690fb4a46984314-0bc58e89358f8511082f",
+              "file": "e2e/oauth-signup.spec.ts",
+              "line": 15,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e\\onboarding-brand-influencer-access.spec.ts",
+      "file": "e2e/onboarding-brand-influencer-access.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Onboarding access and document uploads",
+          "file": "e2e/onboarding-brand-influencer-access.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "influencer login, reach onboarding verify, upload docs, then access dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 28630,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:23:49.987Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "88d86da87aebe535334d-9c347d790d300101a656",
+              "file": "e2e/onboarding-brand-influencer-access.spec.ts",
+              "line": 8,
+              "column": 7
+            },
+            {
+              "title": "brand login, access supplier dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "passed",
+                      "duration": 10749,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:19.003Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "88d86da87aebe535334d-b5dce3a613451d5aebbd",
+              "file": "e2e/onboarding-brand-influencer-access.spec.ts",
+              "line": 54,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e\\onboarding-brand.spec.ts",
+      "file": "e2e/onboarding-brand.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Brand/Supplier Onboarding - Document Uploads",
+          "file": "e2e/onboarding-brand.spec.ts",
+          "line": 16,
+          "column": 6,
+          "specs": [
+            {
+              "title": "can sign up, reach Business Verification, and upload required documents",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 7,
+                      "parallelIndex": 7,
+                      "status": "timedOut",
+                      "duration": 45464,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\onboarding-brand.spec.ts",
+                            "column": 41,
+                            "line": 27
+                          },
+                          "message": "Error: locator.fill: Test timeout of 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('First name')\u001b[22m\n\n\n\u001b[0m \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m     \u001b[90m// Fill form\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 27 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m'First name'\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'E2E'\u001b[39m)\n \u001b[90m    |\u001b[39m                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 28 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m'Last name'\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'Brand'\u001b[39m)\n \u001b[90m 29 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m'Email address'\u001b[39m)\u001b[33m.\u001b[39mfill(email)\n \u001b[90m 30 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m'Password'\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'Passw0rd!'\u001b[39m)\u001b[0m\n\u001b[2m    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\onboarding-brand.spec.ts:27:41\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:23:49.927Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-onboarding-brand-Brand-369d1-d-upload-required-documents-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-onboarding-brand-Brand-369d1-d-upload-required-documents-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-onboarding-brand-Brand-369d1-d-upload-required-documents-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a42ae117048c328e03ce-3ea21add48b0cdae47df",
+              "file": "e2e/onboarding-brand.spec.ts",
+              "line": 17,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e\\onboarding-influencer.spec.ts",
+      "file": "e2e/onboarding-influencer.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Influencer Onboarding - Document Uploads",
+          "file": "e2e/onboarding-influencer.spec.ts",
+          "line": 16,
+          "column": 6,
+          "specs": [
+            {
+              "title": "can sign up, reach Identity Verification, and upload required documents",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 8,
+                      "parallelIndex": 2,
+                      "status": "timedOut",
+                      "duration": 45276,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\onboarding-influencer.spec.ts",
+                            "column": 41,
+                            "line": 27
+                          },
+                          "message": "Error: locator.fill: Test timeout of 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('First name')\u001b[22m\n\n\n\u001b[0m \u001b[90m 25 |\u001b[39m\n \u001b[90m 26 |\u001b[39m     \u001b[90m// Fill form\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 27 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m'First name'\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'E2E'\u001b[39m)\n \u001b[90m    |\u001b[39m                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 28 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m'Last name'\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'Influencer'\u001b[39m)\n \u001b[90m 29 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m'Email address'\u001b[39m)\u001b[33m.\u001b[39mfill(email)\n \u001b[90m 30 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m'Password'\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m'Passw0rd!'\u001b[39m)\u001b[0m\n\u001b[2m    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\onboarding-influencer.spec.ts:27:41\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:08.535Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-onboarding-influencer--64a14-d-upload-required-documents-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-onboarding-influencer--64a14-d-upload-required-documents-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-onboarding-influencer--64a14-d-upload-required-documents-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "aa10e662764f259b2673-b8dcc3c511dc874c762b",
+              "file": "e2e/onboarding-influencer.spec.ts",
+              "line": 17,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e\\roles.spec.ts",
+      "file": "e2e/roles.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Role-based dashboards",
+          "file": "e2e/roles.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "admin can access /admin/dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "passed",
+                      "duration": 11706,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:10.213Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bba7507e6658daca86d9-8517d247fdba8470bbb8",
+              "file": "e2e/roles.spec.ts",
+              "line": 5,
+              "column": 7
+            },
+            {
+              "title": "non-admin redirected away from /dashboard/admin",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 9,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 17424,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\roles.spec.ts:30:24",
+                        "location": {
+                          "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\roles.spec.ts",
+                          "column": 24,
+                          "line": 30
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 28 |\u001b[39m     \u001b[36mconst\u001b[39m redirected \u001b[33m=\u001b[39m\n \u001b[90m 29 |\u001b[39m       page\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m\"/dashboard/supplier\"\u001b[39m) \u001b[33m||\u001b[39m page\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mendsWith(\u001b[32m\"/\"\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 30 |\u001b[39m     expect(redirected)\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 31 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 32 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 33 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\roles.spec.ts",
+                            "column": 24,
+                            "line": 30
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n\n\u001b[0m \u001b[90m 28 |\u001b[39m     \u001b[36mconst\u001b[39m redirected \u001b[33m=\u001b[39m\n \u001b[90m 29 |\u001b[39m       page\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mincludes(\u001b[32m\"/dashboard/supplier\"\u001b[39m) \u001b[33m||\u001b[39m page\u001b[33m.\u001b[39murl()\u001b[33m.\u001b[39mendsWith(\u001b[32m\"/\"\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 30 |\u001b[39m     expect(redirected)\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 31 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 32 |\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 33 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\roles.spec.ts:30:24\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:22.236Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-roles-Role-based-dashb-eeb63-d-away-from-dashboard-admin-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-roles-Role-based-dashb-eeb63-d-away-from-dashboard-admin-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-roles-Role-based-dashb-eeb63-d-away-from-dashboard-admin-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\roles.spec.ts",
+                        "column": 24,
+                        "line": 30
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "bba7507e6658daca86d9-eef851111f0cfb218657",
+              "file": "e2e/roles.spec.ts",
+              "line": 12,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e\\shop-visual.spec.ts",
+      "file": "e2e/shop-visual.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Shop product images",
+          "file": "e2e/shop-visual.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Grid view: product image area has sensible height and is visible",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 17180,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByTestId('product-card').first().locator('img[alt]')\nExpected: visible\nReceived: hidden\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('product-card').first().locator('img[alt]')\u001b[22m\n\u001b[2m    9 × locator resolved to <img loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" alt=\"E2E Test Product A\" sizes=\"(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw\" class=\"object-cover transition-transform duration-300 group-hover:scale-105\" src=\"http://127.0.0.1:3001/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1505740420928-5e560c06d30e%3Fw%3D500&w=3840&q=75\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1505740420928-5e560c06d30e%3Fw%3D500&w=256&q=75 256w, /_next/image?url=https%3A%…/>\u001b[22m\n\u001b[2m      - unexpected value \"hidden\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByTestId('product-card').first().locator('img[alt]')\nExpected: visible\nReceived: hidden\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('product-card').first().locator('img[alt]')\u001b[22m\n\u001b[2m    9 × locator resolved to <img loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" alt=\"E2E Test Product A\" sizes=\"(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw\" class=\"object-cover transition-transform duration-300 group-hover:scale-105\" src=\"http://127.0.0.1:3001/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1505740420928-5e560c06d30e%3Fw%3D500&w=3840&q=75\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1505740420928-5e560c06d30e%3Fw%3D500&w=256&q=75 256w, /_next/image?url=https%3A%…/>\u001b[22m\n\u001b[2m      - unexpected value \"hidden\"\u001b[22m\n\n    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shop-visual.spec.ts:23:23",
+                        "location": {
+                          "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shop-visual.spec.ts",
+                          "column": 23,
+                          "line": 23
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 21 |\u001b[39m     \u001b[90m// Find an <img> inside the card (rendered by next/image)\u001b[39m\n \u001b[90m 22 |\u001b[39m     \u001b[36mconst\u001b[39m img \u001b[33m=\u001b[39m card\u001b[33m.\u001b[39mlocator(\u001b[32m'img[alt]'\u001b[39m)\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 23 |\u001b[39m     \u001b[36mawait\u001b[39m expect(img)\u001b[33m.\u001b[39mtoBeVisible()\n \u001b[90m    |\u001b[39m                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 24 |\u001b[39m\n \u001b[90m 25 |\u001b[39m     \u001b[90m// Sanity-check layout: image bounding box height should be > 80px in grid\u001b[39m\n \u001b[90m 26 |\u001b[39m     \u001b[36mconst\u001b[39m box \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m img\u001b[33m.\u001b[39mboundingBox()\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shop-visual.spec.ts",
+                            "column": 23,
+                            "line": 23
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByTestId('product-card').first().locator('img[alt]')\nExpected: visible\nReceived: hidden\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('product-card').first().locator('img[alt]')\u001b[22m\n\u001b[2m    9 × locator resolved to <img loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" alt=\"E2E Test Product A\" sizes=\"(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw\" class=\"object-cover transition-transform duration-300 group-hover:scale-105\" src=\"http://127.0.0.1:3001/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1505740420928-5e560c06d30e%3Fw%3D500&w=3840&q=75\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1505740420928-5e560c06d30e%3Fw%3D500&w=256&q=75 256w, /_next/image?url=https%3A%…/>\u001b[22m\n\u001b[2m      - unexpected value \"hidden\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 21 |\u001b[39m     \u001b[90m// Find an <img> inside the card (rendered by next/image)\u001b[39m\n \u001b[90m 22 |\u001b[39m     \u001b[36mconst\u001b[39m img \u001b[33m=\u001b[39m card\u001b[33m.\u001b[39mlocator(\u001b[32m'img[alt]'\u001b[39m)\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 23 |\u001b[39m     \u001b[36mawait\u001b[39m expect(img)\u001b[33m.\u001b[39mtoBeVisible()\n \u001b[90m    |\u001b[39m                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 24 |\u001b[39m\n \u001b[90m 25 |\u001b[39m     \u001b[90m// Sanity-check layout: image bounding box height should be > 80px in grid\u001b[39m\n \u001b[90m 26 |\u001b[39m     \u001b[36mconst\u001b[39m box \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m img\u001b[33m.\u001b[39mboundingBox()\u001b[0m\n\u001b[2m    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shop-visual.spec.ts:23:23\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:09.957Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-shop-visual-Shop-produ-41dbc-sible-height-and-is-visible-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-shop-visual-Shop-produ-41dbc-sible-height-and-is-visible-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-shop-visual-Shop-produ-41dbc-sible-height-and-is-visible-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shop-visual.spec.ts",
+                        "column": 23,
+                        "line": 23
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "4b96810853a021ca5437-e8a0b4d93191cd55cb9b",
+              "file": "e2e/shop-visual.spec.ts",
+              "line": 14,
+              "column": 7
+            },
+            {
+              "title": "List view: product image area does not collapse to a thin strip",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 10607,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m60\u001b[39m\nReceived:   \u001b[31m42\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m60\u001b[39m\nReceived:   \u001b[31m42\u001b[39m\n    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shop-visual.spec.ts:47:26",
+                        "location": {
+                          "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shop-visual.spec.ts",
+                          "column": 26,
+                          "line": 47
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 45 |\u001b[39m     \u001b[36mif\u001b[39m (box) {\n \u001b[90m 46 |\u001b[39m       \u001b[90m// In list, height should still be reasonable (avoid ~0-10px strip)\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 47 |\u001b[39m       expect(box\u001b[33m.\u001b[39mheight)\u001b[33m.\u001b[39mtoBeGreaterThan(\u001b[35m60\u001b[39m)\n \u001b[90m    |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 48 |\u001b[39m       expect(box\u001b[33m.\u001b[39mwidth)\u001b[33m.\u001b[39mtoBeGreaterThan(\u001b[35m120\u001b[39m)\n \u001b[90m 49 |\u001b[39m     }\n \u001b[90m 50 |\u001b[39m   })\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shop-visual.spec.ts",
+                            "column": 26,
+                            "line": 47
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m60\u001b[39m\nReceived:   \u001b[31m42\u001b[39m\n\n\u001b[0m \u001b[90m 45 |\u001b[39m     \u001b[36mif\u001b[39m (box) {\n \u001b[90m 46 |\u001b[39m       \u001b[90m// In list, height should still be reasonable (avoid ~0-10px strip)\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 47 |\u001b[39m       expect(box\u001b[33m.\u001b[39mheight)\u001b[33m.\u001b[39mtoBeGreaterThan(\u001b[35m60\u001b[39m)\n \u001b[90m    |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 48 |\u001b[39m       expect(box\u001b[33m.\u001b[39mwidth)\u001b[33m.\u001b[39mtoBeGreaterThan(\u001b[35m120\u001b[39m)\n \u001b[90m 49 |\u001b[39m     }\n \u001b[90m 50 |\u001b[39m   })\u001b[0m\n\u001b[2m    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shop-visual.spec.ts:47:26\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:29.467Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-shop-visual-Shop-produ-cd6da-ot-collapse-to-a-thin-strip-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-shop-visual-Shop-produ-cd6da-ot-collapse-to-a-thin-strip-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-shop-visual-Shop-produ-cd6da-ot-collapse-to-a-thin-strip-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shop-visual.spec.ts",
+                        "column": 26,
+                        "line": 47
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "4b96810853a021ca5437-acc6e4f638a084c88181",
+              "file": "e2e/shop-visual.spec.ts",
+              "line": 34,
+              "column": 7
+            },
+            {
+              "title": "Quick View shows full image",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 13,
+                      "parallelIndex": 3,
+                      "status": "timedOut",
+                      "duration": 45277,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shop-visual.spec.ts",
+                            "column": 30,
+                            "line": 61
+                          },
+                          "message": "Error: locator.click: Test timeout of 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Quick View' })\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none bg-gray-100 text-gray-900 shadow-sm hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600 h-8 px-3 py-1.5 text-sm\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div class=\"flex-1 p-4 flex flex-col\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div data-slot=\"card\" data-testid=\"product-card\" class=\"bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 h-80\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div class=\"flex-1 p-4 flex flex-col\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 100ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <a href=\"/brands\" class=\"text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-md px-2 py-1\">For Brands</a> from <header class=\"sticky top-0 z-40 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm\">…</header> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 100ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\n\n\u001b[0m \u001b[90m 59 |\u001b[39m     \u001b[36mconst\u001b[39m quickViewOverlay \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m'Quick View'\u001b[39m })\n \u001b[90m 60 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m quickViewOverlay\u001b[33m.\u001b[39misVisible()\u001b[33m.\u001b[39m\u001b[36mcatch\u001b[39m(() \u001b[33m=>\u001b[39m \u001b[36mfalse\u001b[39m)) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 61 |\u001b[39m       \u001b[36mawait\u001b[39m quickViewOverlay\u001b[33m.\u001b[39mclick()\n \u001b[90m    |\u001b[39m                              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 62 |\u001b[39m     } \u001b[36melse\u001b[39m {\n \u001b[90m 63 |\u001b[39m       \u001b[90m// Fallback: click the last button inside actions area (has Eye icon)\u001b[39m\n \u001b[90m 64 |\u001b[39m       \u001b[36mconst\u001b[39m actions \u001b[33m=\u001b[39m card\u001b[33m.\u001b[39mlocator(\u001b[32m'button'\u001b[39m)\u001b[0m\n\u001b[2m    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shop-visual.spec.ts:61:30\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:42.511Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-shop-visual-Shop-produ-8b2fc-Quick-View-shows-full-image-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-shop-visual-Shop-produ-8b2fc-Quick-View-shows-full-image-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-shop-visual-Shop-produ-8b2fc-Quick-View-shows-full-image-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "4b96810853a021ca5437-fa6364a28f79847cd863",
+              "file": "e2e/shop-visual.spec.ts",
+              "line": 52,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "e2e\\shops-directory.spec.ts",
+      "file": "e2e/shops-directory.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Influencer shops directory",
+          "file": "e2e/shops-directory.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "renders shop cards with banner/avatar or fallbacks",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 45000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 6,
+                      "status": "failed",
+                      "duration": 14426,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('button', { name: /Visit Shop/i }).first()\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('button', { name: /Visit Shop/i }).first()\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('button', { name: /Visit Shop/i }).first()\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('button', { name: /Visit Shop/i }).first()\u001b[22m\n\n    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shops-directory.spec.ts:15:40",
+                        "location": {
+                          "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shops-directory.spec.ts",
+                          "column": 40,
+                          "line": 15
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 13 |\u001b[39m     \u001b[90m// We expect at least one visible shop card (based on mock/data)\u001b[39m\n \u001b[90m 14 |\u001b[39m     \u001b[36mconst\u001b[39m visitButtons \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/Visit Shop/i\u001b[39m })\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m expect(visitButtons\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 16 |\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[90m// Take the first card area around the first Visit button\u001b[39m\n \u001b[90m 18 |\u001b[39m     \u001b[36mconst\u001b[39m card \u001b[33m=\u001b[39m visitButtons\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mlocator(\u001b[32m'..'\u001b[39m)\u001b[33m.\u001b[39mlocator(\u001b[32m'..'\u001b[39m) \u001b[90m// walk up twice to get card container\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shops-directory.spec.ts",
+                            "column": 40,
+                            "line": 15
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  getByRole('button', { name: /Visit Shop/i }).first()\nExpected: visible\nReceived: <element(s) not found>\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('button', { name: /Visit Shop/i }).first()\u001b[22m\n\n\n\u001b[0m \u001b[90m 13 |\u001b[39m     \u001b[90m// We expect at least one visible shop card (based on mock/data)\u001b[39m\n \u001b[90m 14 |\u001b[39m     \u001b[36mconst\u001b[39m visitButtons \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m'button'\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/Visit Shop/i\u001b[39m })\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 15 |\u001b[39m     \u001b[36mawait\u001b[39m expect(visitButtons\u001b[33m.\u001b[39mfirst())\u001b[33m.\u001b[39mtoBeVisible()\n \u001b[90m    |\u001b[39m                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 16 |\u001b[39m\n \u001b[90m 17 |\u001b[39m     \u001b[90m// Take the first card area around the first Visit button\u001b[39m\n \u001b[90m 18 |\u001b[39m     \u001b[36mconst\u001b[39m card \u001b[33m=\u001b[39m visitButtons\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mlocator(\u001b[32m'..'\u001b[39m)\u001b[33m.\u001b[39mlocator(\u001b[32m'..'\u001b[39m) \u001b[90m// walk up twice to get card container\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shops-directory.spec.ts:15:40\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-09-30T01:24:29.802Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-shops-directory-Influe-bcaea--banner-avatar-or-fallbacks-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-shops-directory-Influe-bcaea--banner-avatar-or-fallbacks-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\test-results\\playwright-artifacts\\e2e-shops-directory-Influe-bcaea--banner-avatar-or-fallbacks-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\tests\\e2e\\shops-directory.spec.ts",
+                        "column": 40,
+                        "line": 15
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "98e76590846a32cc22aa-c6e35b9376d2812825a3",
+              "file": "e2e/shops-directory.spec.ts",
+              "line": 7,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-30T01:23:42.511Z",
+    "duration": 105696.831,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 12,
+    "flaky": 0
+  }
+}

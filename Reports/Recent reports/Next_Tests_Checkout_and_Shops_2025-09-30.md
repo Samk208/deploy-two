@@ -37,10 +37,10 @@ This note summarizes the next Playwright tests to run and supporting commands, b
   - Test (safe reporters, no spaces in paths):
     ```powershell
     New-Item -ItemType Directory -Path "test-results\checkout-reports" -Force | Out-Null
-    pnpm exec playwright test tests/e2e/checkout.spec.ts \
-      --reporter=list \
-      --reporter=json="test-results\checkout-reports\results.json" \
-      --reporter=html="test-results\checkout-reports\playwright-report" \
+    pnpm exec playwright test tests/e2e/checkout.spec.ts `
+      --reporter=list `
+      --reporter=json="test-results\checkout-reports\results.json" `
+      --reporter=html="test-results\checkout-reports\playwright-report" `
       --output="test-results\checkout-reports\playwright-artifacts"
     ```
 

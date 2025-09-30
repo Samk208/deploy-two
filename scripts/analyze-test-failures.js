@@ -3,7 +3,8 @@ const path = require('path');
 
 class TestFailureAnalyzer {
   constructor() {
-    this.resultsFile = 'test-results/results.json';
+    this.resultsFile = process.env.RESULTS_FILE || 'test-results/results.json';
+    this.outputDir = process.env.OUTPUT_DIR || 'test-results';
     this.patterns = {
       timeout: /Test timeout of \d+ms exceeded/,
       connectionRefused: /net::ERR_CONNECTION_REFUSED/,
@@ -124,9 +125,27 @@ class TestFailureAnalyzer {
       slowestTests: [...failures].sort((a, b) => b.duration - a.duration).slice(0, 5)
     };
 
-    fs.mkdirSync('test-results', { recursive: true });
-    fs.writeFileSync('test-analysis-report.json', JSON.stringify(report, null, 2));
-    console.log('\n📝 Detailed report saved to: test-analysis-report.json');
+    fs.mkdirSync(this.outputDir, { recursive: true });
+    const jsonPath = path.join(this.outputDir, 'test-analysis-report.json');
+    const mdPath = path.join(this.outputDir, 'test-analysis-report.md');
+    fs.writeFileSync(jsonPath, JSON.stringify(report, null, 2));
+
+    const md = [
+      '# Test Analysis Report',
+      '',
+      `- **Total failures**: ${report.summary.total}`,
+      `- **Avg failed test duration (ms)**: ${Math.round(report.summary.avgDuration)}`,
+      '',
+      '## Top Errors',
+      ...(report.topErrors.length ? report.topErrors.map(e => `- **[${e.count}]** ${e.error}`) : ['- None']),
+      '',
+      '## Slowest Failed Tests',
+      ...(report.slowestTests.length ? report.slowestTests.map(t => `- **${t.duration}ms** ${t.title} (${t.file})`) : ['- None']),
+      ''
+    ].join('\n');
+    fs.writeFileSync(mdPath, md);
+
+    console.log(`\n📝 Detailed reports saved to:\n- ${jsonPath}\n- ${mdPath}`);
   }
 
   getTopErrors(failures) {

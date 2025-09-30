@@ -62,6 +62,8 @@ const SAMPLE_PASSWORD = (() => {
 })()
 
 if (process.env.SAFE_DEBUG_SEED === 'true') {
+  console.log(`🔓 Sample password: ${SAMPLE_PASSWORD}`)
+} else {
   console.log('🔐 Sample password is set (hidden).')
 }
 

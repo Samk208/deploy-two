@@ -1,0 +1,163 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export interface ProductImageGalleryProps {
+  images: string[];
+  productName: string;
+  layout?: "grid" | "list" | "detail";
+  className?: string;
+}
+
+export function ProductImageGallery({
+  images,
+  productName,
+  layout = "grid",
+  className,
+}: ProductImageGalleryProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const safeImages = Array.isArray(images) && images.length > 0 ? images : ["/placeholder.jpg"]; 
+  const currentImage = safeImages[currentIndex] || "/placeholder.jpg";
+
+  const nextImage = () => {
+    setCurrentIndex((prev) => (prev + 1) % safeImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentIndex((prev) => (prev - 1 + safeImages.length) % safeImages.length);
+  };
+
+  // Card views: optimized for mobile and desktop
+  if (layout === "grid" || layout === "list") {
+    return (
+      <div className={cn("relative group", className)} data-testid="image-container">
+        <div
+          className={cn(
+            "relative overflow-hidden bg-gray-100 w-full shrink-0 rounded-t-lg",
+            layout === "grid" ? "aspect-[4/3]" : "aspect-[3/2] h-32 sm:h-40 lg:h-48"
+          )}
+        >
+          <Image
+            data-testid="product-image"
+            src={currentImage}
+            alt={`${productName} - Image ${currentIndex + 1}`}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            sizes={
+              layout === "grid"
+                ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                : "(max-width: 640px) 100vw, 50vw"
+            }
+            priority={false}
+          />
+
+          {safeImages.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevImage();
+                }}
+                className={cn(
+                  "absolute left-2 top-1/2 -translate-y-1/2",
+                  "bg-white/90 hover:bg-white rounded-full",
+                  "p-2 sm:p-1.5",
+                  "opacity-0 group-hover:opacity-100 transition-opacity",
+                  "touch-manipulation"
+                )}
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="h-5 w-5 sm:h-4 sm:w-4" />
+              </button>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextImage();
+                }}
+                className={cn(
+                  "absolute right-2 top-1/2 -translate-y-1/2",
+                  "bg-white/90 hover:bg-white rounded-full",
+                  "p-2 sm:p-1.5",
+                  "opacity-0 group-hover:opacity-100 transition-opacity",
+                  "touch-manipulation"
+                )}
+                aria-label="Next image"
+              >
+                <ChevronRight className="h-5 w-5 sm:h-4 sm:w-4" />
+              </button>
+            </>
+          )}
+
+          {safeImages.length > 1 && (
+            <div className="absolute bottom-3 sm:bottom-2 left-1/2 -translate-x-1/2 flex gap-2 sm:gap-1.5">
+              {safeImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentIndex(idx);
+                  }}
+                  className={cn(
+                    "rounded-full transition-all touch-manipulation",
+                    "w-2 h-2 sm:w-1.5 sm:h-1.5",
+                    idx === currentIndex ? "bg-white w-6 sm:w-4" : "bg-white/60 active:bg-white/80"
+                  )}
+                  aria-label={`Go to image ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Detail view: gallery with thumbnails (mobile optimized)
+  return (
+    <div className={cn("space-y-3 sm:space-y-4", className)}>
+      <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
+        <Image
+          src={currentImage}
+          alt={`${productName} - Image ${currentIndex + 1}`}
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 50vw"
+          priority
+        />
+        {safeImages.length > 1 && (
+          <div className="absolute top-4 right-4 bg-black/50 text-white text-xs px-2 py-1 rounded">
+            {currentIndex + 1} / {safeImages.length}
+          </div>
+        )}
+      </div>
+
+      {safeImages.length > 1 && (
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex sm:grid sm:grid-cols-4 gap-2 min-w-min">
+            {safeImages.map((img, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                className={cn(
+                  "relative flex-shrink-0 w-20 h-20 sm:w-auto sm:h-auto sm:aspect-square",
+                  "overflow-hidden rounded-md border-2 transition-all",
+                  "touch-manipulation",
+                  idx === currentIndex
+                    ? "border-primary ring-2 ring-primary/20"
+                    : "border-transparent active:border-gray-300"
+                )}
+              >
+                <Image src={img} alt={`${productName} thumbnail ${idx + 1}`} fill className="object-cover" sizes="80px" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

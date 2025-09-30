@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -9,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ProductImageGallery } from "@/components/shop/product-image-gallery"
 
 interface QuickViewModalProps {
   product: any
@@ -18,7 +18,6 @@ interface QuickViewModalProps {
 }
 
 export function QuickViewModal({ product, isOpen, onClose, onAddToCart }: QuickViewModalProps) {
-  const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
 
@@ -44,43 +43,12 @@ export function QuickViewModal({ product, isOpen, onClose, onAddToCart }: QuickV
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Product Images */}
-          <div className="space-y-4">
-            <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
-              <Image
-                src={images[selectedImage] || "/placeholder.jpg"}
-                alt={product.title}
-                fill
-                sizes="(max-width: 768px) 90vw, 50vw"
-                className="object-cover"
-                priority
-              />
-            </div>
-            
-            {images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto">
-                {images.map((image: string, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={cn(
-                      "flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2",
-                      selectedImage === index ? "border-blue-500" : "border-gray-200"
-                    )}
-                  >
-                    <span className="relative block w-16 h-16">
-                      <Image
-                        src={image}
-                        alt={`${product.title} ${index + 1}`}
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                      />
-                    </span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <ProductImageGallery
+            images={images as string[]}
+            productName={product.title}
+            layout="detail"
+            className="md:pr-2"
+          />
 
           {/* Product Details */}
           <div className="space-y-4">

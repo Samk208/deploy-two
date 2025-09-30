@@ -9,7 +9,7 @@ export async function signIn(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const redirectTo = (formData.get("redirectTo") as string) || "/";
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const supabase = await createServerSupabaseClient({ cookies: cookieStore });
 
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -25,7 +25,7 @@ export async function signIn(formData: FormData) {
     .from("profiles")
     .select("role")
     .eq("id", data.user.id)
-    .single<{ role: UserRole }>();
+    .maybeSingle<{ role: UserRole }>();
 
   if (profile?.role === UserRole.ADMIN) {
     return redirect("/admin/dashboard");

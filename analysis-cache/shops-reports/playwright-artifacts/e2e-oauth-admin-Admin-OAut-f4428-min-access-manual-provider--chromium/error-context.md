@@ -1,0 +1,63 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=e6]
+  - main [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e12]:
+        - img "One-Link-Google logo" [ref=e14]
+        - paragraph [ref=e15]:
+          - text: Sign in to
+          - strong [ref=e16]: GitHub
+          - text: to continue to
+          - strong [ref=e17]: One-Link-Google
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - generic [ref=e21]: Username or email address
+            - textbox "Username or email address" [active] [ref=e22]
+          - generic [ref=e23]:
+            - generic [ref=e24]: Password
+            - textbox "Password" [ref=e25]
+            - link "Forgot password?" [ref=e26] [cursor=pointer]:
+              - /url: /password_reset
+          - button "Sign in" [ref=e28] [cursor=pointer]
+        - generic [ref=e29]:
+          - generic [ref=e31]: or
+          - button "Continue with Google" [ref=e33] [cursor=pointer]:
+            - generic [ref=e34] [cursor=pointer]:
+              - generic:
+                - img:
+                  - img
+              - generic [ref=e35] [cursor=pointer]: Continue with Google
+      - generic [ref=e36]:
+        - paragraph [ref=e38]:
+          - text: New to GitHub?
+          - link "Create an account" [ref=e39] [cursor=pointer]:
+            - /url: /join?return_to=%2Flogin%2Foauth%2Fauthorize%3Fclient_id%3DOv23livzr5wXU8qwuyuB%26next%3Dundefined%26redirect_to%3Dhttp%253A%252F%252F127.0.0.1%253A3001%252Fapi%252Fauth%252Fcallback%26redirect_uri%3Dhttps%253A%252F%252Fmqnwtfbdgcuvqvnloidt.supabase.co%252Fauth%252Fv1%252Fcallback%26response_type%3Dcode%26scope%3Duser%253Aemail%26state%3DeyJhbGciOiJIUzI1NiIsImtpZCI6IlJTcmMzeXpDQWRkYjczZ3ciLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE3NTkxOTU3NDMsInNpdGVfdXJsIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwIiwiaWQiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDAiLCJmdW5jdGlvbl9ob29rcyI6bnVsbCwicHJvdmlkZXIiOiJnaXRodWIiLCJyZWZlcnJlciI6Imh0dHA6Ly8xMjcuMC4wLjE6MzAwMS9hcGkvYXV0aC9jYWxsYmFjayIsImZsb3dfc3RhdGVfaWQiOiI0MjU3NWRhNC1iOGJiLTQxZjktYTEzMi1lNTY0Zjk4NDVjYjAifQ.XGiP2MMeuYZRzK18DRpcLhz5ohIPwXDPk99KyAvTUKY&source=oauth
+        - paragraph [ref=e41]:
+          - button "Sign in with a passkey" [ref=e42] [cursor=pointer]:
+            - generic [ref=e44] [cursor=pointer]: Sign in with a passkey
+  - contentinfo [ref=e45]:
+    - list [ref=e46]:
+      - listitem [ref=e47]:
+        - link "Terms" [ref=e48] [cursor=pointer]:
+          - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+      - listitem [ref=e49]:
+        - link "Privacy" [ref=e50] [cursor=pointer]:
+          - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+      - listitem [ref=e51]:
+        - link "Docs" [ref=e52] [cursor=pointer]:
+          - /url: https://docs.github.com
+      - listitem [ref=e53]:
+        - link "Contact GitHub Support" [ref=e54] [cursor=pointer]:
+          - /url: https://support.github.com
+      - listitem [ref=e55]:
+        - button "Manage cookies" [ref=e57] [cursor=pointer]
+      - listitem [ref=e58]:
+        - button "Do not share my personal information" [ref=e60] [cursor=pointer]
+```
