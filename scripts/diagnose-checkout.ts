@@ -85,7 +85,7 @@ async function checkStripeConnectivity() {
   if (!secret) return
 
   console.log('\n🔍 Connecting to Stripe...')
-  const stripe = new Stripe(secret, { apiVersion: '2023-10-16' })
+  const stripe = new Stripe(secret, { apiVersion: '2024-06-20' as any })
   try {
     const account = await stripe.accounts.retrieve()
     addResult('Stripe Connection', 'pass', `Connected to account ${account.id}`)
@@ -102,7 +102,7 @@ async function checkStripeSessionCreation() {
   if (!secret) return
 
   console.log('\n🔍 Creating test Checkout Session via Stripe API...')
-  const stripe = new Stripe(secret, { apiVersion: '2024-06-20' })
+  const stripe = new Stripe(secret, { apiVersion: '2024-06-20' as any })
   const origin = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   try {
     const session = await stripe.checkout.sessions.create({

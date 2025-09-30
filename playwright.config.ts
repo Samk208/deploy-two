@@ -9,8 +9,9 @@ export default defineConfig({
   workers: process.env.CI ? '50%' : undefined,
   reporter: [
     ['list'],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ['html', { outputFolder: 'test-results/playwright-report', open: 'never' }],
+    // Save reports to the requested Windows path with spaces
+    ['json', { outputFile: 'test-results/Shops Reports/New Shop Report/results.json' }],
+    ['html', { outputFolder: 'test-results/Shops Reports/New Shop Report', open: 'never' }],
   ],
   use: {
     baseURL: 'http://127.0.0.1:3001',
@@ -18,7 +19,8 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'off',
   },
-  outputDir: 'test-results/playwright-artifacts',
+  // Artifacts (traces, screenshots, videos)
+  outputDir: 'test-results/Shops Reports/New Shop Report/artifacts',
   projects: [
     {
       name: 'chromium',

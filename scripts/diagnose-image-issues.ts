@@ -282,15 +282,23 @@ function parseNextRemotePatterns() {
 
   const raw = fs.readFileSync(configPath, 'utf8')
 
-  // Naive extraction of known hostnames used in config to compare against DB domains
+  // Use regex-based detection to avoid false positives from comments/strings.
+  // This is heuristic but stricter than raw.includes.
   const allowed: string[] = []
-  if (raw.includes("images.unsplash.com")) allowed.push('images.unsplash.com')
-  if (raw.includes("picsum.photos")) allowed.push('picsum.photos')
+  const unsplashRe = /\bimages\.unsplash\.com\b/;
+  const picsumRe = /\bpicsum\.photos\b/;
+  if (unsplashRe.test(raw)) allowed.push('images.unsplash.com')
+  if (picsumRe.test(raw)) allowed.push('picsum.photos')
 
+  // Non-fatal: if NEXT_PUBLIC_SUPABASE_URL is malformed, log a warning and continue.
   try {
     const supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname
     allowed.push(supabaseHost)
-  } catch {}
+  } catch (e: any) {
+    console.warn(
+      `⚠️  Unable to parse NEXT_PUBLIC_SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL || 'undefined'} - ${e?.message || e}`
+    )
+  }
 
   addResult(
     'Next.js Config',

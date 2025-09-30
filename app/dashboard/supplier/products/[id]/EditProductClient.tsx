@@ -50,6 +50,7 @@ const categories = ["Clothing", "Beauty", "Jewelry", "Home", "Electronics"];
 const regions = ["Global", "KR", "JP", "CN"];
 
 interface ProductFormData {
+  id?: string;
   title: string;
   description: string;
   category: string;

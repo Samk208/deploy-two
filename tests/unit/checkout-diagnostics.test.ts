@@ -1,8 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
-// Module under test
-import * as diag from '../../scripts/checkout-diagnostics';
-
 // Helper to reset env per test
 function setEnv(secret: string | undefined, publishable: string | undefined) {
   if (secret === undefined) delete process.env.STRIPE_SECRET_KEY; else process.env.STRIPE_SECRET_KEY = secret;
@@ -20,21 +17,29 @@ vi.mock('fs', () => {
   } as any;
 });
 
-// Stripe mock: we will override behavior per test by setting spies
-class StripeAccount {
-  retrieve = vi.fn(async () => ({ id: 'acct_123', email: 'acct@example.com', charges_enabled: true }));
-}
-class StripeCheckoutSessions {
-  create = vi.fn(async () => ({ id: 'cs_test_123', url: 'https://checkout.stripe.com/test_123' }));
-  retrieve = vi.fn(async (id: string) => ({ id }));
-}
-class StripeCheckout { sessions = new StripeCheckoutSessions(); }
-class StripeMock {
-  account = new StripeAccount();
-  checkout = new StripeCheckout();
-  constructor(_key: string, _opts: any) {}
-}
-vi.mock('stripe', () => ({ default: StripeMock }));
+// Stripe mock: defined inside factory to avoid hoist issues; expose ctor on global for overrides
+vi.mock('stripe', () => {
+  class StripeAccount {
+    retrieve = vi.fn(async () => ({ id: 'acct_123', email: 'acct@example.com', charges_enabled: true }));
+  }
+  class StripeCheckoutSessions {
+    create = vi.fn(async () => ({ id: 'cs_test_123', url: 'https://checkout.stripe.com/test_123' }));
+    retrieve = vi.fn(async (id: string) => ({ id }));
+  }
+  class StripeCheckout { sessions = new StripeCheckoutSessions(); }
+  class StripeMock {
+    account = new StripeAccount();
+    checkout = new StripeCheckout();
+    constructor(_key: string, _opts: any) {}
+  }
+  const StripeCtor = vi.fn().mockImplementation((key: string, opts: any) => new StripeMock(key, opts));
+  ;(globalThis as any).__StripeCtor = StripeCtor;
+  ;(globalThis as any).__StripeMock = StripeMock;
+  return { default: StripeCtor };
+});
+
+// Module under test (import AFTER mocks are defined)
+import * as diag from '../../scripts/checkout-diagnostics';
 
 // Global fetch mock; overridden in tests as needed
 const defaultFetch = vi.fn(async (input: RequestInfo | URL) => {
@@ -123,10 +128,11 @@ describe('checkout-diagnostics', () => {
     });
 
     it('passes and warns based on account flags', async () => {
-      const mock = new StripeMock('sk_test_abc', {});
-      mock.account.retrieve = vi.fn(async () => ({ id: 'acct_1', charges_enabled: false }));
-      // swap constructor behavior for this test
-      (StripeMock as any).mockImplementationOnce?.(() => mock);
+      const StripeCtor = (global as any).__StripeCtor as any;
+      const StripeMockClass = (global as any).__StripeMock as any;
+      const mock = new StripeMockClass('sk_test_abc', {});
+      mock.account.retrieve = vi.fn(async () => ({ id: 'acct_1', email: 'acct@example.com', charges_enabled: false }));
+      StripeCtor.mockImplementationOnce((_k: string, _o: any) => mock);
       const ok = await diag.testStripeConnection();
       expect(ok).toBe(true);
       expect(diag.results.find(r => r.step === 'Stripe Connection')?.status).toBe('pass');
@@ -264,7 +270,7 @@ describe('checkout-diagnostics', () => {
       fsState[repo('app/checkout/page.tsx')] = '';
       fsState[repo('app/checkout/success/page.tsx')] = 'const session_id = "x";';
       fsState[repo('components/shop/checkout-page.tsx')] = 'const k = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY; try{}catch(e){} const loading = true; window.location.href = "";';
-      fsState[repo('lib/store/cart.ts')] = 'import { create } from "zustand"; export const s = create({ items: [] });';
+      fsState[repo('lib/stores/cart.ts')] = 'import { create } from "zustand"; export const s = create({ items: [] });';
 
       const res = await diag.runAllDiagnostics();
       expect(res.success).toBe(true);
