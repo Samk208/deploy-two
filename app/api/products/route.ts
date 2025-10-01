@@ -1,87 +1,107 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { ensureTypedClient } from '@/lib/supabase/types'
-import { supabaseAdmin } from '@/lib/supabase/admin'
-import { getCurrentUser, hasRole } from '@/lib/auth-helpers'
-import { UserRole, type ApiResponse } from '@/lib/types'
-import { QueryData } from '@supabase/supabase-js'
-export const runtime = 'nodejs'
+import { getCurrentUser, hasRole } from "@/lib/auth-helpers";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { ensureTypedClient } from "@/lib/supabase/types";
+import { UserRole } from "@/lib/types";
+import { NextRequest, NextResponse } from "next/server";
+export const runtime = "nodejs";
 
+// Unified products listing API, supporting both public shop and supplier/admin lists.
+// Backward-compatible response keys are included.
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const category = searchParams.get('category')
-    const search = searchParams.get('search')
-    const supplierId = searchParams.get('supplierId')
-    const limit = parseInt(searchParams.get('limit') || '12')
-    const page = parseInt(searchParams.get('page') || '1')
-    const adminAccess = searchParams.get('admin') === 'true'
+    const url = new URL(request.url);
+    const page = Math.max(1, parseInt(url.searchParams.get("page") || "1"));
+    const pageSizeParam =
+      url.searchParams.get("pageSize") || url.searchParams.get("limit") || "12";
+    const pageSize = Math.min(100, Math.max(1, parseInt(pageSizeParam)));
+    const owner = url.searchParams.get("owner"); // 'supplier' | 'admin' | null
+    const region =
+      url.searchParams.get("region") || url.searchParams.get("regions") || "";
+    const q = (
+      url.searchParams.get("q") ||
+      url.searchParams.get("search") ||
+      ""
+    ).trim();
+    const category = url.searchParams.get("category") || "";
 
-    const offset = (page - 1) * limit
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
 
-    // Create base query with proper client selection
-    const baseClient = adminAccess ? supabaseAdmin : await createServerSupabaseClient(request)
-    const supabase = ensureTypedClient(baseClient)
-    
-    // Build query with all base filters
-    // Note: Avoid joining to users/profiles here to be resilient when FK metadata differs across environments.
-    let query = supabase
-      .from('products')
-      .select('*', { count: 'exact' })
-      .eq('active', true)
-      .or('in_stock.eq.true,stock_count.gt.0')
-      .order('created_at', { ascending: false })
+    const supabase = ensureTypedClient(
+      await createServerSupabaseClient(request)
+    );
 
-    // Apply optional filters
-    if (category) {
-      query = query.eq('category', category)
+    // Base query
+    let query = supabase.from("products").select("*", { count: "exact" });
+
+    // Visibility rules:
+    // - Public (no owner): only active and in-stock products for the shop
+    // - Supplier/Admin views: show all products for the owner
+    const user = await getCurrentUser(supabase).catch(() => null);
+    if (!owner) {
+      query = query.eq("active", true).or("in_stock.eq.true,stock_count.gt.0");
+    } else if (owner === "supplier") {
+      if (!user) {
+        return NextResponse.json(
+          { ok: false, message: "Unauthenticated" },
+          { status: 401 }
+        );
+      }
+      // Suppliers see only their own products
+      query = query.eq("supplier_id", user.id);
+    } else if (owner === "admin") {
+      if (!user || !hasRole(user, [UserRole.ADMIN])) {
+        return NextResponse.json(
+          { ok: false, message: "Admin required" },
+          { status: 403 }
+        );
+      }
+      // Admin sees everything (no additional filter)
     }
-    if (supplierId) {
-      query = query.eq('supplier_id', supplierId)
+
+    if (category) query = query.eq("category", category);
+    if (region && region !== "ALL") {
+      // Region is stored as array; use overlaps to match any
+      query = query.overlaps("region", [region]);
     }
-    if (search) {
-      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,tags.cs.{${search}}`)
+    if (q) {
+      // Search by title, description, or sku
+      query = query.or(
+        `title.ilike.%${q}%,description.ilike.%${q}%,sku.ilike.%${q}%`
+      );
     }
 
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1)
+    query = query.order("created_at", { ascending: false }).range(from, to);
 
-    // Execute query and get results
-    const { data, error, count } = await query
-    // Temporary debug log with safe details
-    console.log('DBG_products', { hasError: !!error, len: data?.length, count })
-
-    // Handle errors with early return
+    const { data, error, count } = await query;
     if (error) {
-      console.error('Database error in /api/products:', {
-        message: error.message,
-        details: (error as any)?.details,
-        hint: (error as any)?.hint,
-        code: (error as any)?.code,
-      })
+      console.error("Products API error:", error);
       return NextResponse.json(
-        { error: 'Failed to fetch products' },
+        { ok: false, message: "Failed to fetch products" },
         { status: 500 }
-      )
+      );
     }
 
-    // Infer product type from query
-    type ProductRow = QueryData<typeof query>[number]
-
-    // Return successful response
-    return NextResponse.json({
+    // Backward compatibility fields for existing clients
+    const resp = {
+      ok: true,
+      data: data || [],
+      total: count || 0,
+      page,
+      pageSize,
+      // legacy keys
       products: data || [],
       totalCount: count || 0,
-      hasMore: data?.length === limit && (offset + limit) < (count || 0),
-      page,
-      limit
-    })
-
+      hasMore:
+        (data?.length || 0) === pageSize && from + pageSize < (count || 0),
+      limit: pageSize,
+    };
+    return NextResponse.json(resp);
   } catch (error) {
-    console.error('API Route Error:', error)
+    console.error("API /api/products failure:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch products' },
+      { ok: false, message: "Failed to fetch products" },
       { status: 500 }
-    )
+    );
   }
 }

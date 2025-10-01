@@ -21,7 +21,31 @@ export async function POST(request: NextRequest) {
     } catch (_) {}
 
     const body = await request.json();
-    console.log("[checkout] request body:", JSON.stringify(body, null, 2));
+    const isDev = process.env.NODE_ENV !== "production";
+    if (isDev) {
+      console.log(
+        "[checkout] request body (dev):",
+        JSON.stringify(body, null, 2)
+      );
+    } else {
+      try {
+        const itemsCount = Array.isArray((body as any)?.items)
+          ? (body as any).items.length
+          : 0;
+        const productIds = Array.isArray((body as any)?.items)
+          ? (body as any).items
+              .map((i: any) => i?.productId)
+              .filter(Boolean)
+              .slice(0, 10)
+          : [];
+        console.log("[checkout] request metadata (redacted):", {
+          itemsCount,
+          productIds,
+          hasShippingAddress: Boolean((body as any)?.shippingAddress),
+          hasBillingAddress: Boolean((body as any)?.billingAddress),
+        });
+      } catch (_) {}
+    }
     const validation = checkoutSchema.safeParse(body);
 
     if (!validation.success) {
@@ -39,15 +63,7 @@ export async function POST(request: NextRequest) {
     const { items, shippingAddress, billingAddress } = validation.data;
     console.log("[checkout] received items:", JSON.stringify(items));
 
-    // Validate Stripe configuration
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    if (!stripeKey) {
-      console.error("MISSING: STRIPE_SECRET_KEY");
-      return NextResponse.json(
-        { ok: false, message: "Stripe not configured" },
-        { status: 500 }
-      );
-    }
+    // Stripe configuration is validated via getStripe() below
 
     // Validate auth (if required for checkout)
     if (!user) {
@@ -58,6 +74,16 @@ export async function POST(request: NextRequest) {
       );
     }
     console.log("[checkout] user:", user.id);
+
+    // Initialize Stripe after cheap checks (auth + validation), before DB work
+    const stripe = getStripe();
+    if (!stripe) {
+      console.error("[checkout] Stripe initialization failed");
+      return NextResponse.json(
+        { ok: false, message: "Stripe not configured" },
+        { status: 500 }
+      );
+    }
 
     // Fetch product details and calculate total
     const productIds = items.map((item) => item.productId);
@@ -330,6 +356,45 @@ export async function POST(request: NextRequest) {
     // Create Stripe Checkout Session
     const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
 
+    // Build safe, size-limited metadata for Stripe (each value must be <= 500 chars)
+    const orderSummaryMinimal = {
+      items: orderItems.map((i) => ({
+        productId: i.productId,
+        quantity: i.quantity,
+      })),
+      total,
+    };
+    const encodeMax = (obj: any, maxLen = 450) => {
+      try {
+        const s = JSON.stringify(obj);
+        if (s.length <= maxLen) return s;
+      } catch {}
+      // Fallback with further reduction
+      const reduced = {
+        itemCount: Array.isArray((obj as any)?.items)
+          ? (obj as any).items.length
+          : undefined,
+        total: (obj as any)?.total,
+        productIds: Array.isArray((obj as any)?.items)
+          ? (obj as any).items
+              .map((x: any) => x.productId)
+              .filter(Boolean)
+              .slice(0, 50)
+          : undefined,
+      };
+      try {
+        const s2 = JSON.stringify(reduced);
+        if (s2.length <= maxLen) return s2;
+      } catch {}
+      return JSON.stringify({
+        itemCount: reduced.itemCount,
+        total: reduced.total,
+      });
+    };
+    const customPricesStrRaw = JSON.stringify(customPrices);
+    const customPricesStr =
+      customPricesStrRaw.length <= 450 ? customPricesStrRaw : undefined;
+
     const sessionPayload: any = {
       payment_method_types: ["card"],
       line_items: lineItems,
@@ -340,19 +405,12 @@ export async function POST(request: NextRequest) {
       ...(user?.email ? { customer_email: user.email } : {}),
       metadata: {
         ...(user?.id ? { userId: user.id } : {}),
-        orderData: JSON.stringify({
-          items: orderItems,
-          total,
-          shippingAddress,
-          billingAddress,
-        }),
+        order_summary: encodeMax(orderSummaryMinimal),
         // Optional influencer and pricing audit context (consumed by webhook)
         ...(influencerIdForMetadata
           ? { influencer_id: influencerIdForMetadata }
           : {}),
-        ...(Object.keys(customPrices).length
-          ? { custom_prices: JSON.stringify(customPrices) }
-          : {}),
+        ...(customPricesStr ? { custom_prices: customPricesStr } : {}),
       },
       shipping_address_collection: {
         allowed_countries: ["US", "CA", "GB", "AU", "JP", "KR"],
@@ -363,14 +421,6 @@ export async function POST(request: NextRequest) {
       hasInfluencer: Boolean(influencerIdForMetadata),
       origin,
     });
-    const stripe = getStripe();
-    if (!stripe) {
-      console.error("[checkout] Stripe initialization failed");
-      return NextResponse.json(
-        { ok: false, message: "Stripe not configured" },
-        { status: 500 }
-      );
-    }
     const session = await stripe.checkout.sessions.create(sessionPayload);
     console.log("[checkout] session created:", session.id);
 
@@ -384,10 +434,14 @@ export async function POST(request: NextRequest) {
     } as ApiResponse);
   } catch (error) {
     console.error("=== CHECKOUT ERROR ===");
-    console.error("Error type:", (error as any)?.constructor?.name);
-    console.error("Error message:", (error as any)?.message);
-    console.error("Error stack:", (error as any)?.stack);
     const allowDetails = process.env.ALLOW_ERROR_DETAILS === "true";
+    if (allowDetails) {
+      console.error("Error type:", (error as any)?.constructor?.name);
+      console.error("Error message:", (error as any)?.message);
+      console.error("Error stack:", (error as any)?.stack);
+    } else {
+      console.error("[checkout] error");
+    }
     const err: any = error;
     const details: Record<string, any> = {
       name: err?.name,

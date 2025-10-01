@@ -1,6 +1,5 @@
-'use client'
+"use client";
 
-import * as React from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -12,8 +11,11 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from '@tanstack/react-table'
+} from "@tanstack/react-table";
+import * as React from "react";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -21,16 +23,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+} from "@/components/ui/table";
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-  onView?: (data: TData) => void
-  onEdit?: (data: TData) => void
-  onDelete?: (data: TData) => void
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  onView?: (data: TData) => void;
+  onEdit?: (data: TData) => void;
+  onDelete?: (data: TData) => void;
+  // Server-driven options (optional)
+  isServerMode?: boolean;
+  page?: number;
+  pageCount?: number;
+  onPageChange?: (nextPage: number) => void;
+  hideQuickFilter?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -38,11 +44,19 @@ export function DataTable<TData, TValue>({
   data,
   onView,
   onEdit,
-  onDelete
+  onDelete,
+  isServerMode = false,
+  page = 1,
+  pageCount,
+  onPageChange,
+  hideQuickFilter = false,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
 
   const table = useReactTable({
     data,
@@ -59,20 +73,22 @@ export function DataTable<TData, TValue>({
       columnFilters,
       columnVisibility,
     },
-  })
+  });
 
   return (
     <div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter by product title..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div>
+      {!hideQuickFilter && (
+        <div className="flex items-center py-4">
+          <Input
+            placeholder="Filter by product title..."
+            value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("title")?.setFilterValue(event.target.value)
+            }
+            className="max-w-sm"
+          />
+        </div>
+      )}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -88,7 +104,7 @@ export function DataTable<TData, TValue>({
                             header.getContext()
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -98,18 +114,24 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
+                  data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -121,20 +143,32 @@ export function DataTable<TData, TValue>({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
+          onClick={() =>
+            isServerMode
+              ? onPageChange?.(Math.max(1, page - 1))
+              : table.previousPage()
+          }
+          disabled={isServerMode ? page <= 1 : !table.getCanPreviousPage()}
         >
           Previous
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
+          onClick={() =>
+            isServerMode ? onPageChange?.(page + 1) : table.nextPage()
+          }
+          disabled={
+            isServerMode
+              ? pageCount != null
+                ? page >= pageCount
+                : false
+              : !table.getCanNextPage()
+          }
         >
           Next
         </Button>
       </div>
     </div>
-  )
+  );
 }

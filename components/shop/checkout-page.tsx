@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/auth-context";
 import { useCartStore } from "@/lib/store/cart";
+import { createClientSupabaseClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { loadStripe } from "@stripe/stripe-js";
 import {
@@ -51,6 +52,7 @@ interface CheckoutFormData {
 export function CheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const supabase = createClientSupabaseClient();
   const {
     items,
     getTotalItems,
@@ -77,6 +79,8 @@ export function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("stripe");
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [isAuthed, setIsAuthed] = useState(false);
 
   // Redirect if cart is empty
   useEffect(() => {
@@ -84,6 +88,31 @@ export function CheckoutPage() {
       router.push("/shop");
     }
   }, [items.length, router]);
+
+  // Ensure user is authenticated before allowing checkout
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (!mounted) return;
+        if (error || !data?.user) {
+          // Redirect to sign-in with return URL
+          router.push(`/sign-in?redirect=/checkout`);
+          return;
+        }
+        setIsAuthed(true);
+      } catch (_) {
+        // On unexpected error, fail safe to sign-in
+        router.push(`/sign-in?redirect=/checkout`);
+      } finally {
+        if (mounted) setIsAuthChecking(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [router, supabase]);
 
   const isValidEmail = (email: string): boolean => {
     // Disallow consecutive dots and leading/trailing dot in local part
@@ -133,6 +162,16 @@ export function CheckoutPage() {
   };
 
   const handleCheckout = async () => {
+    // Double-check auth prior to calling API
+    if (!isAuthed) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to continue",
+        variant: "destructive",
+      });
+      router.push("/sign-in?redirect=/checkout");
+      return;
+    }
     if (!validateForm()) {
       toast.error("Please fill in all required fields");
       return;
@@ -280,6 +319,19 @@ export function CheckoutPage() {
 
   const outOfStockItems = items.filter((item) => item.maxQuantity === 0);
   const inStockItems = items.filter((item) => item.maxQuantity > 0);
+
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardContent className="pt-6 text-center">
+            <h2 className="text-xl font-semibold mb-2">Loading</h2>
+            <p className="text-gray-600">Checking your session…</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (

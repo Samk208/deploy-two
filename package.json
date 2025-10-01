@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "scripts": {
+    "pre-e2e": "node scripts/prepare-e2e-report.mjs",
     "check:env": "cross-env DOTENV_CONFIG_PATH=.env.local node -r dotenv/config scripts/check-env.mjs",
     "db:health": "cross-env DOTENV_CONFIG_PATH=.env.local node -r dotenv/config scripts/supabase-health.mjs",
     "build": "next build",
@@ -32,6 +33,7 @@
     "brand:extract": "node scripts/extract-brand-palette.mjs",
     "brand:extract:url": "node scripts/extract-brand-palette.mjs --url=http://localhost:3000",
     "admin:set-password": "node scripts/set-admin-password.mjs",
+    "user:set-password": "node scripts/set-password.mjs",
     "analyze-failures": "node scripts/analyze-test-failures.js",
     "diagnose:images": "cross-env DOTENV_CONFIG_PATH=.env.local tsx scripts/diagnose-image-issues.ts",
     "diagnose:checkout": "cross-env DOTENV_CONFIG_PATH=.env.local tsx scripts/diagnose-checkout.ts"

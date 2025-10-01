@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { getProducts } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth-context";
-import { PaginatedResponse, Product } from "@/lib/types";
+import { Product } from "@/lib/types";
 import { Download, PlusCircle, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,34 +34,27 @@ export default function SupplierProductsPage() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState<number>(1);
+  const [pageCount, setPageCount] = useState<number>(1);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showExportDrawer, setShowExportDrawer] = useState(false);
-  const [regionFilter, setRegionFilter] = useState<string>("");
+  const [regionFilter, setRegionFilter] = useState<string>("ALL");
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (nextPage: number = 1) => {
     setIsLoading(true);
     try {
-      const url = new URL("/api/products", window.location.origin);
-      url.searchParams.set("owner", "supplier");
-      if (regionFilter) url.searchParams.set("region", regionFilter);
-      const response = await fetch(url.toString());
-
-      if (response.status === 401 || response.status === 403) {
-        router.push("/sign-in");
-        toast({
-          title: "Unauthorized",
-          description: "You do not have permission to access this page.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch products");
-      }
-
-      const result: PaginatedResponse<Product> = await response.json();
-      setProducts(result.data || []);
+      const resp = await getProducts<Product>({
+        owner: "supplier",
+        page: nextPage,
+        pageSize: 10,
+        region: regionFilter !== "ALL" ? regionFilter : undefined,
+      });
+      const data = (resp as any).data || (resp as any).products || [];
+      setProducts(data);
+      setPage(nextPage);
+      const total = (resp as any).total ?? (resp as any).totalCount ?? 0;
+      const size = resp.pageSize ?? 10;
+      setPageCount(Math.max(1, Math.ceil(total / size)));
     } catch (error) {
       console.error(error);
       toast({
@@ -96,14 +90,14 @@ export default function SupplierProductsPage() {
   };
 
   const handleImportSuccess = () => {
-    fetchProducts();
+    fetchProducts(page);
     setShowImportDialog(false);
     toast({ title: "Success", description: "Products imported successfully." });
   };
 
   useEffect(() => {
     if (!isAuthLoading && user?.role === "supplier") {
-      fetchProducts();
+      fetchProducts(1);
     }
   }, [isAuthLoading, user, regionFilter]);
 
@@ -137,7 +131,7 @@ export default function SupplierProductsPage() {
               <SelectValue placeholder="All Regions" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Regions</SelectItem>
+              <SelectItem value="ALL">All Regions</SelectItem>
               <SelectItem value="KR">KR</SelectItem>
               <SelectItem value="JP">JP</SelectItem>
               <SelectItem value="CN">CN</SelectItem>
@@ -146,7 +140,7 @@ export default function SupplierProductsPage() {
           </Select>
           <Button
             variant="outline"
-            onClick={fetchProducts}
+            onClick={() => fetchProducts(1)}
             data-testid="apply-filters"
           >
             Apply
@@ -168,7 +162,14 @@ export default function SupplierProductsPage() {
         </div>
       </div>
 
-      <DataTable columns={columns} data={products} />
+      <DataTable
+        columns={columns}
+        data={products}
+        isServerMode
+        page={page}
+        pageCount={pageCount}
+        onPageChange={(p) => fetchProducts(p)}
+      />
 
       {/* Import Dialog */}
       <ImportProductsDialog
