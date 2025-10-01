@@ -29,7 +29,28 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 // Mock influencer shops data (fallback if API not available)
-const mockShops = [
+export interface Shop {
+  id: string;
+  handle: string;
+  name: string;
+  bio: string;
+  avatar: string;
+  banner: string;
+  followers: string; // human-readable like "125K", "1.2M", "999"
+  verified: boolean;
+  category: string;
+  rating: number;
+  totalProducts: number;
+  totalSales: number;
+  badges: string[];
+  socialLinks: {
+    instagram?: string;
+    twitter?: string;
+    youtube?: string;
+  };
+}
+
+const mockShops: Shop[] = [
   {
     id: "1",
     handle: "sarah_style",
@@ -165,92 +186,25 @@ const sortOptions = [
   { value: "products", label: "Most Products" },
 ];
 
-export default function ShopsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [sortBy, setSortBy] = useState("popular");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [shops, setShops] = useState<any[]>(mockShops);
-  const [loading, setLoading] = useState(true);
+// Robust followers parser: supports K, M, B, decimals, or plain numbers
+function parseFollowers(value: string): number {
+  if (!value) return 0;
+  const trimmed = String(value).trim();
+  const match = trimmed.match(/^\s*([0-9]+(?:\.[0-9]+)?)\s*([kKmMbB])?\s*$/);
+  if (!match) {
+    // Try plain integer fallback
+    const fallback = Number(trimmed.replace(/[,\s]/g, ""));
+    return Number.isFinite(fallback) ? fallback : 0;
+  }
+  const num = parseFloat(match[1]);
+  const suffix = match[2]?.toUpperCase();
+  const multiplier = suffix === "K" ? 1e3 : suffix === "M" ? 1e6 : suffix === "B" ? 1e9 : 1;
+  const result = num * multiplier;
+  return Number.isFinite(result) ? result : 0;
+}
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const res = await fetch("/api/shops/directory", { cache: "no-store" });
-        if (!res.ok) throw new Error("Failed to load directory");
-        const json = await res.json();
-        const list = json?.data?.shops;
-        if (!cancelled && Array.isArray(list) && list.length > 0) {
-          // Map API shape to UI expected fields (keep banner/avatar optional)
-          setShops(
-            list.map((s: any) => ({
-              id: s.id,
-              handle: s.handle,
-              name: s.name,
-              bio: s.description || "",
-              avatar: s.influencer_avatar || "/brand-manager-avatar.png",
-              banner: s.banner || "/fashion-banner.png",
-              followers: s.followers_count ? String(s.followers_count) : "0",
-              verified: !!s.verified,
-              category: s.categories?.[0] || "General",
-              rating: 4.8,
-              totalProducts: s.product_count || 0,
-              totalSales: 0,
-              badges: s.verified ? ["Verified"] : [],
-              socialLinks: {},
-            }))
-          );
-        }
-      } catch (e) {
-        // Keep mock data on failure
-        console.warn(
-          "Using mock shops; directory API unavailable.",
-          (e as any)?.message || e
-        );
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Filter and sort shops
-  const filteredShops = useMemo(() => {
-    const filtered = shops.filter((shop) => {
-      const matchesSearch =
-        shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        shop.handle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        shop.bio.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "All" || shop.category === selectedCategory;
-
-      return matchesSearch && matchesCategory;
-    });
-
-    // Sort shops
-    switch (sortBy) {
-      case "newest":
-        return filtered.sort((a, b) => b.id.localeCompare(a.id));
-      case "followers":
-        return filtered.sort(
-          (a, b) =>
-            parseInt(b.followers.replace("K", "")) -
-            parseInt(a.followers.replace("K", ""))
-        );
-      case "rating":
-        return filtered.sort((a, b) => b.rating - a.rating);
-      case "products":
-        return filtered.sort((a, b) => b.totalProducts - a.totalProducts);
-      default:
-        return filtered.sort((a, b) => b.totalSales - a.totalSales);
-    }
-  }, [shops, searchQuery, selectedCategory, sortBy]);
-
-  const ShopCard = ({ shop }: { shop: (typeof mockShops)[0] }) => (
+function ShopCard({ shop }: { shop: Shop }) {
+  return (
     <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300">
       <div className="relative h-32 overflow-hidden">
         <ProductImage
@@ -372,6 +326,90 @@ export default function ShopsPage() {
       </CardContent>
     </Card>
   );
+}
+
+export default function ShopsPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("popular");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [shops, setShops] = useState<Shop[]>(mockShops);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch("/api/shops/directory", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to load directory");
+        const json = await res.json();
+        const list = json?.data?.shops;
+        if (!cancelled && Array.isArray(list) && list.length > 0) {
+          // Map API shape to UI expected fields (keep banner/avatar optional)
+          setShops(
+            list.map((s: any): Shop => ({
+              id: s.id,
+              handle: s.handle,
+              name: s.name,
+              bio: s.description || "",
+              avatar: s.influencer_avatar || "/brand-manager-avatar.png",
+              banner: s.banner || "/fashion-banner.png",
+              followers: s.followers_count ? String(s.followers_count) : "0",
+              verified: !!s.verified,
+              category: s.categories?.[0] || "General",
+              rating: 4.8,
+              totalProducts: s.product_count || 0,
+              totalSales: 0,
+              badges: s.verified ? ["Verified"] : [],
+              socialLinks: {},
+            }))
+          );
+        }
+      } catch (e) {
+        // Keep mock data on failure
+        console.warn(
+          "Using mock shops; directory API unavailable.",
+          (e as any)?.message || e
+        );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Filter and sort shops
+  const filteredShops = useMemo(() => {
+    const filtered = shops.filter((shop) => {
+      const matchesSearch =
+        shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        shop.handle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        shop.bio.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "All" || shop.category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    });
+
+    // Sort shops
+    switch (sortBy) {
+      case "newest":
+        return filtered.sort((a, b) => b.id.localeCompare(a.id));
+      case "followers":
+        return filtered.sort(
+          (a, b) => parseFollowers(b.followers) - parseFollowers(a.followers)
+        );
+      case "rating":
+        return filtered.sort((a, b) => b.rating - a.rating);
+      case "products":
+        return filtered.sort((a, b) => b.totalProducts - a.totalProducts);
+      default:
+        return filtered.sort((a, b) => b.totalSales - a.totalSales);
+    }
+  }, [shops, searchQuery, selectedCategory, sortBy]);
 
   return (
     <div className="min-h-screen bg-gray-50">

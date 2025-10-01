@@ -229,8 +229,8 @@ export function CheckoutPage() {
         data = txt ? { ok: false, message: txt } : null;
       }
 
-      if (!(data && data.ok === true)) {
-        const msg = (data && data.message) || "Checkout failed";
+      if (!(data && data.ok === true && data.data && data.data.sessionId)) {
+        const msg = (data && data.message) || "Checkout failed: invalid response";
         throw new Error(msg);
       }
 

@@ -74,39 +74,50 @@ export default function EnhancedShopPage() {
     }
   }, []);
 
-  // Fetch all products, not just in_stock ones to see what we have
-  const fetchProducts = useCallback(async () => {
+  // Paginated fetch with explicit columns
+  const pageSize = 24;
+  const fetchProducts = useCallback(async (page: number = 1) => {
     try {
       setLoading(true);
       const { supabase } = await import("@/lib/supabase/client");
 
-      // Fetch ALL products to see what's in database
+      const start = (page - 1) * pageSize;
+      const end = start + pageSize - 1;
+
       const { data, error, count } = await supabase
         .from("products")
-        .select("*", { count: "exact" })
-        .order("created_at", { ascending: false });
+        .select(
+          "id,title,description,price,original_price,images,category,tags,stock_count,in_stock,active,supplier_id,created_at",
+          { count: "exact" }
+        )
+        .order("created_at", { ascending: false })
+        .range(start, end);
 
       if (error) throw error;
 
-      console.log("All products from database:", data);
-      console.log("Total count:", count);
-
-      setProducts(data || []);
-      setTotalCount(count || 0);
-      setHasMore(false); // For now, load all at once
+      setProducts((prev) =>
+        page === 1 ? data || [] : [...prev, ...(data || [])]
+      );
+      const total = count || 0;
+      setTotalCount(total);
+      const reachedEnd = end + 1 >= total || (data?.length || 0) < pageSize;
+      setHasMore(!reachedEnd);
     } catch (err) {
       console.error("Direct fetch error:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch products");
-      setProducts([]);
-      setTotalCount(0);
+      if (page === 1) {
+        setProducts([]);
+        setTotalCount(0);
+        setHasMore(false);
+      }
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]); // run on mount, and whenever fetch function ref changes
+    fetchProducts(1);
+  }, [fetchProducts]);
 
   // Transform products to match ProductCard interface
   const transformProduct = (product: any) => {
@@ -155,11 +166,20 @@ export default function EnhancedShopPage() {
 
   const transformedProducts = products.map(transformProduct);
 
-  // Add to cart function
+  // Add to cart function with strict stock handling
   const addToCart = (product: any) => {
+    const maxQuantity =
+      Number.isInteger(product.stock_count) && product.stock_count > 0
+        ? product.stock_count
+        : 0;
+    if (maxQuantity === 0) {
+      toast.error("This item is currently out of stock.");
+      return;
+    }
+
     const cartItem: Omit<CartItem, "quantity"> & { quantity?: number } = {
       id: product.id,
-      title: product.title, // Fixed: was 'name', should be 'title'
+      title: product.title,
       price: product.price,
       originalPrice: product.original_price,
       image: product.images?.[0] || "/placeholder.svg",
@@ -167,8 +187,8 @@ export default function EnhancedShopPage() {
       supplierId: product.supplier_id || "",
       supplierName: product.supplier?.name || "Unknown Supplier",
       supplierVerified: product.supplier?.verified || false,
-      maxQuantity: product.stock_count || 10,
-      quantity: 1,
+      maxQuantity,
+      quantity: maxQuantity > 0 ? 1 : 0,
     };
 
     addItem(cartItem);
@@ -181,7 +201,8 @@ export default function EnhancedShopPage() {
   };
 
   const handleLoadMore = () => {
-    console.log("Load more clicked");
+    const nextPage = Math.ceil(products.length / pageSize) + 1;
+    fetchProducts(nextPage);
   };
 
   const refetch = () => {

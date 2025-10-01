@@ -29,6 +29,19 @@ jobs:
         env:
           # Provide required envs or use defaults from .env.local if repository includes it
           NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+          # Supabase public keys (publishable on client)
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          # Supabase service role for admin operations used in tests/global-setup
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Optional: database URL if your app uses direct DB access in CI utilities
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Stripe keys for checkout flows in tests
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          # App URLs used by API logic
+          NEXT_PUBLIC_APP_URL: http://127.0.0.1:3001
+          # Any other app-specific runtime secrets can be added similarly
         run: pnpm test:e2e
       - name: Upload HTML report
         if: always()

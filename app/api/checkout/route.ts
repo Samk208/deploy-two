@@ -45,9 +45,19 @@ export async function POST(request: NextRequest) {
       console.error("[checkout] productsError:", productsError);
     }
     if (!products || products.length === 0) {
-      console.warn(
-        "[checkout] No products found by IDs. Proceeding with client-provided items for dev/testing."
-      );
+      const msg = "No products found for requested IDs";
+      if (process.env.NODE_ENV === "development") {
+        console.warn(
+          "[checkout] DEV ONLY: " +
+            msg +
+            ". Using client-provided items for dev/testing."
+        );
+      } else {
+        console.error(
+          "[checkout] " + msg + " - failing fast in non-development environment"
+        );
+        return NextResponse.json({ ok: false, message: msg }, { status: 400 });
+      }
     }
 
     // Calculate total and prepare line items
@@ -73,7 +83,10 @@ export async function POST(request: NextRequest) {
         // Development/test-only: build a guarded fallback with explicit flag
         console.warn(
           "[checkout] DEV FALLBACK: using client-provided item due to missing DB product",
-          { productId: anyItem.productId, reason: productsError ? "productsError" : "not found" }
+          {
+            productId: anyItem.productId,
+            reason: productsError ? "productsError" : "not found",
+          }
         );
         product = {
           id: anyItem.productId,
@@ -94,9 +107,14 @@ export async function POST(request: NextRequest) {
           fallback: true,
         } as any;
         // Minimal validations even in fallback
-        const supplierOk = typeof product.supplier_id === "string" && product.supplier_id.trim().length > 0;
+        const supplierOk =
+          typeof product.supplier_id === "string" &&
+          product.supplier_id.trim().length > 0;
         const priceOk = typeof product.price === "number" && product.price >= 0;
-        const stockOk = typeof product.stock_count === "number" && product.stock_count >= 0 && product.stock_count <= 1000;
+        const stockOk =
+          typeof product.stock_count === "number" &&
+          product.stock_count >= 0 &&
+          product.stock_count <= 1000;
         if (!supplierOk || !priceOk || !stockOk) {
           console.warn("[checkout] DEV FALLBACK VALIDATION FAILED", {
             productId: anyItem.productId,
@@ -121,7 +139,20 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const itemTotal = product.price * item.quantity;
+      // Validate price before computing totals
+      const priceNumber = Number(product.price);
+      const priceValid =
+        typeof priceNumber === "number" &&
+        Number.isFinite(priceNumber) &&
+        priceNumber >= 0;
+      if (!priceValid) {
+        return NextResponse.json(
+          { ok: false, message: `Invalid price for ${product.title}` },
+          { status: 400 }
+        );
+      }
+
+      const itemTotal = priceNumber * item.quantity;
       total += itemTotal;
 
       const imageArray = Array.isArray(product.images)
@@ -141,11 +172,26 @@ export async function POST(request: NextRequest) {
         productData.description = product.description.trim();
       }
 
+      // Validate Stripe unit amount: must be > 0 based on business rules
+      const stripeUnitAmount = formatAmountForStripe(priceNumber);
+      if (
+        !(
+          typeof stripeUnitAmount === "number" &&
+          Number.isFinite(stripeUnitAmount) &&
+          stripeUnitAmount > 0
+        )
+      ) {
+        return NextResponse.json(
+          { ok: false, message: `Invalid Stripe amount for ${product.title}` },
+          { status: 400 }
+        );
+      }
+
       lineItems.push({
         price_data: {
           currency: "usd",
           product_data: productData,
-          unit_amount: formatAmountForStripe(Number(product.price) || 0),
+          unit_amount: stripeUnitAmount,
         },
         quantity: item.quantity,
       });
@@ -305,12 +351,17 @@ export async function POST(request: NextRequest) {
     if (allowDetails) {
       if (typeof err?.stack === "string") details.stack = err.stack;
       if (typeof err?.type === "string") details.type = err.type;
-      if (typeof err?.code === "string" || typeof err?.code === "number") details.code = err.code;
+      if (typeof err?.code === "string" || typeof err?.code === "number")
+        details.code = err.code;
       if (err?.raw && typeof err.raw === "object") {
         const safe: any = {};
         if (typeof err.raw.message === "string") safe.message = err.raw.message;
         if (typeof err.raw.type === "string") safe.type = err.raw.type;
-        if (typeof err.raw.code === "string" || typeof err.raw.code === "number") safe.code = err.raw.code;
+        if (
+          typeof err.raw.code === "string" ||
+          typeof err.raw.code === "number"
+        )
+          safe.code = err.raw.code;
         details.raw = safe;
       }
     }

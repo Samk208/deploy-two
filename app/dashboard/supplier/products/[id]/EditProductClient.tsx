@@ -27,6 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import supabase from "@/lib/supabase/client";
 import {
   AlertCircle,
   ArrowLeft,
@@ -45,7 +46,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
-import supabase from "@/lib/supabase/client";
 
 const categories = ["Clothing", "Beauty", "Jewelry", "Home", "Electronics"];
 const regions = ["Global", "KR", "JP", "CN"];
@@ -129,7 +129,7 @@ export function EditProductClient({
         region: formData.regions,
         images: formData.images,
       };
-      const res = await fetch(`/api/products/${encodeURIComponent(id)}` , {
+      const res = await fetch(`/api/products/${encodeURIComponent(id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -155,10 +155,17 @@ export function EditProductClient({
   };
 
   // Helper: basic client-side resize to max 1600px and convert to webp (except gifs)
-  const maybeResizeImage = async (file: File): Promise<{ blob: Blob; contentType: string; ext: string }> => {
+  const maybeResizeImage = async (
+    file: File
+  ): Promise<{ blob: Blob; contentType: string; ext: string }> => {
     const isGif = file.type === "image/gif";
     const canProcess = file.type.startsWith("image/") && !isGif;
-    if (!canProcess) return { blob: file, contentType: file.type, ext: file.name.split(".").pop() || "bin" };
+    if (!canProcess)
+      return {
+        blob: file,
+        contentType: file.type,
+        ext: file.name.split(".").pop() || "bin",
+      };
 
     const img = document.createElement("img");
     const reader = new FileReader();
@@ -167,7 +174,11 @@ export function EditProductClient({
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
-    await new Promise((res, rej) => { img.onload = () => res(null); img.onerror = rej; img.src = dataUrl; });
+    await new Promise((res, rej) => {
+      img.onload = () => res(null);
+      img.onerror = rej;
+      img.src = dataUrl;
+    });
 
     const max = 1600;
     let { width, height } = img;
@@ -176,12 +187,20 @@ export function EditProductClient({
     height = Math.round(height * scale);
 
     const canvas = document.createElement("canvas");
-    canvas.width = width; canvas.height = height;
+    canvas.width = width;
+    canvas.height = height;
     const ctx = canvas.getContext("2d");
-    if (!ctx) return { blob: file, contentType: file.type, ext: file.name.split(".").pop() || "bin" };
+    if (!ctx)
+      return {
+        blob: file,
+        contentType: file.type,
+        ext: file.name.split(".").pop() || "bin",
+      };
     ctx.drawImage(img, 0, 0, width, height);
 
-    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(b => resolve(b), "image/webp", 0.85));
+    const blob: Blob | null = await new Promise((resolve) =>
+      canvas.toBlob((b) => resolve(b), "image/webp", 0.85)
+    );
     if (!blob) {
       // Propagate explicit error so caller can handle/report
       throw new Error("Image processing failed: canvas.toBlob returned null");
@@ -195,7 +214,9 @@ export function EditProductClient({
 
     // Validate
     const MAX_MB = 10;
-    const valid = files.filter(f => f.type.startsWith("image/") && f.size <= MAX_MB * 1024 * 1024);
+    const valid = files.filter(
+      (f) => f.type.startsWith("image/") && f.size <= MAX_MB * 1024 * 1024
+    );
     if (valid.length !== files.length) {
       setErrorMessage("Some files were skipped (invalid type or >10MB)");
     }
@@ -203,7 +224,13 @@ export function EditProductClient({
     setIsUploading(true);
     setUploadProgress(0);
     try {
-      const productId = (initialProduct?.id || formData?.id || "temp").toString();
+      const rawId = initialProduct?.id ?? formData?.id;
+      if (!rawId) {
+        throw new Error(
+          "Missing product id. Save the product first or refresh before uploading images."
+        );
+      }
+      const productId = String(rawId);
       const uploadedUrls: string[] = [];
       for (let i = 0; i < valid.length; i++) {
         const file = valid[i];
@@ -231,7 +258,8 @@ export function EditProductClient({
           throw new Error(`Upload failed for ${file.name}: ${upErr.message}`);
         }
         const { data } = supabase.storage.from("products").getPublicUrl(path);
-        if (!data?.publicUrl) throw new Error(`Could not resolve URL for ${file.name}`);
+        if (!data?.publicUrl)
+          throw new Error(`Could not resolve URL for ${file.name}`);
         uploadedUrls.push(data.publicUrl);
         setUploadProgress(Math.round(((i + 1) / valid.length) * 100));
       }
@@ -382,7 +410,9 @@ export function EditProductClient({
                     <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">
                       <span className="font-medium text-indigo-600">
-                        {isUploading ? `Uploading... ${uploadProgress}%` : "Click to upload"}
+                        {isUploading
+                          ? `Uploading... ${uploadProgress}%`
+                          : "Click to upload"}
                       </span>{" "}
                       or drag and drop
                     </p>
@@ -792,7 +822,11 @@ export function EditProductClient({
               className="bg-indigo-600 hover:bg-indigo-700"
               data-testid="save-product"
             >
-              {isLoading ? "Saving..." : isUploading ? `Uploading ${uploadProgress}%` : "Save Changes"}
+              {isLoading
+                ? "Saving..."
+                : isUploading
+                  ? `Uploading ${uploadProgress}%`
+                  : "Save Changes"}
             </Button>
           </div>
         </div>
