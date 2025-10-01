@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { normalizeAll } from "@/lib/images/normalizeUnsplash";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,9 +20,13 @@ export function ProductImageGallery({
   className,
 }: ProductImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [failed, setFailed] = useState<Record<number, boolean>>({});
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  const safeImages = Array.isArray(images) && images.length > 0 ? images : ["/placeholder.jpg"]; 
-  const currentImage = safeImages[currentIndex] || "/placeholder.jpg";
+  // Normalize Unsplash params and ensure non-empty list
+  const normalized = normalizeAll(Array.isArray(images) ? images : []);
+  const safeImages = normalized.length > 0 ? normalized : ["/placeholder.jpg"]; 
+  const currentImage = failed[currentIndex] ? "/placeholder.jpg" : (safeImages[currentIndex] || "/placeholder.jpg");
 
   const nextImage = () => {
     setCurrentIndex((prev) => (prev + 1) % safeImages.length);
@@ -32,9 +37,42 @@ export function ProductImageGallery({
   };
 
   // Card views: optimized for mobile and desktop
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (safeImages.length <= 1) return;
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      prevImage();
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      nextImage();
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0]?.clientX ?? null);
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX == null) return;
+    const dx = (e.changedTouches[0]?.clientX ?? touchStartX) - touchStartX;
+    const threshold = 30; // px
+    if (Math.abs(dx) >= threshold) {
+      dx > 0 ? prevImage() : nextImage();
+    }
+    setTouchStartX(null);
+  };
+
   if (layout === "grid" || layout === "list") {
     return (
-      <div className={cn("relative group", className)} data-testid="image-container">
+      <div
+        className={cn("relative group", className)}
+        data-testid="image-container"
+        role="group"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        aria-label={`${productName} gallery`}
+      >
         <div
           className={cn(
             "relative overflow-hidden bg-gray-100 w-full shrink-0 rounded-t-lg",
@@ -53,6 +91,7 @@ export function ProductImageGallery({
                 : "(max-width: 640px) 100vw, 50vw"
             }
             priority={false}
+            onError={() => setFailed((f) => ({ ...f, [currentIndex]: true }))}
           />
 
           {safeImages.length > 1 && (
@@ -64,9 +103,9 @@ export function ProductImageGallery({
                 }}
                 className={cn(
                   "absolute left-2 top-1/2 -translate-y-1/2",
-                  "bg-white/90 hover:bg-white rounded-full",
-                  "p-2 sm:p-1.5",
-                  "opacity-0 group-hover:opacity-100 transition-opacity",
+                  "bg-black/50 hover:bg-black/70 text-white rounded-full",
+                  "p-2 sm:p-2 min-w-[44px] min-h-[44px] flex items-center justify-center z-20",
+                  "opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity",
                   "touch-manipulation"
                 )}
                 aria-label="Previous image"
@@ -81,9 +120,9 @@ export function ProductImageGallery({
                 }}
                 className={cn(
                   "absolute right-2 top-1/2 -translate-y-1/2",
-                  "bg-white/90 hover:bg-white rounded-full",
-                  "p-2 sm:p-1.5",
-                  "opacity-0 group-hover:opacity-100 transition-opacity",
+                  "bg-black/50 hover:bg-black/70 text-white rounded-full",
+                  "p-2 sm:p-2 min-w-[44px] min-h-[44px] flex items-center justify-center z-20",
+                  "opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity",
                   "touch-manipulation"
                 )}
                 aria-label="Next image"
@@ -94,7 +133,7 @@ export function ProductImageGallery({
           )}
 
           {safeImages.length > 1 && (
-            <div className="absolute bottom-3 sm:bottom-2 left-1/2 -translate-x-1/2 flex gap-2 sm:gap-1.5">
+            <div className="absolute bottom-3 sm:bottom-2 left-1/2 -translate-x-1/2 flex gap-2 sm:gap-1.5 z-20">
               {safeImages.map((_, idx) => (
                 <button
                   key={idx}
@@ -128,6 +167,7 @@ export function ProductImageGallery({
           className="object-cover"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 50vw"
           priority
+          onError={() => setFailed((f) => ({ ...f, [currentIndex]: true }))}
         />
         {safeImages.length > 1 && (
           <div className="absolute top-4 right-4 bg-black/50 text-white text-xs px-2 py-1 rounded">
@@ -152,7 +192,14 @@ export function ProductImageGallery({
                     : "border-transparent active:border-gray-300"
                 )}
               >
-                <Image src={img} alt={`${productName} thumbnail ${idx + 1}`} fill className="object-cover" sizes="80px" />
+                <Image
+                  src={failed[idx] ? "/placeholder.jpg" : img}
+                  alt={`${productName} thumbnail ${idx + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="80px"
+                  onError={() => setFailed((f) => ({ ...f, [idx]: true }))}
+                />
               </button>
             ))}
           </div>

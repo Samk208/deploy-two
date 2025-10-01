@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import Image from 'next/image'
+import { ProductImageGallery } from '@/components/shop/product-image-gallery'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -302,12 +303,11 @@ export function InfluencerShopClient({ influencer, products, handle }: Influence
               {filteredProducts.map((product) => (
                 <Card key={product.id} className="group hover:shadow-lg transition-shadow overflow-hidden">
                   <div className="relative">
-                    <Image
-                      src={product.image}
-                      alt={product.title}
-                      width={300}
-                      height={200}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+                    <ProductImageGallery
+                      images={[product.image]}
+                      productName={product.title}
+                      layout="grid"
+                      className="w-full"
                     />
                     
                     {/* Badges */}

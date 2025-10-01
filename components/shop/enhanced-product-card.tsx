@@ -109,7 +109,7 @@ export function EnhancedProductCard({
       onMouseLeave={() => setIsHovered(false)}
     >
       <CardContent className="p-0 h-full flex flex-col">
-        {/* Image / Gallery */}
+        {/* Image / Gallery (no click-to-quick-view to avoid control interference) */}
         <ProductImageGallery
           images={
             Array.isArray(product?.images)
@@ -154,20 +154,7 @@ export function EnhancedProductCard({
           />
         </Button>
 
-        {/* Quick View Overlay */}
-        {isHovered && onQuickView && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => onQuickView(product)}
-              className="bg-white text-gray-900 hover:bg-gray-100"
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              Quick View
-            </Button>
-          </div>
-        )}
+        {/* Quick View removed per UX feedback */}
 
         {/* Content */}
         <div className="flex-1 p-4 flex flex-col">

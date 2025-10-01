@@ -1,60 +1,62 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useCartStore } from "@/lib/store/cart"
-import { loadStripe } from "@stripe/stripe-js"
-import { useAuth } from "@/lib/auth-context"
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/lib/auth-context";
+import { useCartStore } from "@/lib/store/cart";
+import { cn } from "@/lib/utils";
+import { loadStripe } from "@stripe/stripe-js";
 import {
+  AlertCircle,
   ArrowLeft,
+  CheckCircle,
   CreditCard,
+  Loader2,
+  Lock,
+  RotateCcw,
   Shield,
   Truck,
-  RotateCcw,
-  Lock,
-  AlertCircle,
-  CheckCircle,
-  Loader2
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { toast } from "sonner"
+} from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
 
 interface CheckoutFormData {
-  email: string
-  firstName: string
-  lastName: string
-  address: string
-  city: string
-  state: string
-  zipCode: string
-  country: string
-  phone?: string
-  saveAddress: boolean
+  email: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  phone?: string;
+  saveAddress: boolean;
 }
 
 export function CheckoutPage() {
-  const router = useRouter()
-  const { user } = useAuth()
-  const { 
-    items, 
-    getTotalItems, 
-    getTotalPrice, 
-    getSubtotal, 
-    getTax, 
+  const router = useRouter();
+  const { user } = useAuth();
+  const {
+    items,
+    getTotalItems,
+    getTotalPrice,
+    getSubtotal,
+    getTax,
     getShipping,
-    clearCart 
-  } = useCartStore()
+    clearCart,
+  } = useCartStore();
 
   const [formData, setFormData] = useState<CheckoutFormData>({
     email: user?.email || "",
@@ -66,70 +68,73 @@ export function CheckoutPage() {
     zipCode: "",
     country: "US",
     phone: "",
-    saveAddress: false
-  })
+    saveAddress: false,
+  });
 
-  const [paymentMethod, setPaymentMethod] = useState("stripe")
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [paymentMethod, setPaymentMethod] = useState("stripe");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Redirect if cart is empty
   useEffect(() => {
     if (items.length === 0) {
-      router.push("/shop")
+      router.push("/shop");
     }
-  }, [items.length, router])
+  }, [items.length, router]);
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
-    if (!formData.email) newErrors.email = "Email is required"
-    if (!formData.firstName) newErrors.firstName = "First name is required"
-    if (!formData.lastName) newErrors.lastName = "Last name is required"
-    if (!formData.address) newErrors.address = "Address is required"
-    if (!formData.city) newErrors.city = "City is required"
-    if (!formData.state) newErrors.state = "State is required"
-    if (!formData.zipCode) newErrors.zipCode = "ZIP code is required"
+    if (!formData.email) newErrors.email = "Email is required";
+    if (!formData.firstName) newErrors.firstName = "First name is required";
+    if (!formData.lastName) newErrors.lastName = "Last name is required";
+    if (!formData.address) newErrors.address = "Address is required";
+    if (!formData.city) newErrors.city = "City is required";
+    if (!formData.state) newErrors.state = "State is required";
+    if (!formData.zipCode) newErrors.zipCode = "ZIP code is required";
 
     // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = "Please enter a valid email"
+      newErrors.email = "Please enter a valid email";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-  const handleInputChange = (field: keyof CheckoutFormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+  const handleInputChange = (
+    field: keyof CheckoutFormData,
+    value: string | boolean
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field
     if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
-  }
+  };
 
   const handleCheckout = async () => {
     if (!validateForm()) {
-      toast.error("Please fill in all required fields")
-      return
+      toast.error("Please fill in all required fields");
+      return;
     }
 
     if (items.length === 0) {
-      toast.error("Your cart is empty")
-      return
+      toast.error("Your cart is empty");
+      return;
     }
 
-    setIsProcessing(true)
+    setIsProcessing(true);
 
     try {
       // Prepare checkout data
       const checkoutData = {
-        items: items.map(item => ({
+        items: items.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
           // Preserve client-observed pricing for audit; server will re-validate
@@ -138,7 +143,7 @@ export function CheckoutPage() {
           influencerId: item.influencerId,
           shopHandle: item.shopHandle,
           // If present, effective sale price from influencer shop
-          effectivePrice: item.effectivePrice
+          effectivePrice: item.effectivePrice,
         })),
         shippingAddress: {
           firstName: formData.firstName,
@@ -148,7 +153,7 @@ export function CheckoutPage() {
           state: formData.state,
           zipCode: formData.zipCode,
           country: formData.country,
-          phone: formData.phone
+          phone: formData.phone,
         },
         billingAddress: {
           firstName: formData.firstName,
@@ -158,8 +163,41 @@ export function CheckoutPage() {
           state: formData.state,
           zipCode: formData.zipCode,
           country: formData.country,
-          phone: formData.phone
+          phone: formData.phone,
+        },
+      };
+
+      // In development, optionally route via mock session to simplify diagnostics
+      const useMockCheckout =
+        process.env.NEXT_PUBLIC_USE_MOCK_CHECKOUT === "true";
+      if (useMockCheckout) {
+        const mockPayload = {
+          items: checkoutData.items,
+          customerInfo: {
+            email: formData.email,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone,
+          },
+          shippingAddress: checkoutData.shippingAddress,
+        };
+
+        const mockRes = await fetch("/api/checkout/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(mockPayload),
+        });
+
+        const mockData = await mockRes.json();
+        if (!mockRes.ok) {
+          throw new Error(
+            mockData?.error || "Failed to create checkout session (mock)"
+          );
         }
+
+        // Navigate directly in mock mode
+        window.location.href = mockData.url;
+        return;
       }
 
       // Create Stripe checkout session
@@ -169,38 +207,49 @@ export function CheckoutPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(checkoutData),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!data.ok) {
-        throw new Error(data.message || "Checkout failed")
+        throw new Error(data.message || "Checkout failed");
       }
 
       // Redirect to Stripe Checkout
-      const stripe = await stripePromise
+      if (
+        !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
+        typeof process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY !== "string"
+      ) {
+        throw new Error(
+          "Stripe publishable key is missing. Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY in .env.local"
+        );
+      }
+      const stripe = await stripePromise;
       if (!stripe) {
-        throw new Error("Stripe failed to load")
+        throw new Error("Stripe failed to load");
       }
 
       const { error } = await stripe.redirectToCheckout({
         sessionId: data.data.sessionId,
-      })
+      });
 
       if (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
-
     } catch (error) {
-      console.error("Checkout error:", error)
-      toast.error(error instanceof Error ? error.message : "Something went wrong during checkout")
+      console.error("Checkout error:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong during checkout"
+      );
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
-  const outOfStockItems = items.filter(item => item.maxQuantity === 0)
-  const inStockItems = items.filter(item => item.maxQuantity > 0)
+  const outOfStockItems = items.filter((item) => item.maxQuantity === 0);
+  const inStockItems = items.filter((item) => item.maxQuantity > 0);
 
   if (items.length === 0) {
     return (
@@ -208,14 +257,16 @@ export function CheckoutPage() {
         <Card className="max-w-md w-full mx-4">
           <CardContent className="pt-6 text-center">
             <h2 className="text-xl font-semibold mb-2">Your cart is empty</h2>
-            <p className="text-gray-600 mb-4">Add some products to proceed with checkout</p>
+            <p className="text-gray-600 mb-4">
+              Add some products to proceed with checkout
+            </p>
             <Button asChild>
               <a href="/shop">Continue Shopping</a>
             </Button>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -255,12 +306,16 @@ export function CheckoutPage() {
                     <Input
                       id="firstName"
                       value={formData.firstName}
-                      onChange={(e) => handleInputChange("firstName", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("firstName", e.target.value)
+                      }
                       className={cn(errors.firstName && "border-red-500")}
                       placeholder="John"
                     />
                     {errors.firstName && (
-                      <p className="text-sm text-red-600 mt-1">{errors.firstName}</p>
+                      <p className="text-sm text-red-600 mt-1">
+                        {errors.firstName}
+                      </p>
                     )}
                   </div>
                   <div>
@@ -270,12 +325,16 @@ export function CheckoutPage() {
                     <Input
                       id="lastName"
                       value={formData.lastName}
-                      onChange={(e) => handleInputChange("lastName", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("lastName", e.target.value)
+                      }
                       className={cn(errors.lastName && "border-red-500")}
                       placeholder="Doe"
                     />
                     {errors.lastName && (
-                      <p className="text-sm text-red-600 mt-1">{errors.lastName}</p>
+                      <p className="text-sm text-red-600 mt-1">
+                        {errors.lastName}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -326,12 +385,16 @@ export function CheckoutPage() {
                   <Input
                     id="address"
                     value={formData.address}
-                    onChange={(e) => handleInputChange("address", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("address", e.target.value)
+                    }
                     className={cn(errors.address && "border-red-500")}
                     placeholder="123 Main St"
                   />
                   {errors.address && (
-                    <p className="text-sm text-red-600 mt-1">{errors.address}</p>
+                    <p className="text-sm text-red-600 mt-1">
+                      {errors.address}
+                    </p>
                   )}
                 </div>
 
@@ -343,7 +406,9 @@ export function CheckoutPage() {
                     <Input
                       id="city"
                       value={formData.city}
-                      onChange={(e) => handleInputChange("city", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("city", e.target.value)
+                      }
                       className={cn(errors.city && "border-red-500")}
                       placeholder="New York"
                     />
@@ -358,12 +423,16 @@ export function CheckoutPage() {
                     <Input
                       id="state"
                       value={formData.state}
-                      onChange={(e) => handleInputChange("state", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("state", e.target.value)
+                      }
                       className={cn(errors.state && "border-red-500")}
                       placeholder="NY"
                     />
                     {errors.state && (
-                      <p className="text-sm text-red-600 mt-1">{errors.state}</p>
+                      <p className="text-sm text-red-600 mt-1">
+                        {errors.state}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -376,12 +445,16 @@ export function CheckoutPage() {
                     <Input
                       id="zipCode"
                       value={formData.zipCode}
-                      onChange={(e) => handleInputChange("zipCode", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("zipCode", e.target.value)
+                      }
                       className={cn(errors.zipCode && "border-red-500")}
                       placeholder="10001"
                     />
                     {errors.zipCode && (
-                      <p className="text-sm text-red-600 mt-1">{errors.zipCode}</p>
+                      <p className="text-sm text-red-600 mt-1">
+                        {errors.zipCode}
+                      </p>
                     )}
                   </div>
                   <div>
@@ -389,7 +462,9 @@ export function CheckoutPage() {
                     <Input
                       id="country"
                       value={formData.country}
-                      onChange={(e) => handleInputChange("country", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("country", e.target.value)
+                      }
                       placeholder="US"
                     />
                   </div>
@@ -406,7 +481,10 @@ export function CheckoutPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                <RadioGroup
+                  value={paymentMethod}
+                  onValueChange={setPaymentMethod}
+                >
                   <div className="flex items-center space-x-3 p-4 border rounded-lg">
                     <RadioGroupItem value="stripe" id="stripe" />
                     <Label htmlFor="stripe" className="flex-1 cursor-pointer">
@@ -492,7 +570,11 @@ export function CheckoutPage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Shipping</span>
-                    <span>{getShipping() === 0 ? "FREE" : `$${getShipping().toFixed(2)}`}</span>
+                    <span>
+                      {getShipping() === 0
+                        ? "FREE"
+                        : `$${getShipping().toFixed(2)}`}
+                    </span>
                   </div>
                   {getShipping() === 0 && (
                     <p className="text-xs text-green-600">
@@ -511,7 +593,8 @@ export function CheckoutPage() {
                   <Alert className="border-red-200 bg-red-50">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription className="text-red-800">
-                      Some items in your cart are out of stock and won't be included in this order.
+                      Some items in your cart are out of stock and won't be
+                      included in this order.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -557,5 +640,5 @@ export function CheckoutPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
