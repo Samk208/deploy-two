@@ -37,7 +37,10 @@ export async function GET(request: NextRequest) {
     // Visibility rules:
     // - Public (no owner): only active and in-stock products for the shop
     // - Supplier/Admin views: show all products for the owner
-    const user = await getCurrentUser(supabase).catch(() => null);
+    const user = await getCurrentUser(supabase).catch((err) => {
+      console.error("getCurrentUser failed:", err);
+      return null;
+    });
     if (!owner) {
       query = query.eq("active", true).or("in_stock.eq.true,stock_count.gt.0");
     } else if (owner === "supplier") {

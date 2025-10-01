@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { getProducts } from "@/lib/api/client";
+import { getProducts, PAGE_SIZE } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth-context";
 import { Product } from "@/lib/types";
 import { Download, PlusCircle, Upload } from "lucide-react";
@@ -46,15 +46,12 @@ export default function SupplierProductsPage() {
       const resp = await getProducts<Product>({
         owner: "supplier",
         page: nextPage,
-        pageSize: 10,
+        pageSize: PAGE_SIZE,
         region: regionFilter !== "ALL" ? regionFilter : undefined,
       });
-      const data = (resp as any).data || (resp as any).products || [];
-      setProducts(data);
+      setProducts(resp.items);
       setPage(nextPage);
-      const total = (resp as any).total ?? (resp as any).totalCount ?? 0;
-      const size = resp.pageSize ?? 10;
-      setPageCount(Math.max(1, Math.ceil(total / size)));
+      setPageCount(Math.max(1, Math.ceil(resp.total / resp.pageSize)));
     } catch (error) {
       console.error(error);
       toast({
@@ -99,7 +96,7 @@ export default function SupplierProductsPage() {
     if (!isAuthLoading && user?.role === "supplier") {
       fetchProducts(1);
     }
-  }, [isAuthLoading, user, regionFilter]);
+  }, [isAuthLoading, user?.role]);
 
   if (isAuthLoading || isLoading) {
     return (

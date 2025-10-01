@@ -63,10 +63,10 @@ export function DataTable<TData, TValue>({
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: isServerMode ? undefined : setSorting,
+    getSortedRowModel: isServerMode ? undefined : getSortedRowModel(),
+    onColumnFiltersChange: isServerMode ? undefined : setColumnFilters,
+    getFilteredRowModel: isServerMode ? undefined : getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
@@ -77,7 +77,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      {!hideQuickFilter && (
+      {!hideQuickFilter && !isServerMode && (
         <div className="flex items-center py-4">
           <Input
             placeholder="Filter by product title..."

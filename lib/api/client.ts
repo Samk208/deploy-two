@@ -1,26 +1,68 @@
-export type PageResp<T> = {
-  ok: boolean;
-  data: T[];
+export const PAGE_SIZE = 10;
+
+export type NormalizedPage<T> = {
+  ok?: boolean;
+  items: T[];
   total: number;
   page: number;
   pageSize: number;
   message?: string;
 };
 
-export async function getProducts<T = any>(params: {
+type RawPageResponse<T> = {
+  ok?: boolean;
+  data?: T[];
+  products?: T[];
+  items?: T[];
+  total?: number;
+  totalCount?: number;
+  page?: number;
+  pageSize?: number;
+  message?: string;
+};
+
+export type GetProductsParams = {
   page?: number;
   pageSize?: number;
   q?: string;
   region?: string;
   owner?: "supplier" | "admin";
-}) {
-  const url = new URL("/api/products", window.location.origin);
-  Object.entries(params).forEach(([k, v]) => {
+  baseUrl?: string; // optional explicit base URL for SSR callers
+};
+
+export async function getProducts<T = any>(
+  params: GetProductsParams
+): Promise<NormalizedPage<T>> {
+  const { baseUrl, ...query } = params ?? {};
+
+  // Ensure defaults
+  const page = query.page ?? 1;
+  const pageSize = query.pageSize ?? PAGE_SIZE;
+
+  // Build relative or absolute URL string without using window
+  const endpoint = `${baseUrl ? baseUrl.replace(/\/$/, "") : ""}/api/products`;
+  const searchParams = new URLSearchParams();
+  Object.entries({ ...query, page, pageSize }).forEach(([k, v]) => {
     if (v !== undefined && v !== null && String(v).length > 0) {
-      url.searchParams.set(k, String(v));
+      searchParams.set(k, String(v));
     }
   });
-  const r = await fetch(url.toString(), { credentials: "include" });
+  const url = `${endpoint}?${searchParams.toString()}`;
+
+  const r = await fetch(url, { credentials: "include" });
   if (!r.ok) throw new Error(`Fetch failed: ${r.status}`);
-  return (await r.json()) as PageResp<T>;
+  const raw = (await r.json()) as RawPageResponse<T>;
+
+  const items = raw.items ?? raw.data ?? raw.products ?? ([] as T[]);
+  const total = (raw.total ?? raw.totalCount ?? 0) as number;
+  const normalized: NormalizedPage<T> = {
+    ok: raw.ok,
+    items,
+    total,
+    page: raw.page ?? page,
+    pageSize: raw.pageSize ?? pageSize,
+    message: raw.message,
+  };
+
+  return normalized;
 }
