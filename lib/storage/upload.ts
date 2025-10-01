@@ -1,8 +1,8 @@
 import { createClientSupabaseClient } from "@/lib/supabase/client";
 
 // Max size aligned with products bucket policy (5MB)
-const MAX_BYTES = 5 * 1024 * 1024;
-const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
+export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+export const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 function slugify(name: string) {
   return name
@@ -13,21 +13,27 @@ function slugify(name: string) {
     .slice(0, 80) || "image";
 }
 
-async function toWebP(file: File, quality = 0.9): Promise<Blob> {
+type WebPResult = { blob: Blob; converted: boolean };
+
+async function toWebP(file: File, quality = 0.9): Promise<WebPResult> {
   // Try OffscreenCanvas first
   try {
-    // @ts-ignore - OffscreenCanvas is not in all TS lib targets
     const bmp = await createImageBitmap(file);
-    // @ts-ignore
-    const canvas = new OffscreenCanvas(bmp.width, bmp.height);
+    const OC: any = (globalThis as any).OffscreenCanvas;
+    if (!OC) throw new Error("OffscreenCanvas not available");
+    const canvas = new OC(bmp.width, bmp.height);
     const ctx = canvas.getContext("2d");
-    if (!ctx) return file;
+    if (!ctx) return { blob: new Blob([file], { type: file.type }), converted: false };
     ctx.drawImage(bmp, 0, 0);
-    // @ts-ignore
-    return await canvas.convertToBlob({ type: "image/webp", quality });
+    const anyCanvas: any = canvas;
+    if (typeof anyCanvas.convertToBlob === "function") {
+      const blob: Blob = await anyCanvas.convertToBlob({ type: "image/webp", quality });
+      return { blob, converted: true };
+    }
+    return { blob: new Blob([file], { type: file.type }), converted: false };
   } catch {
     // Fallback to HTMLCanvasElement
-    return await new Promise<Blob>((resolve, reject) => {
+    return await new Promise<WebPResult>((resolve, reject) => {
       const img = new Image();
       const reader = new FileReader();
       reader.onload = () => {
@@ -36,14 +42,21 @@ async function toWebP(file: File, quality = 0.9): Promise<Blob> {
           canvas.width = img.width;
           canvas.height = img.height;
           const ctx = canvas.getContext("2d");
-          if (!ctx) return resolve(file);
+          if (!ctx) return resolve({ blob: new Blob([file], { type: file.type }), converted: false });
           ctx.drawImage(img, 0, 0);
-          canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob failed"))), "image/webp", quality);
+          canvas.toBlob(
+            (b) =>
+              b
+                ? resolve({ blob: b, converted: true })
+                : resolve({ blob: new Blob([file], { type: file.type }), converted: false }),
+            "image/webp",
+            quality
+          );
         };
-        img.onerror = () => resolve(file);
+        img.onerror = () => resolve({ blob: new Blob([file], { type: file.type }), converted: false });
         img.src = reader.result as string;
       };
-      reader.onerror = () => resolve(file);
+      reader.onerror = () => resolve({ blob: new Blob([file], { type: file.type }), converted: false });
       reader.readAsDataURL(file);
     });
   }
@@ -59,23 +72,26 @@ export type UploadResult = { key: string; url: string };
  */
 export async function uploadProductImage(file: File, opts: { productId: string }): Promise<UploadResult> {
   if (!file) throw new Error("No file provided");
-  if (!ALLOWED.has(file.type)) throw new Error("Unsupported file type");
-  if (file.size > MAX_BYTES) throw new Error("File too large (max 5MB)");
+  if (!ALLOWED_MIME_TYPES.has(file.type)) throw new Error("Unsupported file type");
+  if (file.size > MAX_FILE_SIZE_BYTES) throw new Error("File too large (max 5MB)");
   if (!opts?.productId) throw new Error("productId is required");
 
   const supabase = createClientSupabaseClient();
 
   // Convert to WebP if needed
-  const webpBlob = file.type === "image/webp" ? file : await toWebP(file, 0.9);
+  const { blob, converted } = file.type === "image/webp" ? { blob: file as Blob, converted: false } : await toWebP(file, 0.9);
   const base = slugify(file.name || "image");
-  const key = `products/${opts.productId}/${base}-${crypto.randomUUID()}.webp`;
+  const origExt = (file.name.split(".").pop() || "bin").toLowerCase();
+  const ext = converted ? "webp" : origExt === "jpeg" ? "jpg" : origExt;
+  const contentType = converted ? "image/webp" : file.type || "application/octet-stream";
+  const key = `products/${opts.productId}/${base}-${crypto.randomUUID()}.${ext}`;
 
   const { error } = await supabase.storage
     .from("products")
-    .upload(key, webpBlob, {
+    .upload(key, blob, {
       cacheControl: "31536000",
       upsert: false,
-      contentType: "image/webp",
+      contentType,
     });
   if (error) throw new Error(error.message || "Upload failed");
 

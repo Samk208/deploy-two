@@ -73,7 +73,11 @@ export function ProductImageGallery({
     const dx = (e.changedTouches[0]?.clientX ?? touchStartX) - touchStartX;
     const threshold = 30; // px
     if (Math.abs(dx) >= threshold) {
-      dx > 0 ? prevImage() : nextImage();
+      if (dx > 0) {
+        prevImage();
+      } else {
+        nextImage();
+      }
     }
     setTouchStartX(null);
   };

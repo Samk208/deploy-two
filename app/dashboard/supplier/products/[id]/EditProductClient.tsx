@@ -27,7 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { uploadProductImage } from "@/lib/storage/upload";
+import { uploadProductImage, ALLOWED_MIME_TYPES, MAX_FILE_SIZE_BYTES } from "@/lib/storage/upload";
 import {
   AlertCircle,
   ArrowLeft,
@@ -229,12 +229,11 @@ export function EditProductClient({
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    // Validate (OWASP allow-list): JPG/PNG/WebP only, up to 5MB
-    const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
-    const MAX_BYTES = 5 * 1024 * 1024;
-    const valid = files.filter((f) => ALLOWED.has(f.type) && f.size <= MAX_BYTES);
+    // Validate (centralized in lib/storage/upload)
+    const valid = files.filter((f) => ALLOWED_MIME_TYPES.has(f.type) && f.size <= MAX_FILE_SIZE_BYTES);
     if (valid.length !== files.length) {
-      setErrorMessage("Some files were skipped (invalid type or >5MB)");
+      const maxMb = Math.floor(MAX_FILE_SIZE_BYTES / 1024 / 1024);
+      setErrorMessage(`Some files were skipped (invalid type or >${maxMb}MB)`);
     }
 
     setIsUploading(true);
