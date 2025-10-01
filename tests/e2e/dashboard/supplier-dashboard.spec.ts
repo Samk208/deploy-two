@@ -22,14 +22,14 @@ test.describe("Supplier Dashboard", () => {
     ).toBeVisible();
   });
 
-  test("orders page is unimplemented (404)", async ({ page }) => {
+  test("orders page loads", async ({ page }) => {
     const resp = await page.goto("/dashboard/supplier/orders");
-    expect(resp?.status()).toBe(404);
+    expect(resp?.status()).toBe(200);
   });
 
-  test("analytics page is unimplemented (404)", async ({ page }) => {
+  test("analytics page loads", async ({ page }) => {
     const resp = await page.goto("/dashboard/supplier/analytics");
-    expect(resp?.status()).toBe(404);
+    expect(resp?.status()).toBe(200);
   });
 
   test("commissions page loads", async ({ page }) => {

@@ -83,8 +83,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       (p: any) => p?.created_at && new Date(p.created_at) >= monthStart
     ).length;
 
-    // Top products: metrics unavailable without reliable item-level linkage; return empty list
-    const topProducts: SupplierDashboardData["topProducts"] = [];
+    // Top products: initialize; will compute a fallback from commissions if item-level linkage is unavailable
+    let topProducts: SupplierDashboardData["topProducts"] = [];
 
     // Orders aggregates scoped to supplier via commissions → orders inner join
     // Use commissions as the linkage: commissions rows carry supplier_id and order_id
@@ -92,6 +92,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       .from("commissions")
       .select(
         `
+        product_id,
         order_id,
         amount,
         rate,
@@ -126,7 +127,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       orderId: string;
       total: number;
       status: string;
-      createdAt: string;
+      createdAt: string | null;
       customerName: string;
       itemsCount: number;
       commissionSum: number;
@@ -139,8 +140,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       const orderId = String(row.order_id || ord.id || "");
       if (!orderId) return;
       const existing = byOrder.get(orderId);
-      const createdAt =
-        ord.created_at || row.created_at || new Date().toISOString();
+      const rawCreatedAt = ord.created_at || row.created_at || null;
+      const parsedTs = rawCreatedAt ? Date.parse(rawCreatedAt) : NaN;
+      const createdAt = Number.isFinite(parsedTs)
+        ? new Date(parsedTs).toISOString()
+        : null;
       const productTitle = row.products?.title || "Order";
       if (!existing) {
         byOrder.set(orderId, {
@@ -161,10 +165,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     });
 
     // Compute dashboard aggregates from unique orders
-    const aggregatedOrders = Array.from(byOrder.values()).sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    const aggregatedOrders = Array.from(byOrder.values()).sort((a, b) => {
+      const ta = a.createdAt ? Date.parse(a.createdAt) : -Infinity;
+      const tb = b.createdAt ? Date.parse(b.createdAt) : -Infinity;
+      return tb - ta;
+    });
 
     aggregatedOrders.forEach((o) => {
       const createdAt = o.createdAt ? new Date(o.createdAt) : null;
@@ -202,8 +207,86 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       total: o.total,
       commission: Math.round(o.commissionSum * 100) / 100,
       status: o.status,
-      createdAt: o.createdAt,
+      createdAt: o.createdAt || new Date(0).toISOString(),
     }));
+
+    // Fallback Top Products aggregation from commissions when item-level linkage is limited
+    if ((commissionJoins || []).length > 0) {
+      const productById: Record<string, any> = Object.create(null);
+      (productsData || []).forEach((p: any) => {
+        if (p?.id) productById[String(p.id)] = p;
+      });
+
+      type ProductAgg = {
+        id: string;
+        title: string;
+        sales: number;
+        commissionSum: number;
+        revenueSum: number;
+        rateSum: number;
+        rateCount: number;
+      };
+
+      const byProduct = new Map<string, ProductAgg>();
+
+      (commissionJoins || []).forEach((row: any) => {
+        const pid = row.product_id ? String(row.product_id) : undefined;
+        const title =
+          row.products?.title || (pid ? `Product ${pid}` : "Product");
+        const key = pid || `title:${title}`;
+        const amount = Number(row.amount) || 0;
+        const rate = Number(row.rate);
+        const estRevenue = rate > 0 ? amount / rate : 0;
+
+        const current = byProduct.get(key);
+        if (!current) {
+          byProduct.set(key, {
+            id: pid || key,
+            title,
+            sales: 1,
+            commissionSum: amount,
+            revenueSum: estRevenue,
+            rateSum: Number.isFinite(rate) ? rate : 0,
+            rateCount: Number.isFinite(rate) && rate > 0 ? 1 : 0,
+          });
+        } else {
+          current.sales += 1;
+          current.commissionSum += amount;
+          current.revenueSum += estRevenue;
+          if (Number.isFinite(rate) && rate > 0) {
+            current.rateSum += rate;
+            current.rateCount += 1;
+          }
+        }
+      });
+
+      const aggregatedProducts: SupplierDashboardData["topProducts"] =
+        Array.from(byProduct.values()).map((g) => {
+          const p = productById[g.id];
+          const avgRate = g.rateCount > 0 ? g.rateSum / g.rateCount : undefined;
+          // Prefer product's configured commission if available, else derive from average rate
+          const commissionPercent =
+            typeof p?.commission === "number"
+              ? Number(p.commission)
+              : avgRate !== undefined
+                ? Math.round(avgRate * 100)
+                : 0;
+
+          return {
+            id: g.id,
+            title: p?.title || g.title,
+            sales: g.sales,
+            revenue: Math.round(g.revenueSum * 100) / 100,
+            commission: commissionPercent,
+            stock: Number(p?.stock_count) || 0,
+          };
+        });
+
+      aggregatedProducts.sort(
+        (a, b) => b.revenue - a.revenue || b.sales - a.sales
+      );
+      topProducts = aggregatedProducts.slice(0, 5);
+    }
 
     const influencerPartners = 0;
 

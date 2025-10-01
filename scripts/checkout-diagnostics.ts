@@ -128,7 +128,7 @@ export async function testStripeConnection() {
 
   try {
     const stripe = new Stripe(stripeKey, {
-      apiVersion: "2025-08-27.basil",
+      apiVersion: "2023-10-16",
     });
 
     const account = await stripe.accounts.retrieve();
@@ -178,7 +178,7 @@ export async function testCheckoutSessionCreation() {
 
   try {
     const stripe = new Stripe(stripeKey, {
-      apiVersion: "2025-08-27.basil",
+      apiVersion: "2023-10-16",
     });
 
     const session = await stripe.checkout.sessions.create({

@@ -22,13 +22,13 @@ test.describe("Admin Dashboard Access", () => {
     await expect(page.getByText(/Verification in progress/i)).toBeVisible();
   });
 
-  test("documents known 404 routes", async ({ page }) => {
+  test("supplier orders and analytics pages load", async ({ page }) => {
     const r1 = await page.goto("/dashboard/supplier/orders");
     expect(r1).not.toBeNull();
-    expect(r1!.status()).toBe(404);
+    expect(r1!.status()).toBe(200);
 
     const r2 = await page.goto("/dashboard/supplier/analytics");
     expect(r2).not.toBeNull();
-    expect(r2!.status()).toBe(404);
+    expect(r2!.status()).toBe(200);
   });
 });

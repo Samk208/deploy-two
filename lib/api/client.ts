@@ -66,3 +66,40 @@ export async function getProducts<T = any>(
 
   return normalized;
 }
+
+// Additional typed client helpers for dashboard pages
+
+export type PageResp<T> = {
+  ok: boolean;
+  data: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  message?: string;
+};
+
+export async function getSupplierDashboard(baseUrl?: string) {
+  const endpoint = `${baseUrl ? baseUrl.replace(/\/$/, "") : ""}/api/dashboard/supplier`;
+  const r = await fetch(endpoint, { cache: "no-store", credentials: "include" as RequestCredentials });
+  if (!r.ok) throw new Error("dashboard fetch failed");
+  return r.json();
+}
+
+export async function getCommissions(params: Record<string, string | number | boolean | undefined>) {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const endpoint = origin ? new URL("/api/commissions", origin) : new URL("/api/commissions", "http://localhost");
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null) endpoint.searchParams.set(k, String(v));
+  });
+  const url = origin ? endpoint.toString() : `/api/commissions?${endpoint.searchParams.toString()}`;
+  const r = await fetch(url, { credentials: "include" as RequestCredentials });
+  if (!r.ok) throw new Error("commissions fetch failed");
+  return r.json() as Promise<PageResp<any>>;
+}
+
+export async function getOrderById(id: string, baseUrl?: string) {
+  const endpoint = `${baseUrl ? baseUrl.replace(/\/$/, "") : ""}/api/orders/${encodeURIComponent(id)}`;
+  const r = await fetch(endpoint, { credentials: "include" as RequestCredentials });
+  if (!r.ok) throw new Error("order fetch failed");
+  return r.json();
+}

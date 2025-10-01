@@ -76,7 +76,7 @@ async function checkProductImages() {
   let quotedStrings = 0;
 
   const allowedDomains = ["images.unsplash.com", "picsum.photos"];
-  const supabaseDomain = new URL(supabaseUrl).hostname;
+  const supabaseDomain = new URL(supabaseUrl as string).hostname;
 
   for (const product of products as any[]) {
     const { images, title } = product;

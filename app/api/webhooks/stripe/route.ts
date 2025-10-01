@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin, type Inserts, type Tables } from "@/lib/supabase/admin"
-import { stripe } from "@/lib/stripe"
+import { getStripe } from "@/lib/stripe"
 import type { ApiResponse } from "@/lib/types"
 
 // Force Node.js runtime to avoid Edge runtime issues with Supabase
@@ -31,6 +31,14 @@ export async function POST(request: NextRequest) {
     // Verify webhook signature
     let event: any
     try {
+      const stripe = getStripe()
+      if (!stripe) {
+        console.error('Stripe is not configured (missing STRIPE_SECRET_KEY)')
+        return NextResponse.json(
+          { ok: false, message: "Stripe not configured" },
+          { status: 500 }
+        )
+      }
       event = stripe.webhooks.constructEvent(
         body,
         signature,

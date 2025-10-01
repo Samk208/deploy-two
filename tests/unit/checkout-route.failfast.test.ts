@@ -58,7 +58,7 @@ describe("checkout route - production fail fast when products missing", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
     process.env.STRIPE_SECRET_KEY = "sk_test_abc";
     process.env.NEXT_PUBLIC_SUPABASE_URL = "http://example";
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "anon";

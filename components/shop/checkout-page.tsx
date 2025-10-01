@@ -164,11 +164,7 @@ export function CheckoutPage() {
   const handleCheckout = async () => {
     // Double-check auth prior to calling API
     if (!isAuthed) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to continue",
-        variant: "destructive",
-      });
+      toast.error("Authentication Required: Please sign in to continue");
       router.push("/sign-in?redirect=/checkout");
       return;
     }
@@ -307,11 +303,7 @@ export function CheckoutPage() {
         message: (error as any)?.message,
         stack: (error as any)?.stack,
       });
-      toast({
-        title: "Checkout Failed",
-        description: (error as any)?.message || "Please try again",
-        variant: "destructive",
-      });
+      toast.error((error as any)?.message || "Checkout failed. Please try again");
     } finally {
       setIsProcessing(false);
     }
