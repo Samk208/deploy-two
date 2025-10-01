@@ -106,13 +106,21 @@ export async function getCommissions(
     url = endpoint.toString();
   }
   const r = await fetch(url, { credentials: "include" as RequestCredentials });
-  if (!r.ok) throw new Error("commissions fetch failed");
+  if (!r.ok) {
+    const body = await r.text().catch(() => "");
+    const info = `GET ${url} -> ${r.status} ${r.statusText}`;
+    throw new Error(`commissions fetch failed: ${info} :: ${body}`);
+  }
   return r.json() as Promise<PageResp<any>>;
 }
 
 export async function getOrderById(id: string, baseUrl?: string) {
   const endpoint = `${baseUrl ? baseUrl.replace(/\/$/, "") : ""}/api/orders/${encodeURIComponent(id)}`;
   const r = await fetch(endpoint, { credentials: "include" as RequestCredentials });
-  if (!r.ok) throw new Error("order fetch failed");
+  if (!r.ok) {
+    const body = await r.text().catch(() => "");
+    const info = `GET ${endpoint} -> ${r.status} ${r.statusText}`;
+    throw new Error(`order fetch failed: ${info} :: ${body}`);
+  }
   return r.json();
 }
