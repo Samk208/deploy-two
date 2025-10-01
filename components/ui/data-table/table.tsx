@@ -65,9 +65,32 @@ export function DataTable<T>({ columns, data, total, page, pageSize, isLoading, 
       <div className="flex items-center justify-between gap-3">
         <div className="text-xs text-muted-foreground">Page {page} of {totalPages} • {total} total</div>
         <div className="flex items-center gap-2">
-          <button className="rounded border px-2 py-1 text-sm" disabled={page <= 1} onClick={() => onPageChange?.(page - 1)}>Prev</button>
-          <button className="rounded border px-2 py-1 text-sm" disabled={page >= totalPages} onClick={() => onPageChange?.(page + 1)}>Next</button>
-          <select className="rounded border px-2 py-1 text-sm" value={pageSize} onChange={(e) => onPageSizeChange?.(Number(e.target.value))}>
+          <button
+            className="rounded border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            aria-label="Previous page"
+            aria-disabled={page <= 1}
+            disabled={page <= 1}
+            onClick={() => onPageChange?.(page - 1)}
+          >
+            Prev
+          </button>
+          <button
+            className="rounded border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            aria-label="Next page"
+            aria-disabled={page >= totalPages}
+            disabled={page >= totalPages}
+            onClick={() => onPageChange?.(page + 1)}
+          >
+            Next
+          </button>
+          <label htmlFor="page-size-select" className="sr-only">Rows per page</label>
+          <select
+            id="page-size-select"
+            aria-label="Rows per page"
+            className="rounded border px-2 py-1 text-sm"
+            value={pageSize}
+            onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
+          >
             {[10, 20, 50].map((s) => (
               <option key={s} value={s}>{s} / page</option>
             ))}

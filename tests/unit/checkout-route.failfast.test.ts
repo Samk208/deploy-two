@@ -37,8 +37,10 @@ vi.mock("../../lib/auth-helpers", () => ({
 
 // Mock Stripe client to avoid real calls
 vi.mock("../../lib/stripe", async () => {
+  const mocked = {} as any;
   return {
-    stripe: {} as any,
+    stripe: mocked,
+    getStripe: () => mocked,
     formatAmountForStripe: (n: number) => Math.round(n * 100),
   };
 });
@@ -47,11 +49,17 @@ vi.mock("../../lib/stripe", async () => {
 import { POST } from "../../app/api/checkout/route";
 
 function makeRequest(body: any): any {
-  return {
+  const req: any = {
     json: async () => body,
     headers: new Map(),
     nextUrl: { origin: "http://localhost:3001" },
-  } as any;
+  };
+  req.clone = () => ({
+    json: async () => body,
+    headers: req.headers,
+    nextUrl: req.nextUrl,
+  });
+  return req;
 }
 
 describe("checkout route - production fail fast when products missing", () => {

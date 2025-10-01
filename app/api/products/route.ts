@@ -68,10 +68,15 @@ export async function GET(request: NextRequest) {
       query = query.overlaps("region", [region]);
     }
     if (q) {
-      // Search by title, description, or sku
+      // Search by title, description, or sku with safe encoded pattern
+      const pattern = `%${q}%`;
+      const encoded = encodeURIComponent(pattern);
       query = query.or(
-        `title.ilike.%${q}%,description.ilike.%${q}%,sku.ilike.%${q}%`
+        `title.ilike.${encoded},description.ilike.${encoded},sku.ilike.${encoded}`
       );
+      // Alternative approach (commented): use a Postgres RPC to combine ORs server-side.
+      // This avoids string building entirely but requires a DB function.
+      // query = supabase.rpc('search_products', { pattern });
     }
 
     query = query.order("created_at", { ascending: false }).range(from, to);

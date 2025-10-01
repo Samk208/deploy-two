@@ -374,19 +374,6 @@ export default function MyShopBuilder() {
 
             {/* Filters */}
             <div className="space-y-4">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search products..."
-                  value={filters.search}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setFilters({ ...filters, search: e.target.value })
-                  }
-                  className="pl-10"
-                />
-              </div>
-
               {/* Filters */}
               <div className="grid grid-cols-3 gap-2">
                 <Select

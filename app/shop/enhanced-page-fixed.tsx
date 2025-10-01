@@ -107,11 +107,12 @@ export default function EnhancedShopPage() {
           ? err.message
           : "Failed to fetch products";
       setError(message);
+      // For page 1, clear all state; for subsequent pages, do NOT append and stop further pagination
       if (page === 1) {
         setProducts([]);
         setTotalCount(0);
-        setHasMore(false);
       }
+      setHasMore(false);
     } finally {
       setLoading(false);
     }

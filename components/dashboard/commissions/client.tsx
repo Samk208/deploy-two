@@ -20,10 +20,18 @@ export default function CommissionsClient({ defaultFilters }: { defaultFilters: 
   const [filters, setFilters] = React.useState<CommissionsFilters>({ ...defaultFilters });
   const query = useQuery({
     queryKey: ["commissions", filters],
-    queryFn: () => getCommissions({
-      ...filters,
-      status: normalizeStatus(filters.status),
-    } as any),
+    queryFn: () => {
+      const params: Record<string, string | number | boolean | undefined> = {
+        owner: filters.owner,
+        status: normalizeStatus(filters.status),
+        page: filters.page,
+        pageSize: filters.pageSize,
+        q: filters.q,
+        from: filters.from,
+        to: filters.to,
+      };
+      return getCommissions(params);
+    },
     staleTime: 10_000,
   });
 

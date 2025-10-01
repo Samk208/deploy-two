@@ -15,7 +15,7 @@ import {
 } from "recharts";
 
 export default function AnalyticsClient() {
-  const { data } = useQuery({ queryKey: ["supplier-dashboard"], queryFn: () => getSupplierDashboard() });
+  const { data, isLoading, error } = useQuery({ queryKey: ["supplier-dashboard"], queryFn: () => getSupplierDashboard() });
 
   const kpis = data?.stats ?? data?.kpis ?? {};
   const topProducts = (data?.topProducts ?? []).map((p: any) => ({
@@ -34,6 +34,16 @@ export default function AnalyticsClient() {
     }
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([date, count]) => ({ date, count }));
   }, [data]);
+
+  if (isLoading) {
+    return <div className="text-sm text-muted-foreground">Loading analytics…</div>;
+  }
+  if (error) {
+    return <div className="text-sm text-red-600">Failed to load analytics</div>;
+  }
+  if (!data) {
+    return null;
+  }
 
   return (
     <div className="space-y-6">

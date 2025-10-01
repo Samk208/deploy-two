@@ -98,13 +98,13 @@ export function CheckoutPage() {
         if (!mounted) return;
         if (error || !data?.user) {
           // Redirect to sign-in with return URL
-          router.push(`/sign-in?redirect=/checkout`);
+          if (mounted) router.push(`/sign-in?redirect=/checkout`);
           return;
         }
         setIsAuthed(true);
       } catch (_) {
         // On unexpected error, fail safe to sign-in
-        router.push(`/sign-in?redirect=/checkout`);
+        if (mounted) router.push(`/sign-in?redirect=/checkout`);
       } finally {
         if (mounted) setIsAuthChecking(false);
       }

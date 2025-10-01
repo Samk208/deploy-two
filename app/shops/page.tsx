@@ -350,28 +350,46 @@ export default function ShopsPage() {
         const json = await res.json();
         const list = json?.data?.shops;
         if (!cancelled && Array.isArray(list) && list.length > 0) {
-          // Map API shape to UI expected fields (keep banner/avatar optional)
-          setShops(
-            list.map(
-              (s: any): Shop => ({
-                id: s.id,
-                handle: s.handle,
-                name: s.name,
-                bio: s.description || "",
-                avatar: s.influencer_avatar || "/brand-manager-avatar.png",
-                banner: s.banner || "/fashion-banner.png",
-                followers: s.followers_count ? String(s.followers_count) : "0",
-                verified: !!s.verified,
-                category: s.categories?.[0] || "General",
-                rating: 4.8,
-                totalProducts: s.product_count || 0,
-                totalSales: 0,
-                createdAt: s.created_at || s.createdAt,
-                badges: s.verified ? ["Verified"] : [],
-                socialLinks: {},
-              })
-            )
-          );
+          // Validate required fields and coerce safe defaults
+          const valid: Shop[] = [];
+          const invalid: any[] = [];
+          for (const s of list) {
+            const idVal = (typeof s?.id === "string" && s.id.trim()) ||
+              (typeof s?.id === "number" && String(s.id)) || "";
+            const handleVal = typeof s?.handle === "string" ? s.handle.trim() : "";
+            const nameVal = typeof s?.name === "string" ? s.name.trim() : "";
+            if (!idVal || !handleVal || !nameVal) {
+              invalid.push(s);
+              continue;
+            }
+            valid.push({
+              id: idVal,
+              handle: handleVal,
+              name: nameVal,
+              bio: typeof s?.description === "string" ? s.description : "",
+              avatar: typeof s?.influencer_avatar === "string" && s.influencer_avatar
+                ? s.influencer_avatar
+                : "/brand-manager-avatar.png",
+              banner: typeof s?.banner === "string" && s.banner ? s.banner : "/fashion-banner.png",
+              followers: Number.isFinite(Number(s?.followers_count))
+                ? String(s.followers_count)
+                : "0",
+              verified: Boolean(s?.verified),
+              category: Array.isArray(s?.categories) && s.categories.length > 0
+                ? String(s.categories[0])
+                : "General",
+              rating: 4.8,
+              totalProducts: Number.isFinite(Number(s?.product_count)) ? Number(s.product_count) : 0,
+              totalSales: 0,
+              createdAt: typeof s?.created_at === "string" ? s.created_at : (typeof s?.createdAt === "string" ? s.createdAt : undefined),
+              badges: s?.verified ? ["Verified"] : [],
+              socialLinks: {},
+            });
+          }
+          if (invalid.length > 0) {
+            console.warn(`Shops directory contained ${invalid.length} invalid item(s); skipped.`);
+          }
+          setShops(valid.length > 0 ? valid : mockShops);
         }
       } catch (e) {
         // Keep mock data on failure

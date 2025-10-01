@@ -85,13 +85,26 @@ export async function getSupplierDashboard(baseUrl?: string) {
   return r.json();
 }
 
-export async function getCommissions(params: Record<string, string | number | boolean | undefined>) {
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const endpoint = origin ? new URL("/api/commissions", origin) : new URL("/api/commissions", "http://localhost");
-  Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== null) endpoint.searchParams.set(k, String(v));
-  });
-  const url = origin ? endpoint.toString() : `/api/commissions?${endpoint.searchParams.toString()}`;
+export async function getCommissions(
+  params: Record<string, string | number | boolean | undefined>,
+  baseUrl?: string
+): Promise<PageResp<any>> {
+  const isBrowser = typeof window !== "undefined";
+  let url: string;
+  if (isBrowser) {
+    const endpoint = new URL("/api/commissions", window.location.origin);
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) endpoint.searchParams.set(k, String(v));
+    });
+    url = endpoint.toString();
+  } else {
+    if (!baseUrl) throw new Error("getCommissions: baseUrl is required for SSR");
+    const endpoint = new URL("/api/commissions", baseUrl.replace(/\/$/, ""));
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) endpoint.searchParams.set(k, String(v));
+    });
+    url = endpoint.toString();
+  }
   const r = await fetch(url, { credentials: "include" as RequestCredentials });
   if (!r.ok) throw new Error("commissions fetch failed");
   return r.json() as Promise<PageResp<any>>;

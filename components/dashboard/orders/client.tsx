@@ -4,23 +4,38 @@ import { getOrderById, getSupplierDashboard } from "@/lib/api/client";
 import { useState } from "react";
 import { DataTable } from "@/components/ui/data-table/table";
 
+type Order = {
+  id: string;
+  status: string;
+  total: number;
+  created_at?: string;
+  [k: string]: any;
+};
+
 export default function OrdersClient() {
-  const { data } = useQuery({ queryKey: ["supplier-dashboard"], queryFn: () => getSupplierDashboard() });
-  const recent = (data?.recentOrders ?? []) as Array<any>;
+  const { data, isLoading, isError, error } = useQuery({ queryKey: ["supplier-dashboard"], queryFn: () => getSupplierDashboard() });
+  const recent = (data?.recentOrders ?? []) as Array<Order>;
   const [orderId, setOrderId] = useState("");
-  const [detail, setDetail] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [detail, setDetail] = useState<Order | null>(null);
+  const [findError, setFindError] = useState<string | null>(null);
 
   async function handleFind() {
-    setError(null);
+    setFindError(null);
     setDetail(null);
     try {
       if (!orderId.trim()) return;
       const d = await getOrderById(orderId.trim());
-      setDetail(d);
+      setDetail(d as Order);
     } catch (e: any) {
-      setError(e?.message || "Failed to fetch order");
+      setFindError(e?.message || "Failed to fetch order");
     }
+  }
+
+  if (isLoading) {
+    return <div className="text-sm text-muted-foreground">Loading orders…</div>;
+  }
+  if (isError) {
+    return <div className="text-sm text-red-600">Failed to load orders: {(error as any)?.message || "Unknown error"}</div>;
   }
 
   return (
@@ -35,7 +50,7 @@ export default function OrdersClient() {
         />
         <button className="rounded border px-3 py-1 text-sm" onClick={handleFind}>Find</button>
       </div>
-      {error && <div className="text-sm text-red-600">{error}</div>}
+      {findError && <div className="text-sm text-red-600">{findError}</div>}
 
       <DataTable
         columns={[

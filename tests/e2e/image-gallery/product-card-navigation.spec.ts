@@ -22,17 +22,16 @@ test.describe("Product Card Image Gallery", () => {
       await prev.click();
     }
 
-    const dot = card
-      .locator('[data-testid="image-dot"], [aria-label^="Go to slide" i]')
-      .nth(1);
-    if (await dot.isVisible()) {
-      await dot.click();
-      // Assert image changed (src or aria-current indicator)
-      const afterSrc = await mainImg.getAttribute("src");
-      if (initialSrc && afterSrc) {
-        expect(afterSrc).not.toBe(initialSrc);
-      }
-    }
+    const dots = card.locator('[data-testid="image-dot"], [aria-label^="Go to image" i], [aria-label^="Go to slide" i]');
+    const dotCount = await dots.count();
+    expect(dotCount).toBeGreaterThan(1);
+    const secondDot = dots.nth(1);
+    await expect(secondDot).toBeVisible();
+    await secondDot.click();
+    const afterSrc = await mainImg.getAttribute("src");
+    expect(initialSrc && initialSrc.length > 0).toBeTruthy();
+    expect(afterSrc && afterSrc.length > 0).toBeTruthy();
+    expect(afterSrc).not.toBe(initialSrc);
   });
 
   test("quick view modal opens and shows thumbnails", async ({ page }) => {
@@ -44,15 +43,14 @@ test.describe("Product Card Image Gallery", () => {
     const modal = page.locator('[role="dialog"], [data-testid="quick-view"]');
     await expect(modal).toBeVisible();
 
-    const mainModalImg = modal.locator("img").first();
+    const mainModalImg = modal.locator('[data-testid="product-image"], img[alt*="Image"]').first();
     const before = await mainModalImg.getAttribute("src");
-    const thumbs = modal.locator('[data-testid="thumbnail"], img').nth(1);
-    if (await thumbs.isVisible()) {
-      await thumbs.click();
-      const after = await mainModalImg.getAttribute("src");
-      if (before && after) {
-        expect(after).not.toBe(before);
-      }
-    }
+    const thumbs = modal.locator('[data-testid="thumbnail"], [aria-label="Product thumbnails"] img');
+    const thumbCount = await thumbs.count();
+    expect(thumbCount).toBeGreaterThan(0);
+    const thumb = thumbs.nth(0);
+    await expect(thumb).toBeVisible();
+    await thumb.click();
+    await expect.poll(async () => (await mainModalImg.getAttribute("src")) || "").not.toBe(before || "");
   });
 });
