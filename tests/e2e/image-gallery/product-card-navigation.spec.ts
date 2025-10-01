@@ -9,18 +9,29 @@ test.describe("Product Card Image Gallery", () => {
     await card.hover();
     const next = card.getByRole("button", { name: /next|›|right/i }).first();
     const prev = card.getByRole("button", { name: /prev|‹|left/i }).first();
+    // Capture initial image src
+    const mainImg = card.locator("img").first();
+    const initialSrc = await mainImg.getAttribute("src");
+
     if (await next.isVisible()) {
-      await next.click({ trial: true }).catch(() => {});
+      await expect(next).toBeVisible();
+      await next.click();
     }
     if (await prev.isVisible()) {
-      await prev.click({ trial: true }).catch(() => {});
+      await expect(prev).toBeVisible();
+      await prev.click();
     }
 
     const dot = card
       .locator('[data-testid="image-dot"], [aria-label^="Go to slide" i]')
       .nth(1);
     if (await dot.isVisible()) {
-      await dot.click({ trial: true }).catch(() => {});
+      await dot.click();
+      // Assert image changed (src or aria-current indicator)
+      const afterSrc = await mainImg.getAttribute("src");
+      if (initialSrc && afterSrc) {
+        expect(afterSrc).not.toBe(initialSrc);
+      }
     }
   });
 
@@ -33,9 +44,15 @@ test.describe("Product Card Image Gallery", () => {
     const modal = page.locator('[role="dialog"], [data-testid="quick-view"]');
     await expect(modal).toBeVisible();
 
+    const mainModalImg = modal.locator("img").first();
+    const before = await mainModalImg.getAttribute("src");
     const thumbs = modal.locator('[data-testid="thumbnail"], img').nth(1);
     if (await thumbs.isVisible()) {
-      await thumbs.click({ trial: true }).catch(() => {});
+      await thumbs.click();
+      const after = await mainModalImg.getAttribute("src");
+      if (before && after) {
+        expect(after).not.toBe(before);
+      }
     }
   });
 });

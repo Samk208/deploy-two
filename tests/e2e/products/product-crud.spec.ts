@@ -6,7 +6,7 @@ test.describe("Supplier Product CRUD", () => {
     await loginAsSupplier(page);
   });
 
-  test("create, update, and delete product", async ({ page }) => {
+  test("create product", async ({ page }) => {
     // Navigate to products
     await page.goto("/dashboard/supplier/products");
     await expect(

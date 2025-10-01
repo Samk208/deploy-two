@@ -198,14 +198,18 @@ function parseFollowers(value: string): number {
   }
   const num = parseFloat(match[1]);
   const suffix = match[2]?.toUpperCase();
-  const multiplier = suffix === "K" ? 1e3 : suffix === "M" ? 1e6 : suffix === "B" ? 1e9 : 1;
+  const multiplier =
+    suffix === "K" ? 1e3 : suffix === "M" ? 1e6 : suffix === "B" ? 1e9 : 1;
   const result = num * multiplier;
   return Number.isFinite(result) ? result : 0;
 }
 
 function ShopCard({ shop }: { shop: Shop }) {
   return (
-    <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300">
+    <Card
+      data-testid="shop-card"
+      className="group overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300"
+    >
       <div className="relative h-32 overflow-hidden">
         <ProductImage
           src={shop.banner || "/placeholder.svg"}
@@ -347,22 +351,24 @@ export default function ShopsPage() {
         if (!cancelled && Array.isArray(list) && list.length > 0) {
           // Map API shape to UI expected fields (keep banner/avatar optional)
           setShops(
-            list.map((s: any): Shop => ({
-              id: s.id,
-              handle: s.handle,
-              name: s.name,
-              bio: s.description || "",
-              avatar: s.influencer_avatar || "/brand-manager-avatar.png",
-              banner: s.banner || "/fashion-banner.png",
-              followers: s.followers_count ? String(s.followers_count) : "0",
-              verified: !!s.verified,
-              category: s.categories?.[0] || "General",
-              rating: 4.8,
-              totalProducts: s.product_count || 0,
-              totalSales: 0,
-              badges: s.verified ? ["Verified"] : [],
-              socialLinks: {},
-            }))
+            list.map(
+              (s: any): Shop => ({
+                id: s.id,
+                handle: s.handle,
+                name: s.name,
+                bio: s.description || "",
+                avatar: s.influencer_avatar || "/brand-manager-avatar.png",
+                banner: s.banner || "/fashion-banner.png",
+                followers: s.followers_count ? String(s.followers_count) : "0",
+                verified: !!s.verified,
+                category: s.categories?.[0] || "General",
+                rating: 4.8,
+                totalProducts: s.product_count || 0,
+                totalSales: 0,
+                badges: s.verified ? ["Verified"] : [],
+                socialLinks: {},
+              })
+            )
           );
         }
       } catch (e) {

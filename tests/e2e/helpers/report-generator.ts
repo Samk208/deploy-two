@@ -14,16 +14,11 @@ interface TestResult {
 export async function generateMarkdownReport(
   results: TestResult[]
 ): Promise<void> {
-  const reportDir = path.join(
-    "C:",
-    "Users",
-    "Lenovo",
-    "Desktop",
-    "Workspce",
-    "vo-onelink-google",
-    "test-results",
-    "Dashboard Report"
-  );
+  // Determine report directory in a cross-platform way
+  const configuredDir = process.env.REPORT_DIR;
+  const reportDir = configuredDir
+    ? path.resolve(configuredDir)
+    : path.join(process.cwd(), "test-results", "Dashboard Report");
 
   await fs.mkdir(reportDir, { recursive: true });
 
@@ -81,23 +76,25 @@ export async function generateMarkdownReport(
     }
   }
 
+  // Known Issues section: load from tests/KNOWN_ISSUES.md
   markdown += `---
 
 ## Known Issues (From Handover Docs)
 
-❌ **404 Routes (Not Implemented):**
-- /dashboard/supplier/orders
-- /dashboard/supplier/analytics
+`;
 
-❌ **API Access Issues:**
-- Admin gets 403 from supplier-only API endpoints
-- Products table empty for admin viewing supplier data
+  const knownIssuesPath = path.join(__dirname, "..", "..", "KNOWN_ISSUES.md");
+  try {
+    const knownIssues = await fs.readFile(knownIssuesPath, "utf-8");
+    const trimmed = knownIssues.trim();
+    markdown += `${trimmed}\n\n`;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to read KNOWN_ISSUES.md:", err);
+    markdown += `_(No KNOWN_ISSUES.md found or readable. Please add tests/KNOWN_ISSUES.md.)_\n\n`;
+  }
 
-⚠️ **Partial Implementations:**
-- Influencer shop builder not fully integrated
-- KYC/KYB document upload incomplete
-
----
+  markdown += `---
 
 ## How to View Detailed Results
 

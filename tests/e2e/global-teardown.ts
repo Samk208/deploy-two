@@ -4,13 +4,9 @@ import path from "path";
 import { generateMarkdownReport } from "./helpers/report-generator";
 
 export default async function globalTeardown(_config: FullConfig) {
+  // Resolve report directory relative to the project root for portability
   const reportDir = path.join(
-    "C:",
-    "Users",
-    "Lenovo",
-    "Desktop",
-    "Workspce",
-    "vo-onelink-google",
+    process.cwd(),
     "test-results",
     "Dashboard Report"
   );
