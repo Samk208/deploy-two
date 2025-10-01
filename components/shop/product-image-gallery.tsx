@@ -49,9 +49,11 @@ export function ProductImageGallery({
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (safeImages.length <= 1) return;
     setTouchStartX(e.touches[0]?.clientX ?? null);
   };
   const handleTouchEnd = (e: React.TouchEvent) => {
+    if (safeImages.length <= 1) return;
     if (touchStartX == null) return;
     const dx = (e.changedTouches[0]?.clientX ?? touchStartX) - touchStartX;
     const threshold = 30; // px
@@ -177,7 +179,11 @@ export function ProductImageGallery({
       </div>
 
       {safeImages.length > 1 && (
-        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div
+          className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0"
+          tabIndex={0}
+          aria-label="Product thumbnails"
+        >
           <div className="flex sm:grid sm:grid-cols-4 gap-2 min-w-min">
             {safeImages.map((img, idx) => (
               <button

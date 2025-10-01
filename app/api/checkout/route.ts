@@ -60,6 +60,21 @@ export async function POST(request: NextRequest) {
       // In development, allow fallback to client-provided payload when product lookup fails
       if (!product) {
         const anyItem: any = item as any;
+        if (process.env.NODE_ENV === "production") {
+          console.error(
+            "[checkout] Missing product in DB in production:",
+            item.productId
+          );
+          return NextResponse.json(
+            { ok: false, message: `Product ${item.productId} not available` },
+            { status: 400 }
+          );
+        }
+        // Development/test-only: build a guarded fallback with explicit flag
+        console.warn(
+          "[checkout] DEV FALLBACK: using client-provided item due to missing DB product",
+          { productId: anyItem.productId, reason: productsError ? "productsError" : "not found" }
+        );
         product = {
           id: anyItem.productId,
           title: anyItem.title || anyItem.name || "Product",
@@ -75,13 +90,20 @@ export async function POST(request: NextRequest) {
           commission: anyItem.commission,
           stock_count: Number.isFinite(anyItem.stock_count)
             ? anyItem.stock_count
-            : 999,
+            : 10,
+          fallback: true,
         } as any;
-        if (process.env.NODE_ENV === "production") {
-          console.error(
-            "[checkout] Missing product in DB in production:",
-            item.productId
-          );
+        // Minimal validations even in fallback
+        const supplierOk = typeof product.supplier_id === "string" && product.supplier_id.trim().length > 0;
+        const priceOk = typeof product.price === "number" && product.price >= 0;
+        const stockOk = typeof product.stock_count === "number" && product.stock_count >= 0 && product.stock_count <= 1000;
+        if (!supplierOk || !priceOk || !stockOk) {
+          console.warn("[checkout] DEV FALLBACK VALIDATION FAILED", {
+            productId: anyItem.productId,
+            supplierOk,
+            priceOk,
+            stockOk,
+          });
           return NextResponse.json(
             { ok: false, message: `Product ${item.productId} not available` },
             { status: 400 }
@@ -274,22 +296,22 @@ export async function POST(request: NextRequest) {
     } as ApiResponse);
   } catch (error) {
     console.error("Checkout error:", error);
-    const isDev = process.env.NODE_ENV !== "production";
+    const allowDetails = process.env.ALLOW_ERROR_DETAILS === "true";
     const err: any = error;
     const details: Record<string, any> = {
       name: err?.name,
       message: err?.message,
     };
-    if (isDev) {
-      details.stack = err?.stack;
-      details.type = err?.type;
-      details.code = err?.code;
+    if (allowDetails) {
+      if (typeof err?.stack === "string") details.stack = err.stack;
+      if (typeof err?.type === "string") details.type = err.type;
+      if (typeof err?.code === "string" || typeof err?.code === "number") details.code = err.code;
       if (err?.raw && typeof err.raw === "object") {
-        details.raw = {
-          message: err.raw.message,
-          type: err.raw.type,
-          code: err.raw.code,
-        };
+        const safe: any = {};
+        if (typeof err.raw.message === "string") safe.message = err.raw.message;
+        if (typeof err.raw.type === "string") safe.type = err.raw.type;
+        if (typeof err.raw.code === "string" || typeof err.raw.code === "number") safe.code = err.raw.code;
+        details.raw = safe;
       }
     }
     return NextResponse.json(

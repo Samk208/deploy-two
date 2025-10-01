@@ -181,7 +181,11 @@ export function EditProductClient({
     if (!ctx) return { blob: file, contentType: file.type, ext: file.name.split(".").pop() || "bin" };
     ctx.drawImage(img, 0, 0, width, height);
 
-    const blob: Blob = await new Promise((resolve) => canvas.toBlob(b => resolve(b as Blob), "image/webp", 0.85));
+    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(b => resolve(b), "image/webp", 0.85));
+    if (!blob) {
+      // Propagate explicit error so caller can handle/report
+      throw new Error("Image processing failed: canvas.toBlob returned null");
+    }
     return { blob, contentType: "image/webp", ext: "webp" };
   };
 
@@ -206,8 +210,16 @@ export function EditProductClient({
         // Optional resize/compress
         const processed = await maybeResizeImage(file);
         const timestamp = Date.now();
-        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path = `${productId}/${timestamp}-${i}-${safeName}.${processed.ext}`.replace(/\.+\./, ".");
+        // Hardened filename sanitization: remove path components and dangerous sequences
+        const original = file.name || "upload";
+        const baseName = original.replace(/[/\\]/g, ""); // remove path separators
+        let nameNoDirs = baseName.replace(/\.\.+/g, "."); // collapse repeated dots
+        nameNoDirs = nameNoDirs.replace(/\.+/g, "."); // prevent sequences like ".."
+        nameNoDirs = nameNoDirs.replace(/^\.+/, ""); // trim leading dots
+        nameNoDirs = nameNoDirs || "file";
+        const nameWithoutExt = nameNoDirs.replace(/\.[^.]*$/, "");
+        const safeCore = nameWithoutExt.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `${productId}/${timestamp}-${i}-${safeCore}.${processed.ext}`;
 
         const { error: upErr } = await supabase.storage
           .from("products")

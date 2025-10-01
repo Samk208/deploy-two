@@ -28,9 +28,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+// Only attempt to load Stripe when a key is present at runtime
+const stripePromise = stripeKey && typeof stripeKey === "string" && stripeKey.trim().length > 0
+  ? loadStripe(stripeKey)
+  : null;
 
 interface CheckoutFormData {
   email: string;
@@ -82,6 +84,17 @@ export function CheckoutPage() {
     }
   }, [items.length, router]);
 
+  const isValidEmail = (email: string): boolean => {
+    // Disallow consecutive dots and leading/trailing dot in local part
+    if (!email || email.includes("..")) return false;
+    const [local, domain] = email.split("@");
+    if (!local || !domain) return false;
+    if (local.startsWith(".") || local.endsWith(".")) return false;
+    // Stricter RFC-like pattern for common cases
+    const re = /^[A-Za-z0-9](?:[A-Za-z0-9._%+-]{0,62}[A-Za-z0-9])?@(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}$/;
+    return re.test(email);
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -93,10 +106,9 @@ export function CheckoutPage() {
     if (!formData.state) newErrors.state = "State is required";
     if (!formData.zipCode) newErrors.zipCode = "ZIP code is required";
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
+    // Email validation (stricter)
+    if (formData.email && !isValidEmail(formData.email)) {
+      newErrors.email = "Please enter a valid email (e.g., name@example.com)";
     }
 
     setErrors(newErrors);
@@ -203,25 +215,29 @@ export function CheckoutPage() {
       // Create Stripe checkout session
       const response = await fetch("/api/checkout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(checkoutData),
       });
 
-      const data = await response.json();
+      // Safely parse JSON; handle non-JSON body
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (_) {
+        // fall back to text for diagnostics
+        const txt = await response.text().catch(() => "");
+        data = txt ? { ok: false, message: txt } : null;
+      }
 
-      if (!data.ok) {
-        throw new Error(data.message || "Checkout failed");
+      if (!(data && data.ok === true)) {
+        const msg = (data && data.message) || "Checkout failed";
+        throw new Error(msg);
       }
 
       // Redirect to Stripe Checkout
-      if (
-        !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ||
-        typeof process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY !== "string"
-      ) {
+      if (!stripePromise) {
         throw new Error(
-          "Stripe publishable key is missing. Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY in .env.local"
+          "Stripe is not configured. Set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY in .env.local"
         );
       }
       const stripe = await stripePromise;

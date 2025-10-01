@@ -21,5 +21,8 @@ export function normalizeUnsplash(url: string): string {
 
 export function normalizeAll(images: string[] | undefined | null): string[] {
   if (!Array.isArray(images)) return [];
-  return images.map((img) => normalizeUnsplash(String(img).trim()));
+  const filtered = images.filter(
+    (img): img is string => typeof img === "string" && img.trim() !== ""
+  );
+  return filtered.map((img) => normalizeUnsplash(img.trim()));
 }
