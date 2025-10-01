@@ -27,7 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import supabase from "@/lib/supabase/client";
+import { uploadProductImage } from "@/lib/storage/upload";
 import {
   AlertCircle,
   ArrowLeft,
@@ -229,13 +229,12 @@ export function EditProductClient({
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    // Validate
-    const MAX_MB = 10;
-    const valid = files.filter(
-      (f) => f.type.startsWith("image/") && f.size <= MAX_MB * 1024 * 1024
-    );
+    // Validate (OWASP allow-list): JPG/PNG/WebP only, up to 5MB
+    const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
+    const MAX_BYTES = 5 * 1024 * 1024;
+    const valid = files.filter((f) => ALLOWED.has(f.type) && f.size <= MAX_BYTES);
     if (valid.length !== files.length) {
-      setErrorMessage("Some files were skipped (invalid type or >10MB)");
+      setErrorMessage("Some files were skipped (invalid type or >5MB)");
     }
 
     setIsUploading(true);
@@ -248,48 +247,11 @@ export function EditProductClient({
         );
       }
       const productId = String(rawId);
-      // Sanitize product identifier for safe storage path usage
-      const sanitizedProductId = (() => {
-        let s = productId.replace(/[\/\\]/g, ""); // remove path separators
-        s = s.replace(/\.{2,}/g, "."); // collapse repeated dots
-        s = s.replace(/^\.+/, ""); // remove leading dots
-        s = s.replace(/[^a-zA-Z0-9._-]/g, "_"); // replace unsafe chars
-        if (!s) s = "product";
-        const maxLen = 64;
-        if (s.length > maxLen) s = s.slice(0, maxLen);
-        return s;
-      })();
       const uploadedUrls: string[] = [];
       for (let i = 0; i < valid.length; i++) {
         const file = valid[i];
-        // Optional resize/compress
-        const processed = await maybeResizeImage(file);
-        const timestamp = Date.now();
-        // Hardened filename sanitization: remove path components and dangerous sequences
-        const original = file.name || "upload";
-        const baseName = original.replace(/[/\\]/g, ""); // remove path separators
-        let nameNoDirs = baseName.replace(/\.\.+/g, "."); // collapse repeated dots
-        nameNoDirs = nameNoDirs.replace(/\.+/g, "."); // prevent sequences like ".."
-        nameNoDirs = nameNoDirs.replace(/^\.+/, ""); // trim leading dots
-        nameNoDirs = nameNoDirs || "file";
-        const nameWithoutExt = nameNoDirs.replace(/\.[^.]*$/, "");
-        const safeCore = nameWithoutExt.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path = `${sanitizedProductId}/${timestamp}-${i}-${safeCore}.${processed.ext}`;
-
-        const { error: upErr } = await supabase.storage
-          .from("products")
-          .upload(path, processed.blob, {
-            upsert: true,
-            contentType: processed.contentType,
-          });
-        if (upErr) {
-          throw new Error(`Upload failed for ${file.name}: ${upErr.message}`);
-        }
-        const { data } = supabase.storage.from("products").getPublicUrl(path);
-        if (!data?.publicUrl)
-          throw new Error(`Could not resolve URL for ${file.name}`);
-        uploadedUrls.push(data.publicUrl);
-        setUploadProgress(Math.round(((i + 1) / valid.length) * 100));
+        const { url } = await uploadProductImage(file, { productId });
+        uploadedUrls.push(url);
       }
       if (uploadedUrls.length) {
         updateField("images", [...formData.images, ...uploadedUrls]);
@@ -445,7 +407,7 @@ export function EditProductClient({
                       or drag and drop
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      PNG, JPG, GIF up to 10MB
+                      JPG/PNG/WebP, up to 5MB
                     </p>
                   </label>
                 </div>

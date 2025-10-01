@@ -51,6 +51,12 @@ export async function uploadBrandLogo(supabase: SupabaseClient, file: File, bran
  * @param productId The ID of the product.
  * @returns The public URL of the uploaded image.
  */
+/**
+ * @deprecated Use `uploadProductImage` from `@/lib/storage/upload` instead.
+ * This legacy helper targets the `product-images` bucket and a different key pattern.
+ * New supplier product uploads should standardize on the `products` bucket with
+ * path `products/{productId}/{slug}-{uuid}.webp` via the canonical helper.
+ */
 export async function uploadProductImage(supabase: SupabaseClient, file: File, productId: string): Promise<string> {
   if (!file || !productId) {
     throw new Error("File and product ID are required.")
