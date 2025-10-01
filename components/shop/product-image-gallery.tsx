@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { normalizeAll } from "@/lib/images/normalizeUnsplash";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -23,10 +23,25 @@ export function ProductImageGallery({
   const [failed, setFailed] = useState<Record<number, boolean>>({});
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  // Normalize Unsplash params and ensure non-empty list
-  const normalized = normalizeAll(Array.isArray(images) ? images : []);
-  const safeImages = normalized.length > 0 ? normalized : ["/placeholder.jpg"]; 
-  const currentImage = failed[currentIndex] ? "/placeholder.jpg" : (safeImages[currentIndex] || "/placeholder.jpg");
+  // Normalize Unsplash params and ensure non-empty list (memoized)
+  const normalized = useMemo(
+    () => normalizeAll(Array.isArray(images) ? images : []),
+    [images]
+  );
+  const safeImages = normalized.length > 0 ? normalized : ["/placeholder.jpg"];
+  const currentImage = failed[currentIndex]
+    ? "/placeholder.jpg"
+    : safeImages[currentIndex] || "/placeholder.jpg";
+
+  // When the image list changes, clamp index and reset failure map
+  useEffect(() => {
+    if (currentIndex >= safeImages.length) {
+      setCurrentIndex(0);
+    }
+    // Reset failed states when images set changes to avoid stale flags
+    setFailed({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [safeImages.length]);
 
   const nextImage = () => {
     setCurrentIndex((prev) => (prev + 1) % safeImages.length);
@@ -98,7 +113,9 @@ export function ProductImageGallery({
                 : "(max-width: 640px) 100vw, 50vw"
             }
             priority={false}
-            onError={() => setFailed((f) => ({ ...f, [currentIndex]: true }))}
+            onError={() =>
+              setFailed((f) => (f[currentIndex] ? f : { ...f, [currentIndex]: true }))
+            }
           />
 
           {safeImages.length > 1 && (
@@ -213,7 +230,9 @@ export function ProductImageGallery({
                   sizes="80px"
                   placeholder="blur"
                   blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlZWUiIC8+PC9zdmc+"
-                  onError={() => setFailed((f) => ({ ...f, [idx]: true }))}
+                  onError={() =>
+                    setFailed((f) => (f[idx] ? f : { ...f, [idx]: true }))
+                  }
                 />
               </button>
             ))}
