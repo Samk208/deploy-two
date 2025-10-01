@@ -92,8 +92,8 @@ export async function checkStripeKeys() {
     return false;
   }
 
-  const secretEnv = stripeKey.includes("test") ? "test" : "live";
-  const publicEnv = stripePublicKey.includes("test") ? "test" : "live";
+  const secretEnv = stripeKey.startsWith("sk_test") ? "test" : "live";
+  const publicEnv = stripePublicKey.startsWith("pk_test") ? "test" : "live";
 
   if (secretEnv !== publicEnv) {
     addResult(
@@ -128,7 +128,7 @@ export async function testStripeConnection() {
 
   try {
     const stripe = new Stripe(stripeKey, {
-      apiVersion: "2023-10-16",
+      apiVersion: "2025-08-27.basil",
     });
 
     const account = await stripe.accounts.retrieve();
@@ -178,7 +178,7 @@ export async function testCheckoutSessionCreation() {
 
   try {
     const stripe = new Stripe(stripeKey, {
-      apiVersion: "2023-10-16",
+      apiVersion: "2025-08-27.basil",
     });
 
     const session = await stripe.checkout.sessions.create({

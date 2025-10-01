@@ -42,6 +42,7 @@ export interface Shop {
   rating: number;
   totalProducts: number;
   totalSales: number;
+  createdAt?: string;
   badges: string[];
   socialLinks: {
     instagram?: string;
@@ -365,6 +366,7 @@ export default function ShopsPage() {
                 rating: 4.8,
                 totalProducts: s.product_count || 0,
                 totalSales: 0,
+                createdAt: s.created_at || s.createdAt,
                 badges: s.verified ? ["Verified"] : [],
                 socialLinks: {},
               })
@@ -401,19 +403,32 @@ export default function ShopsPage() {
     });
 
     // Sort shops
+    const base = [...filtered];
     switch (sortBy) {
-      case "newest":
-        return filtered.sort((a, b) => b.id.localeCompare(a.id));
+      case "newest": {
+        return base.sort((a, b) => {
+          const ta = a.createdAt ? new Date(a.createdAt).getTime() : NaN;
+          const tb = b.createdAt ? new Date(b.createdAt).getTime() : NaN;
+          const taValid = Number.isFinite(ta);
+          const tbValid = Number.isFinite(tb);
+          if (taValid && tbValid) return tb - ta; // newest first
+          // Fallback to id compare if no reliable timestamps
+          return b.id.localeCompare(a.id);
+        });
+      }
       case "followers":
-        return filtered.sort(
+        return base.sort(
           (a, b) => parseFollowers(b.followers) - parseFollowers(a.followers)
         );
       case "rating":
-        return filtered.sort((a, b) => b.rating - a.rating);
+        return base.sort((a, b) => b.rating - a.rating);
       case "products":
-        return filtered.sort((a, b) => b.totalProducts - a.totalProducts);
+        return base.sort((a, b) => b.totalProducts - a.totalProducts);
       default:
-        return filtered.sort((a, b) => b.totalSales - a.totalSales);
+        // Popular: prefer follower count as a meaningful metric
+        return base.sort(
+          (a, b) => parseFollowers(b.followers) - parseFollowers(a.followers)
+        );
     }
   }, [shops, searchQuery, selectedCategory, sortBy]);
 

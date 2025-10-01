@@ -148,10 +148,27 @@ export function EditProductClient({
 
   const handleDelete = async () => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
+    setErrorMessage("");
+    try {
+      const id = (initialProduct?.id || formData?.id || "").toString().trim();
+      if (!id) {
+        throw new Error("Missing product id. Please refresh and try again.");
+      }
 
-    router.push("/dashboard/supplier/products");
+      const res = await fetch(`/api/products/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to delete product");
+      }
+
+      router.push("/dashboard/supplier/products");
+    } catch (err: any) {
+      setErrorMessage(err?.message || "Failed to delete product");
+      setIsLoading(false);
+    }
   };
 
   // Helper: basic client-side resize to max 1600px and convert to webp (except gifs)
@@ -231,6 +248,17 @@ export function EditProductClient({
         );
       }
       const productId = String(rawId);
+      // Sanitize product identifier for safe storage path usage
+      const sanitizedProductId = (() => {
+        let s = productId.replace(/[\/\\]/g, ""); // remove path separators
+        s = s.replace(/\.{2,}/g, "."); // collapse repeated dots
+        s = s.replace(/^\.+/, ""); // remove leading dots
+        s = s.replace(/[^a-zA-Z0-9._-]/g, "_"); // replace unsafe chars
+        if (!s) s = "product";
+        const maxLen = 64;
+        if (s.length > maxLen) s = s.slice(0, maxLen);
+        return s;
+      })();
       const uploadedUrls: string[] = [];
       for (let i = 0; i < valid.length; i++) {
         const file = valid[i];
@@ -246,7 +274,7 @@ export function EditProductClient({
         nameNoDirs = nameNoDirs || "file";
         const nameWithoutExt = nameNoDirs.replace(/\.[^.]*$/, "");
         const safeCore = nameWithoutExt.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path = `${productId}/${timestamp}-${i}-${safeCore}.${processed.ext}`;
+        const path = `${sanitizedProductId}/${timestamp}-${i}-${safeCore}.${processed.ext}`;
 
         const { error: upErr } = await supabase.storage
           .from("products")
@@ -766,7 +794,7 @@ export function EditProductClient({
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Package className="h-4 w-4" />
-            <span>Changes saved automatically</span>
+            <span>Remember to click 'Save Changes' to persist your edits</span>
           </div>
           <div className="flex items-center gap-3">
             {errorMessage && (

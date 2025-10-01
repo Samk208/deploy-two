@@ -87,7 +87,22 @@ export default function EnhancedShopPage() {
       const { data, error, count } = await supabase
         .from("products")
         .select(
-          "id,title,description,price,original_price,images,category,tags,stock_count,in_stock,active,supplier_id,created_at",
+          `
+            id,
+            title,
+            description,
+            price,
+            original_price,
+            images,
+            category,
+            tags,
+            stock_count,
+            in_stock,
+            active,
+            supplier_id,
+            created_at,
+            profiles:supplier_id ( name, verified, avatar_url )
+          `,
           { count: "exact" }
         )
         .order("created_at", { ascending: false })
@@ -156,10 +171,9 @@ export default function EnhancedShopPage() {
       review_count: reviewCount,
       supplier: {
         id: product.supplier_id || "",
-        name: "TechGear Supplier", // Default supplier name for now
-        verified: true,
-        avatar_url:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+        name: product?.profiles?.name || "",
+        verified: Boolean(product?.profiles?.verified) || false,
+        avatar_url: product?.profiles?.avatar_url || "",
       },
     };
   };
