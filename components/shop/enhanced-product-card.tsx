@@ -1,14 +1,13 @@
 "use client";
 
+import { ProductImageGallery } from "@/components/shop/product-image-gallery";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Eye, Heart, ShoppingCart, Star, Truck, Zap } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ProductImageGallery } from "@/components/shop/product-image-gallery";
 
 // Strongly-typed product interface used throughout this component
 export interface Product {
@@ -109,35 +108,47 @@ export function EnhancedProductCard({
       onMouseLeave={() => setIsHovered(false)}
     >
       <CardContent className="p-0 h-full flex flex-col">
-        {/* Image / Gallery (no click-to-quick-view to avoid control interference) */}
-        <ProductImageGallery
-          images={
-            Array.isArray(product?.images)
-              ? (product.images as string[])
-              : (product?.images ? [String(product.images)] : [])
-          }
-          productName={product.title}
-          layout={layout}
-        />
+        {/* Image / Gallery - clicking opens Quick View when available */}
+        <div
+          className={cn(
+            "cursor-pointer",
+            onQuickView ? "focus:outline-none" : ""
+          )}
+          onClick={() => onQuickView?.(product)}
+          role={onQuickView ? "button" : undefined}
+          aria-label={onQuickView ? `Quick view ${product.title}` : undefined}
+        >
+          <ProductImageGallery
+            images={
+              Array.isArray(product?.images)
+                ? (product.images as string[])
+                : product?.images
+                  ? [String(product.images)]
+                  : []
+            }
+            productName={product.title}
+            layout={layout}
+          />
+        </div>
 
         {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {hasDiscount && (
-              <Badge variant="destructive" className="text-xs">
-                -{discountPercentage}%
-              </Badge>
-            )}
-            {product.badges?.map((badge: string, index: number) => (
-              <Badge key={index} variant="secondary" className="text-xs">
-                {badge}
-              </Badge>
-            ))}
-            {!product.in_stock && (
-              <Badge variant="outline" className="text-xs bg-white/90">
-                Out of Stock
-              </Badge>
-            )}
-          </div>
+        <div className="absolute top-2 left-2 flex flex-col gap-1">
+          {hasDiscount && (
+            <Badge variant="destructive" className="text-xs">
+              -{discountPercentage}%
+            </Badge>
+          )}
+          {product.badges?.map((badge: string, index: number) => (
+            <Badge key={index} variant="secondary" className="text-xs">
+              {badge}
+            </Badge>
+          ))}
+          {!product.in_stock && (
+            <Badge variant="outline" className="text-xs bg-white/90">
+              Out of Stock
+            </Badge>
+          )}
+        </div>
 
         {/* Wishlist Button */}
         <Button

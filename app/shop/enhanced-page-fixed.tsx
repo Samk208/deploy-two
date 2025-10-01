@@ -74,52 +74,39 @@ export default function EnhancedShopPage() {
     }
   }, []);
 
-  // Paginated fetch with explicit columns
+  // Paginated fetch via API (resilient to env/config)
   const pageSize = 24;
   const fetchProducts = useCallback(async (page: number = 1) => {
     try {
       setLoading(true);
-      const { supabase } = await import("@/lib/supabase/client");
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(pageSize),
+      });
+      const res = await fetch(`/api/products?${params.toString()}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`API /api/products failed: ${res.status} ${text}`);
+      }
+      const json = await res.json();
+      const data = (json?.products as any[]) || [];
+      const count = Number(json?.totalCount) || 0;
 
-      const start = (page - 1) * pageSize;
-      const end = start + pageSize - 1;
-
-      const { data, error, count } = await supabase
-        .from("products")
-        .select(
-          `
-            id,
-            title,
-            description,
-            price,
-            original_price,
-            images,
-            category,
-            tags,
-            stock_count,
-            in_stock,
-            active,
-            supplier_id,
-            created_at,
-            profiles:supplier_id ( name, verified, avatar_url )
-          `,
-          { count: "exact" }
-        )
-        .order("created_at", { ascending: false })
-        .range(start, end);
-
-      if (error) throw error;
-
-      setProducts((prev) =>
-        page === 1 ? data || [] : [...prev, ...(data || [])]
-      );
-      const total = count || 0;
-      setTotalCount(total);
-      const reachedEnd = end + 1 >= total || (data?.length || 0) < pageSize;
+      setProducts((prev) => (page === 1 ? data : [...prev, ...data]));
+      setTotalCount(count);
+      const reachedEnd = data.length < pageSize || page * pageSize >= count;
       setHasMore(!reachedEnd);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Direct fetch error:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch products");
+      const message =
+        typeof err?.message === "string" && err.message.trim()
+          ? err.message
+          : "Failed to fetch products";
+      setError(message);
       if (page === 1) {
         setProducts([]);
         setTotalCount(0);
@@ -220,7 +207,8 @@ export default function EnhancedShopPage() {
   };
 
   const refetch = () => {
-    fetchProducts();
+    setError(null);
+    fetchProducts(1);
   };
 
   const handleQuickView = (product: any) => {
