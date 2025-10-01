@@ -87,6 +87,11 @@ export function ProductImageGallery({
             alt={`${productName} - Image ${currentIndex + 1}`}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+            decoding="async"
+            fetchPriority="low"
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlZWUiIC8+PC9zdmc+"
             sizes={
               layout === "grid"
                 ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -203,7 +208,11 @@ export function ProductImageGallery({
                   alt={`${productName} thumbnail ${idx + 1}`}
                   fill
                   className="object-cover"
+                  loading="lazy"
+                  decoding="async"
                   sizes="80px"
+                  placeholder="blur"
+                  blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlZWUiIC8+PC9zdmc+"
                   onError={() => setFailed((f) => ({ ...f, [idx]: true }))}
                 />
               </button>
