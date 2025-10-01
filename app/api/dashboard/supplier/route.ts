@@ -83,22 +83,32 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       (p: any) => p?.created_at && new Date(p.created_at) >= monthStart
     ).length;
 
-    // Top products (approximation without joins or subselects)
-    const topProducts = (productsData || []).slice(0, 5).map((p: any) => ({
-      id: p.id,
-      title: p.title || "Untitled",
-      sales: 0,
-      revenue: 0,
-      commission: p.commission || 0,
-      stock: p.stock_count || 0,
-    }));
+    // Top products: metrics unavailable without reliable item-level linkage; return empty list
+    const topProducts: SupplierDashboardData["topProducts"] = [];
 
-    // Orders aggregates: fallback-safe without complex joins
-    const { data: ordersData } = await supabase
-      .from("orders")
-      .select("id, total, status, created_at")
+    // Orders aggregates scoped to supplier via commissions → orders inner join
+    // Use commissions as the linkage: commissions rows carry supplier_id and order_id
+    const { data: commissionJoins } = await supabase
+      .from("commissions")
+      .select(
+        `
+        order_id,
+        amount,
+        rate,
+        created_at,
+        products ( title ),
+        orders!inner (
+          id,
+          total,
+          status,
+          created_at,
+          users!orders_customer_id_fkey ( name )
+        )
+      `
+      )
+      .eq("supplier_id", supplierId)
       .order("created_at", { ascending: false })
-      .limit(25);
+      .limit(200);
 
     let totalRevenue = 0;
     let totalSales = 0;
@@ -111,37 +121,88 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     let monthRevenue = 0;
     let monthOrders = 0;
 
-    // Without order items linkage available in typed schema, use totals only
-    (ordersData || []).forEach((order: any) => {
-      const createdAt = order.created_at ? new Date(order.created_at) : null;
+    // Aggregate by unique order_id
+    type OrderAgg = {
+      orderId: string;
+      total: number;
+      status: string;
+      createdAt: string;
+      customerName: string;
+      itemsCount: number;
+      commissionSum: number;
+      firstProductTitle: string;
+    };
+
+    const byOrder = new Map<string, OrderAgg>();
+    (commissionJoins || []).forEach((row: any) => {
+      const ord = row.orders || {};
+      const orderId = String(row.order_id || ord.id || "");
+      if (!orderId) return;
+      const existing = byOrder.get(orderId);
+      const createdAt =
+        ord.created_at || row.created_at || new Date().toISOString();
+      const productTitle = row.products?.title || "Order";
+      if (!existing) {
+        byOrder.set(orderId, {
+          orderId,
+          total: Number(ord.total) || 0,
+          status: ord.status || "unknown",
+          createdAt,
+          customerName: ord?.users?.name || "Customer",
+          itemsCount: 1,
+          commissionSum: Number(row.amount) || 0,
+          firstProductTitle: productTitle,
+        });
+      } else {
+        existing.itemsCount += 1;
+        existing.commissionSum += Number(row.amount) || 0;
+        // Prefer earliest createdAt from order, keep firstProductTitle as-is
+      }
+    });
+
+    // Compute dashboard aggregates from unique orders
+    const aggregatedOrders = Array.from(byOrder.values()).sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    aggregatedOrders.forEach((o) => {
+      const createdAt = o.createdAt ? new Date(o.createdAt) : null;
       const isToday = !!createdAt && createdAt >= todayStart;
       const isThisMonth = !!createdAt && createdAt >= monthStart;
 
-      totalRevenue += order.total || 0;
-      // sales unknown without items; keep as 0
-      if (order.status === "pending" || order.status === "processing") {
+      totalRevenue += o.total || 0;
+      totalSales += o.itemsCount || 0;
+      commissionEarned += o.commissionSum || 0;
+
+      if (o.status === "pending" || o.status === "processing") {
         activeOrders++;
       }
       if (isToday) {
-        todayRevenue += order.total || 0;
+        todayRevenue += o.total || 0;
+        todaySales += o.itemsCount || 0;
         todayOrders++;
       }
       if (isThisMonth) {
-        monthRevenue += order.total || 0;
+        monthRevenue += o.total || 0;
+        monthSales += o.itemsCount || 0;
         monthOrders++;
       }
     });
 
-    // Commission cannot be derived without items; set to 0 (UI handles formatting)
-    const recentOrders = (ordersData || []).slice(0, 5).map((o: any) => ({
-      id: o.id,
-      customerName: "Customer",
-      productTitle: "Order",
-      quantity: 0,
-      total: o.total || 0,
-      commission: 0,
-      status: o.status || "unknown",
-      createdAt: o.created_at || new Date().toISOString(),
+    // Recent orders derived from aggregated supplier-scoped orders
+    const recentOrders = aggregatedOrders.slice(0, 5).map((o) => ({
+      id: o.orderId,
+      customerName: o.customerName,
+      productTitle:
+        o.itemsCount > 1
+          ? `${o.firstProductTitle} + ${o.itemsCount - 1} more`
+          : o.firstProductTitle,
+      quantity: o.itemsCount,
+      total: o.total,
+      commission: Math.round(o.commissionSum * 100) / 100,
+      status: o.status,
+      createdAt: o.createdAt,
     }));
 
     const influencerPartners = 0;
