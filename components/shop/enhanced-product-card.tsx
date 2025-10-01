@@ -112,7 +112,7 @@ export function EnhancedProductCard({
         <div
           className={cn(
             "cursor-pointer",
-            onQuickView ? "focus:outline-none" : ""
+            onQuickView ? "focus:ring-2 focus:ring-blue-500" : ""
           )}
           onClick={() => onQuickView?.(product)}
           role={onQuickView ? "button" : undefined}

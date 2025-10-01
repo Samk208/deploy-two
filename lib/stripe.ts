@@ -1,53 +1,62 @@
-import Stripe from 'stripe'
+import Stripe from "stripe";
 
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY!
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || "";
+let stripeInstance: Stripe | null = null;
 
-if (!stripeSecretKey) {
-  throw new Error('STRIPE_SECRET_KEY is not set in environment variables')
+export function getStripe(): Stripe | null {
+  if (!stripeSecretKey || typeof stripeSecretKey !== "string") return null;
+  if (!stripeInstance) {
+    stripeInstance = new Stripe(stripeSecretKey, {
+      apiVersion: "2024-06-20",
+      typescript: true,
+    });
+  }
+  return stripeInstance;
 }
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-  typescript: true,
-})
-
-export const formatAmountForStripe = (amount: number, currency: string = 'usd'): number => {
+export const formatAmountForStripe = (
+  amount: number,
+  currency: string = "usd"
+): number => {
   // Convert to smallest currency unit (cents for USD, etc.)
-  const numberFormat = new Intl.NumberFormat(['en-US'], {
-    style: 'currency',
+  const numberFormat = new Intl.NumberFormat(["en-US"], {
+    style: "currency",
     currency: currency,
-    currencyDisplay: 'symbol',
-  })
-  
-  const parts = numberFormat.formatToParts(amount)
-  let zeroDecimalCurrency = true
-  
-  for (const part of parts) {
-    if (part.type === 'decimal') {
-      zeroDecimalCurrency = false
-      break
-    }
-  }
-  
-  return zeroDecimalCurrency ? amount : Math.round(amount * 100)
-}
+    currencyDisplay: "symbol",
+  });
 
-export const formatAmountFromStripe = (amount: number, currency: string = 'usd'): number => {
-  const numberFormat = new Intl.NumberFormat(['en-US'], {
-    style: 'currency',
-    currency: currency,
-    currencyDisplay: 'symbol',
-  })
-  
-  const parts = numberFormat.formatToParts(amount)
-  let zeroDecimalCurrency = true
-  
+  const parts = numberFormat.formatToParts(amount);
+  let zeroDecimalCurrency = true;
+
   for (const part of parts) {
-    if (part.type === 'decimal') {
-      zeroDecimalCurrency = false
-      break
+    if (part.type === "decimal") {
+      zeroDecimalCurrency = false;
+      break;
     }
   }
-  
-  return zeroDecimalCurrency ? amount : amount / 100
-}
+
+  return zeroDecimalCurrency ? amount : Math.round(amount * 100);
+};
+
+export const formatAmountFromStripe = (
+  amount: number,
+  currency: string = "usd"
+): number => {
+  const numberFormat = new Intl.NumberFormat(["en-US"], {
+    style: "currency",
+    currency: currency,
+    currencyDisplay: "symbol",
+  });
+
+  const parts = numberFormat.formatToParts(amount);
+  let zeroDecimalCurrency = true;
+
+  for (const part of parts) {
+    if (part.type === "decimal") {
+      zeroDecimalCurrency = false;
+      break;
+    }
+  }
+
+  return zeroDecimalCurrency ? amount : amount / 100;
+};

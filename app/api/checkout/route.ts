@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/lib/auth-helpers";
-import { formatAmountForStripe, stripe } from "@/lib/stripe";
+import { formatAmountForStripe, getStripe } from "@/lib/stripe";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { type ApiResponse } from "@/lib/types";
 import { checkoutSchema } from "@/lib/validators";
@@ -9,11 +9,19 @@ import { NextResponse, type NextRequest } from "next/server";
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
+  console.log("=== CHECKOUT API CALLED ===");
   try {
     const supabase = await createServerSupabaseClient();
     const user = await getCurrentUser(supabase);
 
+    // Log minimal request context
+    try {
+      const bodyPeek = await request.clone().text();
+      console.log("[checkout] raw body length:", bodyPeek?.length || 0);
+    } catch (_) {}
+
     const body = await request.json();
+    console.log("[checkout] request body:", JSON.stringify(body, null, 2));
     const validation = checkoutSchema.safeParse(body);
 
     if (!validation.success) {
@@ -30,6 +38,26 @@ export async function POST(request: NextRequest) {
 
     const { items, shippingAddress, billingAddress } = validation.data;
     console.log("[checkout] received items:", JSON.stringify(items));
+
+    // Validate Stripe configuration
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) {
+      console.error("MISSING: STRIPE_SECRET_KEY");
+      return NextResponse.json(
+        { ok: false, message: "Stripe not configured" },
+        { status: 500 }
+      );
+    }
+
+    // Validate auth (if required for checkout)
+    if (!user) {
+      console.error("[checkout] Unauthorized: no user");
+      return NextResponse.json(
+        { ok: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+    console.log("[checkout] user:", user.id);
 
     // Fetch product details and calculate total
     const productIds = items.map((item) => item.productId);
@@ -160,11 +188,17 @@ export async function POST(request: NextRequest) {
         : typeof product.images === "string"
           ? [product.images]
           : [];
+      // Only pass publicly accessible URLs to Stripe; omit relative paths
+      const stripeImages = imageArray
+        .filter((u: any) => typeof u === "string" && /^https?:\/\//.test(u))
+        .slice(0, 1);
       // Build product_data without empty fields to satisfy Stripe validation
       const productData: any = {
         name: product.title || "Product",
-        images: imageArray.filter(Boolean).slice(0, 1),
       };
+      if (stripeImages.length) {
+        productData.images = stripeImages;
+      }
       if (
         typeof product.description === "string" &&
         product.description.trim().length > 0
@@ -329,6 +363,14 @@ export async function POST(request: NextRequest) {
       hasInfluencer: Boolean(influencerIdForMetadata),
       origin,
     });
+    const stripe = getStripe();
+    if (!stripe) {
+      console.error("[checkout] Stripe initialization failed");
+      return NextResponse.json(
+        { ok: false, message: "Stripe not configured" },
+        { status: 500 }
+      );
+    }
     const session = await stripe.checkout.sessions.create(sessionPayload);
     console.log("[checkout] session created:", session.id);
 
@@ -341,7 +383,10 @@ export async function POST(request: NextRequest) {
       message: "Checkout session created successfully",
     } as ApiResponse);
   } catch (error) {
-    console.error("Checkout error:", error);
+    console.error("=== CHECKOUT ERROR ===");
+    console.error("Error type:", (error as any)?.constructor?.name);
+    console.error("Error message:", (error as any)?.message);
+    console.error("Error stack:", (error as any)?.stack);
     const allowDetails = process.env.ALLOW_ERROR_DETAILS === "true";
     const err: any = error;
     const details: Record<string, any> = {

@@ -30,9 +30,10 @@ import { toast } from "sonner";
 
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 // Only attempt to load Stripe when a key is present at runtime
-const stripePromise = stripeKey && typeof stripeKey === "string" && stripeKey.trim().length > 0
-  ? loadStripe(stripeKey)
-  : null;
+const stripePromise =
+  stripeKey && typeof stripeKey === "string" && stripeKey.trim().length > 0
+    ? loadStripe(stripeKey)
+    : null;
 
 interface CheckoutFormData {
   email: string;
@@ -91,7 +92,8 @@ export function CheckoutPage() {
     if (!local || !domain) return false;
     if (local.startsWith(".") || local.endsWith(".")) return false;
     // Stricter RFC-like pattern for common cases
-    const re = /^[A-Za-z0-9](?:[A-Za-z0-9._%+-]{0,62}[A-Za-z0-9])?@(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}$/;
+    const re =
+      /^[A-Za-z0-9](?:[A-Za-z0-9._%+-]{0,62}[A-Za-z0-9])?@(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}$/;
     return re.test(email);
   };
 
@@ -229,8 +231,16 @@ export function CheckoutPage() {
         data = txt ? { ok: false, message: txt } : null;
       }
 
+      // Log full response for debugging
+      console.log("Checkout response:", {
+        status: response.status,
+        ok: response.ok,
+        data,
+      });
+
       if (!(data && data.ok === true && data.data && data.data.sessionId)) {
-        const msg = (data && data.message) || "Checkout failed: invalid response";
+        const msg =
+          (data && data.message) || "Checkout failed: invalid response";
         throw new Error(msg);
       }
 
@@ -253,12 +263,16 @@ export function CheckoutPage() {
         throw new Error(error.message);
       }
     } catch (error) {
-      console.error("Checkout error:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong during checkout"
-      );
+      console.error("Checkout error details:", {
+        name: (error as any)?.name,
+        message: (error as any)?.message,
+        stack: (error as any)?.stack,
+      });
+      toast({
+        title: "Checkout Failed",
+        description: (error as any)?.message || "Please try again",
+        variant: "destructive",
+      });
     } finally {
       setIsProcessing(false);
     }

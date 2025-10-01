@@ -47,6 +47,23 @@ interface Product {
   reviews: number;
 }
 
+// Product shape used by the Quick View modal
+interface QuickViewProduct {
+  id: string | number;
+  title: string;
+  description?: string;
+  price: number;
+  original_price?: number;
+  images?: string[] | string;
+  category?: string;
+  region?: string;
+  in_stock?: boolean;
+  stock_count?: number;
+  rating?: number;
+  reviews?: number;
+  commission?: number;
+}
+
 interface Influencer {
   handle: string;
   name: string;
@@ -78,7 +95,8 @@ export function InfluencerShopClient({
   const [selectedRegion, setSelectedRegion] = useState("All");
   const [sortBy, setSortBy] = useState("featured");
   const { addItem } = useCartStore();
-  const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
+  const [quickViewProduct, setQuickViewProduct] =
+    useState<QuickViewProduct | null>(null);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
   // Get unique categories and regions
@@ -156,7 +174,7 @@ export function InfluencerShopClient({
   };
 
   const openQuickView = (product: Product) => {
-    const modalProduct = {
+    const modalProduct: QuickViewProduct = {
       id: product.id,
       title: product.title,
       description: "",
@@ -478,18 +496,20 @@ export function InfluencerShopClient({
         onAddToCart={(p) => {
           // Map modal product back to cart schema
           const mapped: Product = {
-            id: String(p.id),
-            title: p.title,
-            price: p.price,
-            originalPrice: p.original_price,
-            image: Array.isArray(p.images) ? p.images[0] : p.images,
+            id: String((p as QuickViewProduct).id),
+            title: (p as QuickViewProduct).title,
+            price: (p as QuickViewProduct).price,
+            originalPrice: (p as QuickViewProduct).original_price,
+            image: Array.isArray((p as QuickViewProduct).images)
+              ? ((p as QuickViewProduct).images as string[])[0]
+              : ((p as QuickViewProduct).images as string | undefined) || "",
             badges: [],
-            category: p.category || "General",
-            region: p.region || "Global",
-            inStock: p.in_stock !== false,
-            stockCount: p.stock_count || 0,
-            rating: p.rating || 4.5,
-            reviews: p.reviews || 0,
+            category: (p as QuickViewProduct).category || "General",
+            region: (p as QuickViewProduct).region || "Global",
+            inStock: (p as QuickViewProduct).in_stock !== false,
+            stockCount: (p as QuickViewProduct).stock_count || 0,
+            rating: (p as QuickViewProduct).rating || 4.5,
+            reviews: (p as QuickViewProduct).reviews || 0,
           };
           handleAddToCart(mapped);
         }}
