@@ -1,6 +1,6 @@
 # Dashboard Build - Handover Notes
 
-Last updated: 2025-10-01
+Last updated: 2025-10-02
 
 ## Scope
 - Supplier dashboard backend/API and UI status
@@ -9,6 +9,21 @@ Last updated: 2025-10-01
 - What’s left to build (supplier + influencer), with concrete next steps
 
 ---
+
+## Highlights since last handover
+
+- **[standardized image uploads]** Canonical helper `lib/storage/upload.ts` now handles product image uploads end-to-end:
+  - Exports `ALLOWED_MIME_TYPES` and `MAX_FILE_SIZE_BYTES` (5MB) for centralized client validation.
+  - Client-side conversion to WebP with safe fallback; always uploads a Blob and sets correct `contentType` and file extension.
+  - Path convention: `products/{productId}/{slug}-{uuid}.<ext>`; `upsert: false`, long cache TTL.
+  - Returns `{ key, url }` via `getPublicUrl()` (compatible with current public bucket setup).
+- **[refactor edit page]** `app/dashboard/supplier/products/[id]/EditProductClient.tsx` uses the canonical helper; removed inline storage logic and duplicated limits. UI hint adjusted to JPG/PNG/WebP up to 5MB.
+- **[legacy helper]** `lib/storage.ts:uploadProductImage()` targeting `product-images` bucket is marked `@deprecated` to avoid future duplication.
+- **[lint/type fixes]** Resolved ESLint issues in `components/shop/product-image-gallery.tsx` and TS comment linting in upload helper via feature detection (no ts-ignore).
+
+Notes:
+- If the bucket is made private later, switch the helper to `createSignedUrl` for reads.
+- RLS policies should tie `products/{productId}/…` to the owning supplier (see Nice-to-haves).
 
 ## Supplier Dashboard
 
@@ -114,6 +129,10 @@ Last updated: 2025-10-01
 - Time calculations: ensure invalid `created_at` values are excluded from time windows
 - Performance: commission joins limited to recent N rows; consider pagination/cursors for larger datasets
 
+Additional (uploads):
+- **Content-type/extension correctness** is now guaranteed; mismatches are avoided even if conversion fails.
+- **Upserts disabled** (`upsert: false`) to prevent accidental overwrites under the same key.
+
 ---
 
 ## Actionable Backlog
@@ -121,3 +140,21 @@ Last updated: 2025-10-01
 - Supplier Analytics page using supplier dashboard aggregates (and optional timeseries API)
 - Influencer dashboard API endpoint and analytics UI
 - Add end-to-end tests for new pages
+
+### Uploads-specific next steps (recommended)
+- **[New Product flow]** Implement `POST /api/products` to create a draft and return `{ id }`, then upload images via the helper using `productId`. This keeps RLS clean and avoids temp moves.
+- **[Persist ordering/deletes]** Wire reorder/delete UI on the edit page to persist the `images` array via existing `PUT /api/products/[id]`.
+- **[RLS policy migration/doc]** Add a migration or documentation snippet to enforce: only suppliers owning a product can `INSERT` into `storage.objects` paths under `products/{productId}/…`.
+- **[Signed URLs option]** If bucket is private, switch display reads to signed URLs with reasonable TTL.
+
+### Nice-to-haves
+- **Dropzone UX**: Use a dropzone (e.g., shadcn + react-dropzone) with progress and multiple file selection.
+- **Client-side resize constraints**: Optional downscale for very large images (already supported via WebP conversion path).
+- **Image moderation or EXIF strip**: Consider server-side post-processing if needed for compliance.
+- **Observability**: Log storage errors server-side; add Sentry breadcrumbs for client upload failures.
+- **CDN tweaks**: Ensure `next.config.mjs` image patterns cover Supabase hosts in all envs; consider AVIF in addition to WebP (already configured).
+
+### How to test uploads (manual)
+- **Allowed types/size**: Try 4–5MB JPG/PNG → should upload and convert to WebP; larger files are rejected client-side.
+- **Edit page flow**: Upload one or more images on `app/dashboard/supplier/products/[id]/EditProductClient.tsx`; thumbnails should render, and saving should persist `images`.
+- **RLS (when added)**: Attempt to upload to a product the user does not own → should be blocked by RLS.

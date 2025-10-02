@@ -20,6 +20,7 @@ import {
   DollarSign,
 } from "lucide-react"
 import { Suspense } from "react"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 
 export const metadata: Metadata = {
   title: "Dashboard - One-Link",
@@ -44,22 +45,50 @@ const influencerNavItems = [
   { href: "/dashboard/influencer/settings", icon: Settings, label: "Settings", badge: null },
 ]
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // Mock user data - in a real app, this would come from authentication
-  const user = {
-    name: "Sarah Kim",
-    email: "sarah@example.com",
-    role: "supplier" as const,
-    avatar: "/fashion-influencer-avatar.png",
-    verified: false,
-    verificationStatus: "pending" as const, // pending | verified | rejected
+  // Resolve authenticated user role and optional influencer shop handle
+  const supabase = await createServerSupabaseClient()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  let role: "supplier" | "influencer" | "admin" | "customer" = "customer"
+  let name = "User"
+  let avatar: string | null = null
+  let verified = false
+  let verificationStatus: "pending" | "verified" | "rejected" = "pending"
+  let influencerShopHandle: string | null = null
+
+  if (session?.user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role,name,avatar,verified,verification_status")
+      .eq("id", session.user.id)
+      .maybeSingle()
+
+    if (profile) {
+      role = (profile as any).role ?? role
+      name = (profile as any).name ?? name
+      avatar = (profile as any).avatar ?? null
+      verified = !!(profile as any).verified
+      verificationStatus = ((profile as any).verification_status ?? "pending") as any
+    }
+
+    if (role === "influencer") {
+      const { data: shop } = await supabase
+        .from("shops")
+        .select("handle")
+        .eq("influencer_id", session.user.id)
+        .maybeSingle()
+      influencerShopHandle = (shop as any)?.handle ?? null
+    }
   }
 
-  const navItems = user.role === "supplier" ? supplierNavItems : influencerNavItems
+  const navItems = role === "supplier" ? supplierNavItems : influencerNavItems
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -97,29 +126,28 @@ export default function DashboardLayout({
               {/* Notifications */}
               <Button variant="ghost" size="sm" className="relative">
                 <Bell className="h-5 w-5" />
-                <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 bg-red-500 text-white text-xs">2</Badge>
               </Button>
 
               {/* User menu */}
               <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
                 <div className="hidden sm:block text-right">
-                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                  <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+                  <p className="text-sm font-medium text-gray-900">{name}</p>
+                  <p className="text-xs text-gray-500 capitalize">{role}</p>
                 </div>
                 <div className="relative">
                   <img
-                    src={user.avatar || "/placeholder.svg"}
-                    alt={user.name}
+                    src={avatar || "/placeholder.svg"}
+                    alt={name}
                     className="h-8 w-8 rounded-full object-cover"
                   />
-                  {user.verified && (
+                  {verified && (
                     <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 border-2 border-white rounded-full" />
                   )}
                 </div>
               </div>
             </div>
           </div>
-        </header>
+          </header>
 
         <div className="flex">
           {/* Sidebar */}
@@ -143,13 +171,15 @@ export default function DashboardLayout({
 
               <Separator className="my-4" />
 
-              <Link
-                href="/shop/sarah_style"
-                className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
-              >
-                <Store className="h-5 w-5" />
-                <span className="flex-1">View Shop</span>
-              </Link>
+              {role === "influencer" && influencerShopHandle && (
+                <Link
+                  href={`/shop/${influencerShopHandle}`}
+                  className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                >
+                  <Store className="h-5 w-5" />
+                  <span className="flex-1">View Shop</span>
+                </Link>
+              )}
 
               <button className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors w-full">
                 <LogOut className="h-5 w-5" />
@@ -161,8 +191,8 @@ export default function DashboardLayout({
           {/* Main content */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
             <VerificationBannerWrapper
-              userRole={user.role === "supplier" ? "brand" : "influencer"}
-              verificationStatus={user.verificationStatus}
+              userRole={role === "supplier" ? "brand" : "influencer"}
+              verificationStatus={verificationStatus}
             />
             {children}
           </main>

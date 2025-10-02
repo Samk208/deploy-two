@@ -2,8 +2,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { createServerSupabaseClient } from "@/lib/supabase/server"
 
-export default function InfluencerDashboard() {
+export default async function InfluencerDashboard() {
+  const supabase = await createServerSupabaseClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  let shopHandle: string | null = null
+  if (session?.user) {
+    const { data: shop } = await supabase
+      .from("shops")
+      .select("handle")
+      .eq("influencer_id", session.user.id)
+      .maybeSingle()
+    shopHandle = (shop as any)?.handle ?? null
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -72,7 +84,8 @@ export default function InfluencerDashboard() {
                 Manage My Shop
               </Button>
             </Link>
-            <Link href="/shop/sarah-style">
+            {shopHandle && (
+            <Link href={`/shop/${shopHandle}`}>
               <Button className="w-full justify-start bg-transparent" variant="outline">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -91,6 +104,7 @@ export default function InfluencerDashboard() {
                 Preview My Shop
               </Button>
             </Link>
+            )}
             <Link href="/dashboard/influencer/analytics">
               <Button className="w-full justify-start bg-transparent" variant="outline">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
