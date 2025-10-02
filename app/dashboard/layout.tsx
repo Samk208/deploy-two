@@ -88,7 +88,7 @@ export default async function DashboardLayout({
     }
   }
 
-  const navItems = role === "supplier" ? supplierNavItems : influencerNavItems
+  const navItems = role === "influencer" ? influencerNavItems : supplierNavItems
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -191,7 +191,7 @@ export default async function DashboardLayout({
           {/* Main content */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
             <VerificationBannerWrapper
-              userRole={role === "supplier" ? "brand" : "influencer"}
+              userRole={role === "influencer" ? "influencer" : "brand"}
               verificationStatus={verificationStatus}
             />
             {children}
