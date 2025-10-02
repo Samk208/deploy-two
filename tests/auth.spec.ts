@@ -1,22 +1,26 @@
 import { expect, test } from "@playwright/test";
 
-async function ensureLoggedIn(page: import('@playwright/test').Page, email: string, password: string) {
-  // If the user menu is not visible, perform a UI login
-  const menu = page.getByTestId('user-menu').first();
-  try {
-    await expect(menu).toBeVisible({ timeout: 5000 });
-    return; // already logged in
-  } catch {
-    // Not logged in yet; go to sign-in and authenticate
-    await page.goto('/sign-in', { waitUntil: 'domcontentloaded' });
-    await page.fill('input[name="email"]', email);
-    await page.fill('input[name="password"]', password);
-    await page.click('button[type="submit"]');
-    // Let redirects/SSR settle
-    await page.waitForLoadState('networkidle');
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByTestId('user-menu').first()).toBeVisible({ timeout: 15000 });
-  }
+async function ensureLoggedIn(
+  page: import('@playwright/test').Page,
+  email: string,
+  password: string
+) {
+  // Deterministic: start with a clean auth/session state, then perform UI login
+  await page.context().clearCookies();
+  await page.addInitScript(() => {
+    try {
+      window.localStorage?.clear?.();
+      window.sessionStorage?.clear?.();
+      // Clear any persisted auth keys commonly used
+      const keys = Object.keys(window.localStorage ?? {});
+      for (const k of keys) {
+        if (/auth|session|token|supabase/i.test(k)) {
+          try { window.localStorage.removeItem(k); } catch {}
+        }
+      }
+    } catch {}
+  });
+  await uiSignIn(page, email, password);
 }
 
 async function openUserMenu(page: import('@playwright/test').Page) {
@@ -50,10 +54,18 @@ async function waitForSession(page: import('@playwright/test').Page) {
 
 /** Perform a deterministic UI sign-in on /sign-in */
 async function uiSignIn(page: import('@playwright/test').Page, email: string, password: string) {
+  // Always begin from a clean state to avoid false positives from leftover sessions
+  await page.context().clearCookies();
+  await page.addInitScript(() => {
+    try {
+      window.localStorage?.clear?.();
+      window.sessionStorage?.clear?.();
+    } catch {}
+  });
   await page.goto('/sign-in', { waitUntil: 'domcontentloaded' });
   // Prefer label-based selectors with fallbacks
-  const emailField = page.getByLabel(/email/i).or(page.locator('input[name="email"]')).first();
-  const passField = page.getByLabel(/password/i).or(page.locator('input[name="password"]')).first();
+  const emailField = page.getByLabel(/email/i).or(page.locator('input[name="email"]').first());
+  const passField = page.getByLabel(/password/i).or(page.locator('input[name="password"]').first());
   await emailField.fill(email);
   await passField.fill(password);
   await page.getByRole('button', { name: /sign in/i }).or(page.locator('button[type="submit"]').first()).click();
