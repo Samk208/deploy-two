@@ -82,12 +82,13 @@ export function CheckoutPage() {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [isAuthed, setIsAuthed] = useState(false);
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty, but avoid racing with auth redirect
   useEffect(() => {
+    if (isAuthChecking) return; // wait until auth check completes
     if (items.length === 0) {
       router.push("/shop");
     }
-  }, [items.length, router]);
+  }, [items.length, router, isAuthChecking]);
 
   // Ensure user is authenticated before allowing checkout
   useEffect(() => {

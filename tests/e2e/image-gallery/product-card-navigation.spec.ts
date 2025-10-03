@@ -13,7 +13,14 @@ test.describe("Product Card Image Gallery", () => {
     const mainImg = card.locator("img").first();
     const initialSrc = await mainImg.getAttribute("src");
 
-    if (await next.isVisible()) {
+    const nextVisible = await next.isVisible().catch(() => false);
+    const prevVisible = await prev.isVisible().catch(() => false);
+    // Require at least one navigation control to be visible, otherwise skip to avoid false green
+    if (!nextVisible && !prevVisible) {
+      test.skip(true, "No navigation buttons visible on the first product card; skipping navigation checks");
+    }
+
+    if (nextVisible) {
       await expect(next).toBeVisible();
       const before = (await mainImg.getAttribute("src")) || "";
       await next.click();
@@ -21,7 +28,7 @@ test.describe("Product Card Image Gallery", () => {
         before
       );
     }
-    if (await prev.isVisible()) {
+    if (prevVisible) {
       await expect(prev).toBeVisible();
       const before = (await mainImg.getAttribute("src")) || "";
       await prev.click();

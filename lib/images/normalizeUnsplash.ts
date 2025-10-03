@@ -1,6 +1,6 @@
 export function normalizeUnsplash(url: string): string {
   try {
-    if (!url || typeof url !== "string") return url;
+    if (!url || typeof url !== "string") return "";
     const u = new URL(url);
     if (u.hostname !== "images.unsplash.com") return url;
 
@@ -13,9 +13,11 @@ export function normalizeUnsplash(url: string): string {
     if (!u.searchParams.has("q")) u.searchParams.set("q", "80");
 
     // Rebuild
-    return `${u.origin}${u.pathname}?${u.searchParams.toString()}`;
+    const query = u.searchParams.toString();
+    const base = `${u.origin}${u.pathname}${query ? `?${query}` : ""}`;
+    return `${base}${u.hash || ""}`;
   } catch {
-    return url;
+    return typeof url === "string" ? url : "";
   }
 }
 

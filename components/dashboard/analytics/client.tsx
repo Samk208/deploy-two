@@ -14,7 +14,10 @@ import {
   Line,
 } from "recharts";
 
-export default function AnalyticsClient() {
+export default function AnalyticsClient({
+  currency,
+  locale,
+}: { currency?: string; locale?: string } = {}) {
   const { data, isLoading, error } = useQuery({ queryKey: ["supplier-dashboard"], queryFn: () => getSupplierDashboard() });
 
   const kpis = data?.stats ?? data?.kpis ?? {};
@@ -52,8 +55,8 @@ export default function AnalyticsClient() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Kpi label="Products" value={Number(kpis.totalProducts ?? kpis.products ?? 0)} />
         <Kpi label="Orders" value={Number(kpis.totalOrders ?? kpis.orders ?? 0)} />
-        <Kpi label="Revenue" value={Number(kpis.totalRevenue ?? 0)} format="currency" />
-        <Kpi label="Commission" value={Number(kpis.commissionEarned ?? kpis.totalCommission ?? 0)} format="currency" />
+        <Kpi label="Revenue" value={Number(kpis.totalRevenue ?? 0)} format="currency" currency={currency} locale={locale} />
+        <Kpi label="Commission" value={Number(kpis.commissionEarned ?? kpis.totalCommission ?? 0)} format="currency" currency={currency} locale={locale} />
       </div>
 
       <div className="rounded border p-4">
@@ -72,7 +75,7 @@ export default function AnalyticsClient() {
       </div>
 
       <div className="rounded border p-4">
-        <h3 className="mb-2 font-medium">Daily Orders (placeholder)</h3>
+        <h3 className="mb-2 font-medium">Daily Orders</h3>
         <div style={{ width: "100%", height: 280 }}>
           <ResponsiveContainer>
             <LineChart data={daily}>
@@ -89,8 +92,12 @@ export default function AnalyticsClient() {
   );
 }
 
-function Kpi({ label, value, format }: { label: string; value: number; format?: "currency" | "number" }) {
-  const display = format === "currency" ? new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(value) : new Intl.NumberFormat().format(value);
+function Kpi({ label, value, format, currency, locale }: { label: string; value: number; format?: "currency" | "number"; currency?: string; locale?: string }) {
+  const resolvedLocale = locale || undefined;
+  const resolvedCurrency = currency || "USD";
+  const display = format === "currency"
+    ? new Intl.NumberFormat(resolvedLocale, { style: "currency", currency: resolvedCurrency }).format(value)
+    : new Intl.NumberFormat(resolvedLocale).format(value);
   return (
     <div className="rounded-lg border p-4">
       <div className="text-sm text-muted-foreground">{label}</div>

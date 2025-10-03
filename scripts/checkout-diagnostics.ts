@@ -5,9 +5,12 @@ import fs from "fs";
 import path from "path";
 import Stripe from "stripe";
 
-export const stripeKey =
-  process.env.STRIPE_SECRET_KEY || process.env.TEST_STRIPE_SECRET_KEY;
-export const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+function getStripeSecretKey() {
+  return process.env.STRIPE_SECRET_KEY || process.env.TEST_STRIPE_SECRET_KEY;
+}
+function getStripePublicKey() {
+  return process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+}
 
 export interface DiagnosticResult {
   step: string;
@@ -17,6 +20,12 @@ export interface DiagnosticResult {
   recommendations?: string[];
 }
 
+// Shared results buffer expected by tests
+export const results: DiagnosticResult[] = [];
+export function clearResults() {
+  results.length = 0;
+}
+
 export function addResult(
   step: string,
   status: DiagnosticResult["status"],
@@ -24,114 +33,104 @@ export function addResult(
   error?: string,
   recommendations?: string[]
 ): DiagnosticResult {
-  return { step, status, details, error, recommendations };
+  const item = { step, status, details, error, recommendations };
+  results.push(item);
+  return item;
 }
 
-export async function checkStripeKeys(): Promise<DiagnosticResult[] | false> {
+export async function checkStripeKeys(): Promise<boolean> {
   console.log("\n🔍 Step 1: Checking Stripe API keys...\n");
-  const out: DiagnosticResult[] = [];
+  const stripeKey = getStripeSecretKey();
+  const stripePublicKey = getStripePublicKey();
   if (!stripeKey) {
-    out.push(
-      addResult(
-        "Stripe Secret Key",
-        "fail",
-        "STRIPE_SECRET_KEY not found in environment",
-        undefined,
-        [
-          "Add STRIPE_SECRET_KEY to .env.local",
-          "Get key from Stripe Dashboard → Developers → API Keys",
-          "Use test key (sk_test_...) for development",
-        ]
-      )
+    addResult(
+      "Stripe Secret Key",
+      "fail",
+      "STRIPE_SECRET_KEY not found in environment",
+      undefined,
+      [
+        "Add STRIPE_SECRET_KEY to .env.local",
+        "Get key from Stripe Dashboard → Developers → API Keys",
+        "Use test key (sk_test_...) for development",
+      ]
     );
-    return out;
+    return false;
   }
 
   if (!stripeKey.startsWith("sk_")) {
-    out.push(
-      addResult(
-        "Stripe Secret Key Format",
-        "fail",
-        "Secret key has invalid format",
-        `Key prefix (masked): ${stripeKey.slice(0, 4)}***`,
-        ["Secret keys should start with sk_test_ or sk_live_"]
-      )
+    addResult(
+      "Stripe Secret Key Format",
+      "fail",
+      "Secret key has invalid format",
+      `Key prefix (masked): ${stripeKey.slice(0, 4)}***`,
+      ["Secret keys should start with sk_test_ or sk_live_"]
     );
-    return out;
+    return false;
   }
 
-  out.push(
-    addResult(
-      "Stripe Secret Key",
-      "pass",
-      `Found ${stripeKey.startsWith("sk_test_") ? "test" : "live"} key`
-    )
+  addResult(
+    "Stripe Secret Key",
+    "pass",
+    `Found ${stripeKey.startsWith("sk_test_") ? "test" : "live"} key`
   );
 
   if (!stripePublicKey) {
-    out.push(
-      addResult(
-        "Stripe Publishable Key",
-        "fail",
-        "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY not found",
-        undefined,
-        [
-          "Add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to .env.local",
-          "Must be prefixed with NEXT_PUBLIC_ to be available in browser",
-        ]
-      )
+    addResult(
+      "Stripe Publishable Key",
+      "fail",
+      "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY not found",
+      undefined,
+      [
+        "Add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to .env.local",
+        "Must be prefixed with NEXT_PUBLIC_ to be available in browser",
+      ]
     );
-    return out;
+    return false;
   }
 
   if (!stripePublicKey.startsWith("pk_")) {
-    out.push(
-      addResult(
-        "Stripe Publishable Key Format",
-        "fail",
-        "Publishable key has invalid format",
-        undefined,
-        ["Publishable keys should start with pk_test_ or pk_live_"]
-      )
+    addResult(
+      "Stripe Publishable Key Format",
+      "fail",
+      "Publishable key has invalid format",
+      undefined,
+      ["Publishable keys should start with pk_test_ or pk_live_"]
     );
-    return out;
+    return false;
   }
 
   const secretEnv = stripeKey.startsWith("sk_test") ? "test" : "live";
   const publicEnv = stripePublicKey.startsWith("pk_test") ? "test" : "live";
 
   if (secretEnv !== publicEnv) {
-    out.push(
-      addResult(
-        "Stripe Key Pair",
-        "fail",
-        "Secret and publishable keys are from different environments",
-        `Secret: ${secretEnv}, Publishable: ${publicEnv}`,
-        [
-          "Ensure both keys are from the same environment (both test or both live)",
-          "Check Stripe Dashboard for matching key pairs",
-        ]
-      )
+    addResult(
+      "Stripe Key Pair",
+      "fail",
+      "Secret and publishable keys are from different environments",
+      `Secret: ${secretEnv}, Publishable: ${publicEnv}`,
+      [
+        "Ensure both keys are from the same environment (both test or both live)",
+        "Check Stripe Dashboard for matching key pairs",
+      ]
     );
-    return out;
+    return false;
   }
 
-  out.push(
-    addResult(
-      "Stripe Publishable Key",
-      "pass",
-      `Found ${publicEnv} key, matches secret key environment`
-    )
+  addResult(
+    "Stripe Publishable Key",
+    "pass",
+    `Found ${publicEnv} key, matches secret key environment`
   );
-  return out;
+  return true;
 }
 
-export async function testStripeConnection(): Promise<DiagnosticResult[]> {
+export async function testStripeConnection(): Promise<boolean> {
   console.log("\n🔍 Step 2: Testing Stripe API connection...\n");
-  const out: DiagnosticResult[] = [];
+  let ok = true;
+  const stripeKey = getStripeSecretKey();
   if (!stripeKey) {
-    out.push(addResult("Stripe Connection", "fail", "Cannot test - no API key"));
-    return out;
+    addResult("Stripe Connection", "fail", "Cannot test - no API key");
+    return false;
   }
 
   try {
@@ -139,54 +138,48 @@ export async function testStripeConnection(): Promise<DiagnosticResult[]> {
       apiVersion: "2023-10-16",
     });
 
-    const account = await stripe.accounts.retrieve();
+    const account = await (stripe as any).account.retrieve();
 
-    out.push(
-      addResult(
-        "Stripe Connection",
-        "pass",
-        `Connected to account: ${(account as any).email || (account as any).id}`
-      )
+    addResult(
+      "Stripe Connection",
+      "pass",
+      `Connected to account: ${(account as any).email || (account as any).id}`
     );
 
     if (!(account as any).charges_enabled) {
-      out.push(
-        addResult(
-          "Account Status",
-          "warning",
-          "Account cannot process charges yet",
-          "Charges not enabled",
-          ["Complete account verification in Stripe Dashboard"]
-        )
+      addResult(
+        "Account Status",
+        "warning",
+        "Account cannot process charges yet",
+        "Charges not enabled",
+        ["Complete account verification in Stripe Dashboard"]
       );
     } else {
-      out.push(addResult("Account Status", "pass", "Account is fully activated"));
+      addResult("Account Status", "pass", "Account is fully activated");
     }
-    return out;
+    return ok;
   } catch (error: any) {
-    out.push(
-      addResult(
-        "Stripe Connection",
-        "fail",
-        "Failed to connect to Stripe",
-        error?.message,
-        [
-          "Verify API key is correct",
-          "Check network connectivity",
-          "Ensure API key has not been revoked",
-        ]
-      )
+    addResult(
+      "Stripe Connection",
+      "fail",
+      "Failed to connect to Stripe",
+      error?.message,
+      [
+        "Verify API key is correct",
+        "Check network connectivity",
+        "Ensure API key has not been revoked",
+      ]
     );
-    return out;
+    return false;
   }
 }
 
-export async function testCheckoutSessionCreation(): Promise<DiagnosticResult[]> {
+export async function testCheckoutSessionCreation(): Promise<boolean> {
   console.log("\n🔍 Step 3: Testing Checkout Session creation...\n");
-  const out: DiagnosticResult[] = [];
+  const stripeKey = getStripeSecretKey();
   if (!stripeKey) {
-    out.push(addResult("Session Creation", "fail", "Cannot test - no API key"));
-    return out;
+    addResult("Session Creation", "fail", "Cannot test - no API key");
+    return false;
   }
 
   try {
@@ -223,29 +216,25 @@ export async function testCheckoutSessionCreation(): Promise<DiagnosticResult[]>
     } as any);
 
     if (!(session as any).id || !(session as any).url) {
-      out.push(
-        addResult(
-          "Session Creation",
-          "fail",
-          "Session created but missing required fields",
-          `ID: ${(session as any).id}, URL: ${(session as any).url}`,
-          ["Check Stripe API version compatibility"]
-        )
-      );
-      return out;
-    }
-
-    out.push(
       addResult(
         "Session Creation",
-        "pass",
-        "Successfully created checkout session",
-        undefined,
-        [
-          `Session ID: ${(session as any).id}`,
-          `URL: ${((session as any).url as string)?.substring(0, 50)}...`,
-        ]
-      )
+        "fail",
+        "Session created but missing required fields",
+        `ID: ${(session as any).id}, URL: ${(session as any).url}`,
+        ["Check Stripe API version compatibility"]
+      );
+      return false;
+    }
+
+    addResult(
+      "Session Creation",
+      "pass",
+      "Successfully created checkout session",
+      undefined,
+      [
+        `Session ID: ${(session as any).id}`,
+        `URL: ${((session as any).url as string)?.substring(0, 50)}...`,
+      ]
     );
 
     const retrieved = await stripe.checkout.sessions.retrieve(
@@ -253,45 +242,38 @@ export async function testCheckoutSessionCreation(): Promise<DiagnosticResult[]>
     );
 
     if ((retrieved as any).id !== (session as any).id) {
-      out.push(
-        addResult(
-          "Session Retrieval",
-          "fail",
-          "Session retrieval returned different ID"
-        )
-      );
-      return out;
-    }
-
-    out.push(
       addResult(
         "Session Retrieval",
-        "pass",
-        "Session can be retrieved successfully"
-      )
-    );
-    return out;
-  } catch (error: any) {
-    out.push(
-      addResult(
-        "Session Creation",
         "fail",
-        "Failed to create checkout session",
-        error?.message,
-        [
-          "Check if account is restricted",
-          "Verify line_items format is correct",
-          "Ensure success_url and cancel_url are valid",
-        ]
-      )
+        "Session retrieval returned different ID"
+      );
+      return false;
+    }
+
+    addResult(
+      "Session Retrieval",
+      "pass",
+      "Session can be retrieved successfully"
     );
-    return out;
+    return true;
+  } catch (error: any) {
+    addResult(
+      "Session Creation",
+      "fail",
+      "Failed to create checkout session",
+      error?.message,
+      [
+        "Check if account is restricted",
+        "Verify line_items format is correct",
+        "Ensure success_url and cancel_url are valid",
+      ]
+    );
+    return false;
   }
 }
 
-export async function testAPIRoute(): Promise<DiagnosticResult[]> {
+export async function testAPIRoute(): Promise<boolean> {
   console.log("\n🔍 Step 4: Testing /api/checkout endpoint...\n");
-  const out: DiagnosticResult[] = [];
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
   try {
@@ -324,80 +306,72 @@ export async function testAPIRoute(): Promise<DiagnosticResult[]> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      out.push(
-        addResult(
-          "API Route",
-          "fail",
-          `API returned status ${response.status}`,
-          errorText,
-          [
-            "Check if API route file exists: app/api/checkout/route.ts",
-            "Verify STRIPE_SECRET_KEY is available to API route",
-            "Check server logs for errors",
-            "Ensure request body validation is not too strict",
-          ]
-        )
+      addResult(
+        "API Route",
+        "fail",
+        `API returned status ${response.status}`,
+        errorText,
+        [
+          "Check if API route file exists: app/api/checkout/route.ts",
+          "Verify STRIPE_SECRET_KEY is available to API route",
+          "Check server logs for errors",
+          "Ensure request body validation is not too strict",
+        ]
       );
-      return out;
+      return false;
     }
 
     const data = await response.json();
 
     if (!(data as any).sessionId || !(data as any).url) {
-      out.push(
-        addResult(
-          "API Route Response",
-          "fail",
-          "API response missing required fields",
-          `Response: ${JSON.stringify(data)}`,
-          [
-            "API should return { sessionId: string, url: string }",
-            "Check API route implementation",
-          ]
-        )
+      addResult(
+        "API Route Response",
+        "fail",
+        "API response missing required fields",
+        `Response: ${JSON.stringify(data)}`,
+        [
+          "API should return { sessionId: string, url: string }",
+          "Check API route implementation",
+        ]
       );
-      return out;
+      return false;
     }
 
     if (!((data as any).url as string).includes("checkout.stripe.com")) {
-      out.push(
-        addResult(
-          "API Route Response",
-          "fail",
-          "Stripe URL appears invalid",
-          `URL: ${(data as any).url}`,
-          ["Verify Stripe session is created correctly in API route"]
-        )
+      addResult(
+        "API Route Response",
+        "fail",
+        "Stripe URL appears invalid",
+        `URL: ${(data as any).url}`,
+        ["Verify Stripe session is created correctly in API route"]
       );
-      return out;
+      return false;
     }
 
-    out.push(addResult("API Route", "pass", "API route working correctly", undefined, [
+    addResult("API Route", "pass", "API route working correctly", undefined, [
       `Session ID: ${(data as any).sessionId}`,
       `Stripe URL: ${((data as any).url as string).substring(0, 50)}...`,
-    ]));
-    return out;
+    ]);
+    return true;
   } catch (error: any) {
-    out.push(
-      addResult(
-        "API Route",
-        "fail",
-        "Failed to call API endpoint",
-        error?.message,
-        [
-          "Ensure dev server is running: npm run dev",
-          "Check if port 3000 is available",
-          "Verify API_URL environment variable if set",
-        ]
-      )
+    addResult(
+      "API Route",
+      "fail",
+      "Failed to call API endpoint",
+      error?.message,
+      [
+        "Ensure dev server is running: npm run dev",
+        "Check if port 3000 is available",
+        "Verify API_URL environment variable if set",
+      ]
     );
-    return out;
+    return false;
   }
 }
 
-export function checkClientSideCode(): DiagnosticResult[] {
+export function checkClientSideCode(): boolean {
   console.log("\n🔍 Step 5: Checking client-side checkout code...\n");
-  const out: DiagnosticResult[] = [];
+  let hasFail = false;
   const checkoutPagePath = path.join(process.cwd(), "app/checkout/page.tsx");
   const checkoutComponentPath = path.join(
     process.cwd(),
@@ -405,51 +379,43 @@ export function checkClientSideCode(): DiagnosticResult[] {
   );
 
   if (!fs.existsSync(checkoutPagePath)) {
-    out.push(
-      addResult(
-        "Checkout Page",
-        "fail",
-        "Checkout page not found",
-        `Expected: ${checkoutPagePath}`,
-        ["Create app/checkout/page.tsx"]
-      )
+    addResult(
+      "Checkout Page",
+      "fail",
+      "Checkout page not found",
+      `Expected: ${checkoutPagePath}`,
+      ["Create app/checkout/page.tsx"]
     );
-    return out;
+    return false;
   }
-  out.push(addResult("Checkout Page", "pass", "Checkout page file exists"));
+  addResult("Checkout Page", "pass", "Checkout page file exists");
 
   if (!fs.existsSync(checkoutComponentPath)) {
-    out.push(
-      addResult(
-        "Checkout Component",
-        "warning",
-        "Checkout component not found",
-        `Expected: ${checkoutComponentPath}`,
-        ["Component may be defined elsewhere - verify in page.tsx"]
-      )
+    addResult(
+      "Checkout Component",
+      "warning",
+      "Checkout component not found",
+      `Expected: ${checkoutComponentPath}`,
+      ["Component may be defined elsewhere - verify in page.tsx"]
     );
   } else {
-    out.push(addResult("Checkout Component", "pass", "Checkout component file exists"));
+    addResult("Checkout Component", "pass", "Checkout component file exists");
 
     const componentCode = fs.readFileSync(checkoutComponentPath, "utf8");
 
     if (!componentCode.includes("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY")) {
-      out.push(
-        addResult(
-          "Stripe Key Usage",
-          "warning",
-          "Component may not be using Stripe publishable key",
-          undefined,
-          ["Verify Stripe.js is properly initialized with publishable key"]
-        )
+      addResult(
+        "Stripe Key Usage",
+        "warning",
+        "Component may not be using Stripe publishable key",
+        undefined,
+        ["Verify Stripe.js is properly initialized with publishable key"]
       );
     } else {
-      out.push(
-        addResult(
-          "Stripe Key Usage",
-          "pass",
-          "Component references publishable key"
-        )
+      addResult(
+        "Stripe Key Usage",
+        "pass",
+        "Component references publishable key"
       );
     }
 
@@ -457,93 +423,82 @@ export function checkClientSideCode(): DiagnosticResult[] {
       !componentCode.includes("window.location") &&
       !componentCode.includes("router.push")
     ) {
-      out.push(
-        addResult(
-          "Redirect Logic",
-          "warning",
-          "No redirect logic found in component",
-          undefined,
-          [
-            "After session creation, component should redirect to session.url",
-            "Use window.location.href = sessionUrl or router.push()",
-          ]
-        )
+      addResult(
+        "Redirect Logic",
+        "warning",
+        "No redirect logic found in component",
+        undefined,
+        [
+          "After session creation, component should redirect to session.url",
+          "Use window.location.href = sessionUrl or router.push()",
+        ]
       );
     } else {
-      out.push(addResult("Redirect Logic", "pass", "Component has redirect logic"));
+      addResult("Redirect Logic", "pass", "Component has redirect logic");
     }
 
     if (!componentCode.includes("try") || !componentCode.includes("catch")) {
-      out.push(
-        addResult(
-          "Error Handling",
-          "warning",
-          "No try-catch error handling found",
-          undefined,
-          [
-            "Add try-catch blocks around API calls",
-            "Show error toast/message to user",
-          ]
-        )
+      addResult(
+        "Error Handling",
+        "warning",
+        "No try-catch error handling found",
+        undefined,
+        [
+          "Add try-catch blocks around API calls",
+          "Show error toast/message to user",
+        ]
       );
     } else {
-      out.push(addResult("Error Handling", "pass", "Component has error handling"));
+      addResult("Error Handling", "pass", "Component has error handling");
     }
 
     if (
       !componentCode.includes("loading") &&
       !componentCode.includes("isSubmitting")
     ) {
-      out.push(
-        addResult(
-          "Loading States",
-          "warning",
-          "No loading state management found",
-          undefined,
-          [
-            "Add loading state to prevent double submissions",
-            "Disable submit button while processing",
-          ]
-        )
+      addResult(
+        "Loading States",
+        "warning",
+        "No loading state management found",
+        undefined,
+        [
+          "Add loading state to prevent double submissions",
+          "Disable submit button while processing",
+        ]
       );
     } else {
-      out.push(
-        addResult(
-          "Loading States",
-          "pass",
-          "Component manages loading states"
-        )
+      addResult(
+        "Loading States",
+        "pass",
+        "Component manages loading states"
       );
     }
   }
-  return out;
+  return !hasFail;
 }
 
-export function checkSuccessPage(): DiagnosticResult[] {
+export function checkSuccessPage(): boolean {
   console.log("\n🔍 Step 6: Checking success page...\n");
-  const out: DiagnosticResult[] = [];
   const successPagePath = path.join(
     process.cwd(),
     "app/checkout/success/page.tsx"
   );
 
   if (!fs.existsSync(successPagePath)) {
-    out.push(
-      addResult(
-        "Success Page",
-        "fail",
-        "Success page not found",
-        `Expected: ${successPagePath}`,
-        [
-          "Create app/checkout/success/page.tsx",
-          "Page should verify session_id query param",
-          "Retrieve session from Stripe to confirm payment",
-        ]
-      )
+    addResult(
+      "Success Page",
+      "fail",
+      "Success page not found",
+      `Expected: ${successPagePath}`,
+      [
+        "Create app/checkout/success/page.tsx",
+        "Page should verify session_id query param",
+        "Retrieve session from Stripe to confirm payment",
+      ]
     );
-    return out;
+    return false;
   }
-  out.push(addResult("Success Page", "pass", "Success page file exists"));
+  addResult("Success Page", "pass", "Success page file exists");
 
   const successCode = fs.readFileSync(successPagePath, "utf8");
 
@@ -551,33 +506,28 @@ export function checkSuccessPage(): DiagnosticResult[] {
     !successCode.includes("session_id") &&
     !successCode.includes("sessionId")
   ) {
-    out.push(
-      addResult(
-        "Session ID Verification",
-        "warning",
-        "Success page may not verify session ID",
-        undefined,
-        [
-          "Read session_id from query params",
-          "Verify session with Stripe API before showing success",
-        ]
-      )
+    addResult(
+      "Session ID Verification",
+      "warning",
+      "Success page may not verify session ID",
+      undefined,
+      [
+        "Read session_id from query params",
+        "Verify session with Stripe API before showing success",
+      ]
     );
   } else {
-    out.push(
-      addResult(
-        "Session ID Verification",
-        "pass",
-        "Success page handles session ID"
-      )
+    addResult(
+      "Session ID Verification",
+      "pass",
+      "Success page handles session ID"
     );
   }
-  return out;
+  return true;
 }
 
-export async function checkCartStore(): Promise<DiagnosticResult[]> {
+export async function checkCartStore(): Promise<boolean> {
   console.log("\n🔍 Step 7: Checking cart store implementation...\n");
-  const out: DiagnosticResult[] = [];
   const possiblePaths = [
     path.join(process.cwd(), "lib/store/cart.ts"),
     path.join(process.cwd(), "lib/stores/cart.ts"),
@@ -594,71 +544,61 @@ export async function checkCartStore(): Promise<DiagnosticResult[]> {
   }
 
   if (!cartStorePath) {
-    out.push(addResult("Cart Store", "warning", "Cart store file not found", undefined, [
+    addResult("Cart Store", "warning", "Cart store file not found", undefined, [
       "Verify cart state management implementation",
       "Check if using different state solution",
-    ]));
-    return out;
+    ]);
+    return false;
   }
-  out.push(
-    addResult(
-      "Cart Store",
-      "pass",
-      `Cart store found at ${path.relative(process.cwd(), cartStorePath)}`
-    )
+  addResult(
+    "Cart Store",
+    "pass",
+    `Cart store found at ${path.relative(process.cwd(), cartStorePath)}`
   );
 
   const storeCode = fs.readFileSync(cartStorePath, "utf8");
 
   if (!storeCode.includes("create") || !storeCode.includes("zustand")) {
-    out.push(
-      addResult(
-        "Cart Store Implementation",
-        "warning",
-        "May not be using Zustand",
-        undefined,
-        ["Verify cart state management approach"]
-      )
+    addResult(
+      "Cart Store Implementation",
+      "warning",
+      "May not be using Zustand",
+      undefined,
+      ["Verify cart state management approach"]
     );
   } else {
-    out.push(
-      addResult(
-        "Cart Store Implementation",
-        "pass",
-        "Using Zustand for cart state"
-      )
+    addResult(
+      "Cart Store Implementation",
+      "pass",
+      "Using Zustand for cart state"
     );
   }
 
   if (!storeCode.includes("items")) {
-    out.push(
-      addResult(
-        "Cart Items",
-        "warning",
-        "No items array found in cart store",
-        undefined,
-        ["Cart store should maintain array of cart items"]
-      )
+    addResult(
+      "Cart Items",
+      "warning",
+      "No items array found in cart store",
+      undefined,
+      ["Cart store should maintain array of cart items"]
     );
   } else {
-    out.push(addResult("Cart Items", "pass", "Cart store has items array"));
+    addResult("Cart Items", "pass", "Cart store has items array");
   }
 
   if (!storeCode.includes("checkout") && !storeCode.includes("getItems")) {
-    out.push(
-      addResult(
-        "Checkout Method",
-        "warning",
-        "No method to retrieve cart items for checkout",
-        undefined,
-        [
-          "Add method to get all cart items",
-          "Or add method to clear cart after successful checkout",
-        ]
-      )
+    addResult(
+      "Checkout Method",
+      "warning",
+      "No method to retrieve cart items for checkout",
+      undefined,
+      [
+        "Add method to get all cart items",
+        "Or add method to clear cart after successful checkout",
+      ]
     );
   }
-  return out;
+  return true;
 }
 
 export function printReport(results: DiagnosticResult[]) {
@@ -704,20 +644,17 @@ export function printReport(results: DiagnosticResult[]) {
 }
 
 export async function runAllDiagnostics() {
-  const all: DiagnosticResult[] = [];
-  const keys = await checkStripeKeys();
-  if (keys && Array.isArray(keys)) all.push(...keys);
-  // If Stripe keys check produced a fail, skip further steps
-  const failedKeys = (keys && Array.isArray(keys)) ? keys.some((r) => r.status === "fail") : false;
-  if (failedKeys) return { success: false, results: all };
+  clearResults();
+  const k = await checkStripeKeys();
+  if (!k) return { success: false, results: [...results] };
 
-  all.push(...(await testStripeConnection()));
-  all.push(...(await testCheckoutSessionCreation()));
-  all.push(...(await testAPIRoute()));
-  all.push(...checkClientSideCode());
-  all.push(...checkSuccessPage());
-  all.push(...(await checkCartStore()));
+  const c1 = await testStripeConnection();
+  const c2 = await testCheckoutSessionCreation();
+  const c3 = await testAPIRoute();
+  const c4 = checkClientSideCode();
+  const c5 = checkSuccessPage();
+  const c6 = await checkCartStore();
 
-  const success = all.every((r) => r.status !== "fail");
-  return { success, results: all };
+  const success = k && c1 && c2 && c3 && c4 && c5 && c6 && results.every((r) => r.status !== "fail");
+  return { success, results: [...results] };
 }

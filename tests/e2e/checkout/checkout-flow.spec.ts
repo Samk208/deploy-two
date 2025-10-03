@@ -60,7 +60,10 @@ test.describe("Checkout Flow", () => {
     await page.fill('input[name="address"], input[autocomplete="address-line1"]', '123 Test St');
     await page.fill('input[name="city"], input[autocomplete="address-level2"]', 'Seoul');
     const postal = page.locator('input[name="postalCode"], input[autocomplete="postal-code"]');
-    if (await postal.count()) await postal.fill('12345');
+    if (await postal.count()) {
+      await postal.first().waitFor({ state: 'visible', timeout: 5000 });
+      await postal.first().fill('12345');
+    }
 
     // 7) Pay/Complete order
     const payBtn = page

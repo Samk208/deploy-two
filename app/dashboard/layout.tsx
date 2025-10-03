@@ -64,11 +64,19 @@ export default async function DashboardLayout({
   let influencerShopHandle: string | null = null
 
   if (session?.user) {
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role,name,avatar,verified,verification_status")
       .eq("id", session.user.id)
       .maybeSingle()
+
+    if (profileError) {
+      console.error("[dashboard/layout] profiles query error", {
+        userId: session.user.id,
+        error: profileError.message,
+        code: (profileError as any)?.code,
+      })
+    }
 
     if (profile) {
       role = (profile as any).role ?? role
@@ -79,12 +87,21 @@ export default async function DashboardLayout({
     }
 
     if (role === "influencer") {
-      const { data: shop } = await supabase
+      const { data: shop, error: shopError } = await supabase
         .from("shops")
         .select("handle")
         .eq("influencer_id", session.user.id)
         .maybeSingle()
-      influencerShopHandle = (shop as any)?.handle ?? null
+      if (shopError) {
+        console.error("[dashboard/layout] shops query error", {
+          userId: session.user.id,
+          error: shopError.message,
+          code: (shopError as any)?.code,
+        })
+        influencerShopHandle = null
+      } else {
+        influencerShopHandle = (shop as any)?.handle ?? null
+      }
     }
   }
 

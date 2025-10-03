@@ -198,6 +198,26 @@ export function InfluencerShopClient({
     setQuickViewProduct(null);
   };
 
+  // Map a QuickViewProduct (from modal) into the cart Product shape
+  function mapQuickViewToProduct(qv: QuickViewProduct): Product {
+    return {
+      id: String(qv.id),
+      title: qv.title,
+      price: qv.price,
+      originalPrice: qv.original_price,
+      image: Array.isArray(qv.images)
+        ? (qv.images[0] ?? "")
+        : (qv.images as string | undefined) || "",
+      badges: [],
+      category: qv.category || "General",
+      region: qv.region || "Global",
+      inStock: qv.in_stock !== false,
+      stockCount: qv.stock_count ?? 0,
+      rating: qv.rating ?? 4.5,
+      reviews: qv.reviews ?? 0,
+    };
+  }
+
   const getSocialIcon = (platform: string) => {
     switch (platform) {
       case "instagram":
@@ -493,25 +513,8 @@ export function InfluencerShopClient({
         product={quickViewProduct}
         isOpen={isQuickViewOpen}
         onClose={closeQuickView}
-        onAddToCart={(p) => {
-          // Map modal product back to cart schema
-          const mapped: Product = {
-            id: String((p as QuickViewProduct).id),
-            title: (p as QuickViewProduct).title,
-            price: (p as QuickViewProduct).price,
-            originalPrice: (p as QuickViewProduct).original_price,
-            image: Array.isArray((p as QuickViewProduct).images)
-              ? ((p as QuickViewProduct).images as string[])[0]
-              : ((p as QuickViewProduct).images as string | undefined) || "",
-            badges: [],
-            category: (p as QuickViewProduct).category || "General",
-            region: (p as QuickViewProduct).region || "Global",
-            inStock: (p as QuickViewProduct).in_stock !== false,
-            stockCount: (p as QuickViewProduct).stock_count || 0,
-            rating: (p as QuickViewProduct).rating || 4.5,
-            reviews: (p as QuickViewProduct).reviews || 0,
-          };
-          handleAddToCart(mapped);
+        onAddToCart={(p: QuickViewProduct) => {
+          handleAddToCart(mapQuickViewToProduct(p));
         }}
       />
     </div>

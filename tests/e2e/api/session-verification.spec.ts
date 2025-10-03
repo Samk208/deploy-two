@@ -8,8 +8,9 @@ test.describe("Session & Role API Verification", () => {
     const sessionRes = await request.get("/api/auth/session");
     expect(sessionRes.status()).toBeLessThan(400);
     const session = await sessionRes.json();
+    expect(session).toBeDefined();
     expect(session?.user).toBeDefined();
-    expect(session.user.role).toBe("supplier");
+    expect(session?.user?.role).toBe("supplier");
 
     const dashRes = await request.get("/api/dashboard/supplier");
     expect(dashRes.status()).toBe(200);
@@ -21,8 +22,9 @@ test.describe("Session & Role API Verification", () => {
     const sessionRes = await request.get("/api/auth/session");
     expect(sessionRes.status()).toBeLessThan(400);
     const session = await sessionRes.json();
+    expect(session).toBeDefined();
     expect(session?.user).toBeDefined();
-    expect(session.user.role).toBe("influencer");
+    expect(session?.user?.role).toBe("influencer");
 
     const supplierDash = await request.get("/api/dashboard/supplier");
     expect([401, 403]).toContain(supplierDash.status());

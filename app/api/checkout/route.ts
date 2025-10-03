@@ -218,15 +218,15 @@ export async function POST(request: NextRequest) {
       }
 
       // Validate price before computing totals
-      // Missing/undefined prices and negative prices are rejected; value must be finite >= 0
+      // Missing/undefined prices and non-positive (<= 0) prices are rejected; value must be finite > 0
       const priceNumber = Number(product.price);
       const priceValid =
         typeof priceNumber === "number" &&
         Number.isFinite(priceNumber) &&
-        priceNumber >= 0;
+        priceNumber > 0;
       if (!priceValid) {
         return NextResponse.json(
-          { ok: false, message: `Invalid price for ${product.title}` },
+          { ok: false, message: `Invalid Stripe amount for ${product.title} (zero-priced items are not supported)` },
           { status: 400 }
         );
       }

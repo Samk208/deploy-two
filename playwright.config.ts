@@ -12,20 +12,20 @@ export default defineConfig({
     [
       "html",
       {
-        outputFolder: "test-results/Dashboard Report/html-report",
+        outputFolder: "Dashboard Build/Reports/html-report",
         open: "never",
       },
     ],
     [
       "json",
       {
-        outputFile: "test-results/Dashboard Report/test-results.json",
+        outputFile: "Dashboard Build/Reports/test-results.json",
       },
     ],
     [
       "junit",
       {
-        outputFile: "test-results/Dashboard Report/junit-results.xml",
+        outputFile: "Dashboard Build/Reports/junit-results.xml",
       },
     ],
   ],
@@ -37,7 +37,7 @@ export default defineConfig({
     actionTimeout: 10_000,
   },
   // Artifacts (traces, screenshots, videos)
-  outputDir: "test-results/Dashboard Report/test-artifacts",
+  outputDir: "Dashboard Build/Reports/test-artifacts",
   projects: [
     {
       name: "chromium",
