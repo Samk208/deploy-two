@@ -117,6 +117,17 @@ export function EnhancedProductCard({
           onClick={() => onQuickView?.(product)}
           role={onQuickView ? "button" : undefined}
           aria-label={onQuickView ? `Quick view ${product.title}` : undefined}
+          tabIndex={onQuickView ? 0 : undefined}
+          onKeyDown={(e) => {
+            if (!onQuickView) return;
+            if (e.key === "Enter") {
+              e.preventDefault();
+              onQuickView(product);
+            } else if (e.key === " ") {
+              e.preventDefault();
+              onQuickView(product);
+            }
+          }}
         >
           <ProductImageGallery
             images={

@@ -70,7 +70,10 @@ async function performSignUp(page: Page, role: 'influencer' | 'brand') {
     const fc = await chooser
     await fc.setFiles({ name, mimeType, buffer })
   }
-  await page.waitForTimeout(500)
+  // Wait deterministically for an upload success indicator instead of fixed timeout
+  await expect(
+    page.locator('[data-testid="upload-success"], text=/Uploaded|Success|Verification/i')
+  ).toBeVisible({ timeout: 5000 });
   await nextBtn.click()
 
   const submitBtn = page.locator('[data-testid="onboarding-submit"], button:has-text("Submit"), button:has-text("Finish")')

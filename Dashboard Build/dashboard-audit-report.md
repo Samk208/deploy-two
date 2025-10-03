@@ -132,11 +132,3 @@ This report summarizes the current state of the influencer and supplier dashboar
   - DB indexes for common queries (e.g., `commissions(influencer_id, product_id, created_at)`, `orders(supplier_id, created_at)`).
   - Materialized views for monthly summaries/top products if scale grows.
 
-## Key File/Route Index
-
-- Layout/Role: `app/dashboard/layout.tsx`, `middleware.ts`
-- Influencer: `app/dashboard/influencer/{page.tsx, shop/page.tsx, products/page.tsx, analytics/page.tsx, earnings/page.tsx, settings/page.tsx}`
-- Supplier: `app/dashboard/supplier/{page.tsx, products/page.tsx, products/new/page.tsx, products/[id]/EditProductClient.tsx, orders/page.tsx, analytics/page.tsx, commissions/page.tsx, settings/page.tsx}`
-- Public shops: `app/shops/page.tsx`, `app/shop/[handle]/page.tsx`, `app/api/shop/[handle]/route.ts`
-- APIs: `app/api/dashboard/supplier/route.ts`, `app/api/influencer/shop/route.ts`, `app/api/influencer/shop/[id]/route.ts`, `app/api/commissions/route.ts`, `app/api/orders/[id]/route.ts`, `app/api/webhooks/stripe/route.ts`
-- Upload helper: `lib/storage/upload.ts`

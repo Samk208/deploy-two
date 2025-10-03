@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { type ApiResponse } from "@/lib/types";
 import { checkoutSchema } from "@/lib/validators";
 import { NextResponse, type NextRequest } from "next/server";
+import { validateClientProduct } from "@/lib/checkout/devFallback";
 
 // Declare runtime for Node.js-specific imports (Stripe)
 export const runtime = "nodejs";
@@ -100,15 +101,24 @@ export async function POST(request: NextRequest) {
     }
     if (!products || products.length === 0) {
       const msg = "No products found for requested IDs";
-      if (process.env.NODE_ENV === "development") {
+      // In non-production, we may optionally allow a DEV fallback controlled by DEV_FALLBACK flag
+      if (process.env.NODE_ENV !== "production") {
+        if (process.env.DEV_FALLBACK !== "true") {
+          console.error(
+            "[checkout] " +
+              msg +
+              " - DEV_FALLBACK is not enabled; refusing client-derived products"
+          );
+          return NextResponse.json({ ok: false, message: msg }, { status: 400 });
+        }
         console.warn(
-          "[checkout] DEV ONLY: " +
+          "[checkout] DEV_FALLBACK enabled: " +
             msg +
-            ". Using client-provided items for dev/testing."
+            ". Using client-provided items strictly for dev/testing."
         );
       } else {
         console.error(
-          "[checkout] " + msg + " - failing fast in non-development environment"
+          "[checkout] " + msg + " - failing fast in production"
         );
         return NextResponse.json({ ok: false, message: msg }, { status: 400 });
       }
@@ -124,6 +134,7 @@ export async function POST(request: NextRequest) {
       // In development, allow fallback to client-provided payload when product lookup fails
       if (!product) {
         const anyItem: any = item as any;
+        // Production: never allow fallback
         if (process.env.NODE_ENV === "production") {
           console.error(
             "[checkout] Missing product in DB in production:",
@@ -134,53 +145,66 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        // Development/test-only: build a guarded fallback with explicit flag
+        // Non-production: require explicit DEV_FALLBACK flag
+        if (process.env.DEV_FALLBACK !== "true") {
+          console.error(
+            "[checkout] DEV_FALLBACK is not enabled; refusing client-derived product",
+            { productId: anyItem.productId }
+          );
+          return NextResponse.json(
+            { ok: false, message: `Product ${item.productId} not available` },
+            { status: 400 }
+          );
+        }
+        // Development/test-only: build a strictly validated fallback
         console.warn(
-          "[checkout] DEV FALLBACK: using client-provided item due to missing DB product",
+          "[checkout] DEV_FALLBACK ACTIVE: using client-provided item due to missing DB product",
           {
             productId: anyItem.productId,
             reason: productsError ? "productsError" : "not found",
           }
         );
-        product = {
+        const candidate: any = {
           id: anyItem.productId,
-          title: anyItem.title || anyItem.name || "Product",
-          description: anyItem.description || "",
+          title:
+            typeof anyItem.title === "string"
+              ? anyItem.title
+              : typeof anyItem.name === "string"
+                ? anyItem.name
+                : "Product",
+          description:
+            typeof anyItem.description === "string" ? anyItem.description : "",
           price:
             typeof anyItem.price === "number"
               ? anyItem.price
               : typeof anyItem.effectivePrice === "number"
                 ? anyItem.effectivePrice
-                : 0,
-          images: anyItem.image ? [anyItem.image] : [],
+                : undefined,
+          images: Array.isArray(anyItem.images)
+            ? anyItem.images
+            : anyItem.image
+              ? [anyItem.image]
+              : [],
           supplier_id: anyItem.supplierId,
           commission: anyItem.commission,
-          stock_count: Number.isFinite(anyItem.stock_count)
-            ? anyItem.stock_count
-            : 10,
+          stock_count: anyItem.stock_count,
           fallback: true,
+          fallbackSource: "dev",
         } as any;
-        // Minimal validations even in fallback
-        const supplierOk =
-          typeof product.supplier_id === "string" &&
-          product.supplier_id.trim().length > 0;
-        const priceOk = typeof product.price === "number" && product.price >= 0;
-        const stockOk =
-          typeof product.stock_count === "number" &&
-          product.stock_count >= 0 &&
-          product.stock_count <= 1000;
-        if (!supplierOk || !priceOk || !stockOk) {
-          console.warn("[checkout] DEV FALLBACK VALIDATION FAILED", {
+
+        // Strict validation for DEV fallback using shared utility
+        const validation = validateClientProduct(candidate);
+        if (!validation.ok) {
+          console.warn("[checkout] DEV_FALLBACK VALIDATION FAILED", {
             productId: anyItem.productId,
-            supplierOk,
-            priceOk,
-            stockOk,
+            errors: validation.errors,
           });
           return NextResponse.json(
             { ok: false, message: `Product ${item.productId} not available` },
             { status: 400 }
           );
         }
+        product = candidate;
       }
 
       if (
@@ -194,6 +218,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Validate price before computing totals
+      // Missing/undefined prices and negative prices are rejected; value must be finite >= 0
       const priceNumber = Number(product.price);
       const priceValid =
         typeof priceNumber === "number" &&
@@ -470,3 +495,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

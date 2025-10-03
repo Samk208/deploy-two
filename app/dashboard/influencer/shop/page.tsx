@@ -26,7 +26,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface AvailableProduct {
@@ -91,8 +91,8 @@ export default function MyShopBuilder() {
     "publish" | "unpublish" | "delete" | null
   >(null);
 
-  // Fetch shop data
-  const fetchShopData = async () => {
+  // Fetch shop data (memoized to avoid stale closures over filters)
+  const fetchShopData = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -121,11 +121,11 @@ export default function MyShopBuilder() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     fetchShopData();
-  }, [filters]);
+  }, [fetchShopData]);
 
   // Add product to shop
   const addToShop = async (product: AvailableProduct) => {
@@ -169,10 +169,13 @@ export default function MyShopBuilder() {
         fetchShopData();
         setEditingProduct(null);
       } else {
-        toast.error(result.error || "Failed to update product");
+        const msg = result.error || "Failed to update product";
+        toast.error(msg);
+        throw new Error(msg);
       }
     } catch (err) {
       toast.error("Network error occurred");
+      throw err;
     }
   };
 
@@ -196,12 +199,13 @@ export default function MyShopBuilder() {
   };
 
   // Handle drag and drop reordering
-  const handleDragEnd = (result: {
+  const handleDragEnd = async (result: {
     destination?: { index: number } | null;
     source: { index: number };
   }) => {
     if (!result.destination) return;
 
+    const prev = Array.from(shopProducts);
     const items = Array.from(shopProducts);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
@@ -212,14 +216,23 @@ export default function MyShopBuilder() {
       order: index,
     }));
 
+    // Optimistic update
     setShopProducts(updatedItems);
 
-    // Update in backend
-    updatedItems.forEach((item, index) => {
-      if (item.order !== index) {
-        updateShopProduct(item.id, { order: index });
+    // Persist sequentially; rollback on failure
+    try {
+      for (const item of updatedItems) {
+        const desiredOrder = item.order;
+        // Only send updates for items whose order actually changed compared to prev snapshot
+        const prevItem = prev.find((p) => p.id === item.id);
+        if (!prevItem || prevItem.order === desiredOrder) continue;
+        await updateShopProduct(item.id, { order: desiredOrder });
       }
-    });
+    } catch (e) {
+      // Rollback UI and notify
+      setShopProducts(prev);
+      toast.error("Failed to save new order. Changes were reverted.");
+    }
   };
 
   // Get unique values for filters

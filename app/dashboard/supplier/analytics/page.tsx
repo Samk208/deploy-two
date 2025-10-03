@@ -6,7 +6,12 @@ export default async function Page() {
   await qc.prefetchQuery({
     queryKey: ["supplier-dashboard"],
     queryFn: async () => {
-      const r = await fetch(`/api/dashboard/supplier`, { cache: "no-store" });
+      // Safe: prefer relative fetch to same-origin API to avoid host header injection
+      // If you need absolute URLs in some environments, set BASE_URL and validate it via env
+      const base = process.env.BASE_URL?.trim();
+      const useAbsolute = base && /^https?:\/\//i.test(base);
+      const url = useAbsolute ? `${base}/api/dashboard/supplier` : "/api/dashboard/supplier";
+      const r = await fetch(url, { cache: "no-store" });
       if (!r.ok) throw new Error("dashboard fetch failed");
       return r.json();
     },

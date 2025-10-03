@@ -15,11 +15,19 @@ test.describe("Product Card Image Gallery", () => {
 
     if (await next.isVisible()) {
       await expect(next).toBeVisible();
+      const before = (await mainImg.getAttribute("src")) || "";
       await next.click();
+      await expect.poll(async () => (await mainImg.getAttribute("src")) || "").not.toBe(
+        before
+      );
     }
     if (await prev.isVisible()) {
       await expect(prev).toBeVisible();
+      const before = (await mainImg.getAttribute("src")) || "";
       await prev.click();
+      await expect.poll(async () => (await mainImg.getAttribute("src")) || "").not.toBe(
+        before
+      );
     }
 
     const dots = card.locator('[data-testid="image-dot"], [aria-label^="Go to image" i], [aria-label^="Go to slide" i]');
@@ -47,10 +55,12 @@ test.describe("Product Card Image Gallery", () => {
     const before = await mainModalImg.getAttribute("src");
     const thumbs = modal.locator('[data-testid="thumbnail"], [aria-label="Product thumbnails"] img');
     const thumbCount = await thumbs.count();
-    expect(thumbCount).toBeGreaterThan(0);
-    const thumb = thumbs.nth(0);
+    expect(thumbCount).toBeGreaterThanOrEqual(2);
+    const thumb = thumbs.nth(1);
     await expect(thumb).toBeVisible();
     await thumb.click();
-    await expect.poll(async () => (await mainModalImg.getAttribute("src")) || "").not.toBe(before || "");
+    await expect.poll(async () => (await mainModalImg.getAttribute("src")) || "").not.toBe(
+      (before || "")
+    );
   });
 });

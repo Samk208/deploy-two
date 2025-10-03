@@ -30,6 +30,24 @@ export type GetProductsParams = {
   baseUrl?: string; // optional explicit base URL for SSR callers
 };
 
+// Central helper to build absolute API URLs both in SSR and browser
+export function buildApiUrl(
+  path: string,
+  params?: Record<string, string | number | boolean | undefined>,
+  baseUrl?: string
+): string {
+  const isBrowser = typeof window !== "undefined" && !!(window as any)?.location;
+  const base = baseUrl?.replace(/\/$/, "") || (isBrowser ? window.location.origin : undefined);
+  if (!base) throw new Error("buildApiUrl: baseUrl is required for SSR");
+  const u = new URL(path, base);
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) u.searchParams.set(k, String(v));
+    });
+  }
+  return u.toString();
+}
+
 export async function getProducts<T = any>(
   params: GetProductsParams
 ): Promise<NormalizedPage<T>> {
@@ -50,7 +68,11 @@ export async function getProducts<T = any>(
   const url = `${endpoint}?${searchParams.toString()}`;
 
   const r = await fetch(url, { credentials: "include" });
-  if (!r.ok) throw new Error(`Fetch failed: ${r.status}`);
+  if (!r.ok) {
+    const body = await r.text().catch(() => "");
+    const info = `GET ${url} -> ${r.status} ${r.statusText}`;
+    throw new Error(`products fetch failed: ${info} :: ${body}`);
+  }
   const raw = (await r.json()) as RawPageResponse<T>;
 
   const items = raw.items ?? raw.data ?? raw.products ?? ([] as T[]);
@@ -81,7 +103,11 @@ export type PageResp<T> = {
 export async function getSupplierDashboard(baseUrl?: string) {
   const endpoint = `${baseUrl ? baseUrl.replace(/\/$/, "") : ""}/api/dashboard/supplier`;
   const r = await fetch(endpoint, { cache: "no-store", credentials: "include" as RequestCredentials });
-  if (!r.ok) throw new Error("dashboard fetch failed");
+  if (!r.ok) {
+    const body = await r.text().catch(() => "");
+    const info = `GET ${endpoint} -> ${r.status} ${r.statusText}`;
+    throw new Error(`dashboard fetch failed: ${info} :: ${body}`);
+  }
   return r.json();
 }
 
@@ -89,22 +115,7 @@ export async function getCommissions(
   params: Record<string, string | number | boolean | undefined>,
   baseUrl?: string
 ): Promise<PageResp<any>> {
-  const isBrowser = typeof window !== "undefined";
-  let url: string;
-  if (isBrowser) {
-    const endpoint = new URL("/api/commissions", window.location.origin);
-    Object.entries(params).forEach(([k, v]) => {
-      if (v !== undefined && v !== null) endpoint.searchParams.set(k, String(v));
-    });
-    url = endpoint.toString();
-  } else {
-    if (!baseUrl) throw new Error("getCommissions: baseUrl is required for SSR");
-    const endpoint = new URL("/api/commissions", baseUrl.replace(/\/$/, ""));
-    Object.entries(params).forEach(([k, v]) => {
-      if (v !== undefined && v !== null) endpoint.searchParams.set(k, String(v));
-    });
-    url = endpoint.toString();
-  }
+  const url = buildApiUrl("/api/commissions", params, baseUrl);
   const r = await fetch(url, { credentials: "include" as RequestCredentials });
   if (!r.ok) {
     const body = await r.text().catch(() => "");

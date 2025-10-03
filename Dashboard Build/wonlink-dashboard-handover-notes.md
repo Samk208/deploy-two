@@ -149,12 +149,50 @@ Additional (uploads):
 
 ### Nice-to-haves
 - **Dropzone UX**: Use a dropzone (e.g., shadcn + react-dropzone) with progress and multiple file selection.
-- **Client-side resize constraints**: Optional downscale for very large images (already supported via WebP conversion path).
 - **Image moderation or EXIF strip**: Consider server-side post-processing if needed for compliance.
 - **Observability**: Log storage errors server-side; add Sentry breadcrumbs for client upload failures.
 - **CDN tweaks**: Ensure `next.config.mjs` image patterns cover Supabase hosts in all envs; consider AVIF in addition to WebP (already configured).
 
 ### How to test uploads (manual)
-- **Allowed types/size**: Try 4–5MB JPG/PNG → should upload and convert to WebP; larger files are rejected client-side.
-- **Edit page flow**: Upload one or more images on `app/dashboard/supplier/products/[id]/EditProductClient.tsx`; thumbnails should render, and saving should persist `images`.
-- **RLS (when added)**: Attempt to upload to a product the user does not own → should be blocked by RLS.
+  - **Allowed types/size**: Try 4–5MB JPG/PNG → should upload and convert to WebP; larger files are rejected client-side.
+  - **Edit page flow**: Upload one or more images on `app/dashboard/supplier/products/[id]/EditProductClient.tsx`; thumbnails should render, and saving should persist `images`.
+  - **RLS (when added)**: Attempt to upload to a product the user does not own → should be blocked by RLS.
+
+---
+
+## Test Suite Fixes and Diagnostics Improvements
+
+- **[Image gallery navigation race fix]** Updated `tests/e2e/image-gallery/product-card-navigation.spec.ts`:
+  - Before clicking `next`/`prev`, capture the current main image `src` and use `expect.poll` to wait until it changes after the click. This removes flakiness from async image transitions.
+  - Thumbnail interaction now clicks the second thumbnail (`thumbs.nth(1)`) with guards to ensure at least two thumbnails exist and that the selected thumbnail is visible before clicking.
+
+- **[Onboarding access spec hardcoded creds → env-configurable]**
+  - Added `TEST_INFLUENCER_CREDENTIALS` to `tests/helpers/auth.ts`, sourced from `process.env.TEST_INFLUENCER_EMAIL` and `process.env.TEST_INFLUENCER_PASSWORD` with safe defaults.
+  - Refactored `tests/e2e/onboarding-brand-influencer-access.spec.ts` to use `TEST_INFLUENCER_CREDENTIALS` instead of hard-coded strings.
+
+- **[Supplier auth flow consolidation]**
+  - Replaced manual brand login steps with `loginAsSupplier(page)` helper in `tests/e2e/onboarding-brand-influencer-access.spec.ts` to centralize error handling, screenshots, and URL waits.
+
+### Required/Updated Tests
+
+- **Image Gallery**
+  - File: `tests/e2e/image-gallery/product-card-navigation.spec.ts`
+  - What to verify: main image `src` changes after `next`/`prev` clicks and when clicking second thumbnail.
+
+- **Onboarding Brand/Influencer Access**
+  - File: `tests/e2e/onboarding-brand-influencer-access.spec.ts`
+  - What to verify:
+    - Influencer can sign in using `TEST_INFLUENCER_CREDENTIALS` and reach `/dashboard/influencer` or proceed through onboarding verification with uploads when required.
+    - Brand can sign in via `loginAsSupplier(page)` and lands on `/dashboard/supplier`.
+
+### Configuration
+
+- Optional environment variables (CI/CD secrets or local `.env`):
+  - `TEST_INFLUENCER_EMAIL` (default: `test.influencer+e2e@test.local`)
+  - `TEST_INFLUENCER_PASSWORD` (default: `NewInfluencerPassword123!`)
+### Run Commands
+
+```bash
+pnpm test:e2e -- tests/e2e/image-gallery/product-card-navigation.spec.ts
+pnpm test:e2e -- tests/e2e/onboarding-brand-influencer-access.spec.ts
+pnpm test:e2e -- tests/e2e/dashboard/role-routing.spec.ts

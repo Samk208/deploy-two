@@ -2,6 +2,22 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
+    // Server-side enforcement: never allow mock checkout in production
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { error: 'Mock checkout is disabled in production' },
+        { status: 403 }
+      )
+    }
+
+    // Optional server-only flag to explicitly enable mock sessions in non-prod
+    if (process.env.USE_MOCK_CHECKOUT !== 'true') {
+      return NextResponse.json(
+        { error: 'Mock checkout is disabled by server configuration' },
+        { status: 403 }
+      )
+    }
+
     // Parse the request body to get cart items and customer info
     const body = await request.json()
     const { items, customerInfo, shippingAddress } = body

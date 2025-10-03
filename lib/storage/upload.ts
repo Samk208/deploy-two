@@ -63,6 +63,7 @@ async function toWebP(file: File, quality = 0.9): Promise<WebPResult> {
 }
 
 export type UploadResult = { key: string; url: string };
+export type UploadProgressFn = (fraction: number) => void; // 0..1
 
 /**
  * Upload a product image to Supabase Storage (bucket: products), returning public URL.
@@ -70,13 +71,19 @@ export type UploadResult = { key: string; url: string };
  * - Converts to WebP client-side for optimization (with safe fallback).
  * - Object key: products/{productId}/{slug}-{uuid}.webp
  */
-export async function uploadProductImage(file: File, opts: { productId: string }): Promise<UploadResult> {
+export async function uploadProductImage(
+  file: File,
+  opts: { productId: string; onProgress?: UploadProgressFn }
+): Promise<UploadResult> {
   if (!file) throw new Error("No file provided");
   if (!ALLOWED_MIME_TYPES.has(file.type)) throw new Error("Unsupported file type");
   if (file.size > MAX_FILE_SIZE_BYTES) throw new Error("File too large (max 5MB)");
   if (!opts?.productId) throw new Error("productId is required");
 
   const supabase = createClientSupabaseClient();
+
+  // Progress: start
+  try { opts?.onProgress?.(0); } catch {}
 
   // Convert to WebP if needed
   const { blob, converted } = file.type === "image/webp" ? { blob: file as Blob, converted: false } : await toWebP(file, 0.9);
@@ -96,5 +103,6 @@ export async function uploadProductImage(file: File, opts: { productId: string }
   if (error) throw new Error(error.message || "Upload failed");
 
   const { data } = supabase.storage.from("products").getPublicUrl(key);
+  try { opts?.onProgress?.(1); } catch {}
   return { key, url: data.publicUrl };
 }

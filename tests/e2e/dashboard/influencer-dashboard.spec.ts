@@ -1,13 +1,14 @@
 import { expect, test } from "@playwright/test";
+import { loginAsInfluencer } from "../../helpers/auth";
 
 test.describe("Influencer Dashboard Access", () => {
-  test("page loads (if implemented) or redirects appropriately", async ({
-    page,
-  }) => {
-    // We don't have a helper for influencer login; visit the page directly to validate route presence
-    const response = await page.goto("/dashboard/influencer");
-    // Accept either 200 page load or redirect away if not authenticated
-    expect(response).not.toBeNull();
-    expect([200, 302, 301, 307, 308]).toContain(response!.status());
+  test.beforeEach(async ({ page }) => {
+    await loginAsInfluencer(page);
+  });
+
+  test("dashboard loads and shows influencer UI", async ({ page }) => {
+    await expect(page).toHaveURL(/\/dashboard\/influencer(\/.*)?$/);
+    // generic heading/section check to avoid brittle selectors
+    await expect(page.locator("h1, h2").filter({ hasText: /influencer|shop|commissions/i })).toBeVisible();
   });
 });

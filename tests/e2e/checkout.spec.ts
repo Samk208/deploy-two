@@ -51,7 +51,8 @@ test.describe("Checkout API", () => {
           // help route infer influencer context
           shopHandle: HANDLE,
           // provide effectivePrice to allow sale price testing
-          effectivePrice: (first!.sale_price ?? first!.price) as number,
+          // ensure numeric fallback if both values are missing
+          effectivePrice: (first!.sale_price ?? first!.price ?? 0) as number,
           image: first!.image,
           title: first!.title,
         },

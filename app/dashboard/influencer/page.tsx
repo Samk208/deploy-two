@@ -6,15 +6,27 @@ import { createServerSupabaseClient } from "@/lib/supabase/server"
 
 export default async function InfluencerDashboard() {
   const supabase = await createServerSupabaseClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  let session = null as null | { user: { id: string } }
+  try {
+    const res = await supabase.auth.getSession()
+    session = res?.data?.session ? { user: { id: res.data.session.user.id } } : null
+  } catch (e) {
+    console.error("Failed to read session in influencer dashboard:", e)
+    session = null
+  }
   let shopHandle: string | null = null
   if (session?.user) {
-    const { data: shop } = await supabase
+    type ShopRow = { handle: string | null }
+    const { data, error } = await supabase
       .from("shops")
       .select("handle")
       .eq("influencer_id", session.user.id)
-      .maybeSingle()
-    shopHandle = (shop as any)?.handle ?? null
+      .maybeSingle<ShopRow>()
+    if (error) {
+      console.error("Failed to fetch influencer shop handle:", error)
+    } else if (data?.handle) {
+      shopHandle = data.handle
+    }
   }
   return (
     <div className="space-y-6">

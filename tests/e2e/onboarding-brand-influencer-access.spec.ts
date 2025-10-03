@@ -1,16 +1,18 @@
 import { expect, test } from "@playwright/test";
+import { TEST_INFLUENCER_CREDENTIALS, loginAsSupplier } from "../helpers/auth";
 
 function makeFile(name: string, mimeType: string, content = "dummy") {
   return { name, mimeType, buffer: Buffer.from(content) };
 }
 
 test.describe("Onboarding access and document uploads", () => {
-  test("influencer login, reach onboarding verify, upload docs, then access dashboard", async ({
+  test("influencer login, reach onboarding verify, upload docs, then access dashboard (and role is influencer)", async ({
     page,
+    request,
   }) => {
     await page.goto("/sign-in");
-    await page.getByLabel("Email").fill("test.influencer+e2e@test.local");
-    await page.getByLabel("Password").fill("NewInfluencerPassword123!");
+    await page.getByLabel("Email").fill(TEST_INFLUENCER_CREDENTIALS.email);
+    await page.getByLabel("Password").fill(TEST_INFLUENCER_CREDENTIALS.password);
     await page.getByRole("button", { name: "Sign In" }).click();
 
     // Either lands on dashboard or onboarding based on account state
@@ -49,14 +51,20 @@ test.describe("Onboarding access and document uploads", () => {
     }
     await page.waitForURL("**/dashboard/influencer", { timeout: 15000 });
     await expect(page).toHaveURL(/\/dashboard\/influencer$/);
+    // Verify session role
+    const sessionRes = await request.get("/api/auth/session");
+    expect(sessionRes.status()).toBeLessThan(400);
+    const session = await sessionRes.json();
+    expect(session?.user?.role).toBe("influencer");
   });
 
-  test("brand login, access supplier dashboard", async ({ page }) => {
-    await page.goto("/sign-in");
-    await page.getByLabel("Email").fill("test.brand+e2e@test.local");
-    await page.getByLabel("Password").fill("NewBrandPassword123!");
-    await page.getByRole("button", { name: "Sign In" }).click();
-    await page.waitForURL("**/dashboard/supplier", { timeout: 15000 });
-    await expect(page).toHaveURL(/\/dashboard\/supplier$/);
+  test("brand login, access supplier dashboard (and role is supplier)", async ({ page, request }) => {
+    await loginAsSupplier(page);
+    await expect(page).toHaveURL(/\/dashboard\/supplier(\/.*)?$/);
+    // Verify session role
+    const sessionRes = await request.get("/api/auth/session");
+    expect(sessionRes.status()).toBeLessThan(400);
+    const session = await sessionRes.json();
+    expect(session?.user?.role).toBe("supplier");
   });
 });

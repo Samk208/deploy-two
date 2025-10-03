@@ -15,14 +15,20 @@ export async function GET(request: NextRequest) {
     .eq("id", user.id)
     .maybeSingle<Profile>();
 
-  const payload = {
-    user: { id: user.id, email: user.email },
-    role: (profile?.role ?? null) as string | null,
-    error: error?.message || null,
-  };
-
+  // If there's a database error (connection/query), return 500 with minimal info
   if (error) {
-    return NextResponse.json(payload, { status: 500 });
+    const minimal = {
+      ok: false,
+      message: "Failed to retrieve profile",
+      // Avoid leaking user details in error responses
+    } as const;
+    return NextResponse.json(minimal, { status: 500 });
   }
-  return NextResponse.json(payload, { status: 200 });
+
+  // Treat missing profile as valid (role: null)
+  const role: string | null = (profile?.role ?? null) as string | null;
+  return NextResponse.json(
+    { user: { id: user.id, email: user.email }, role },
+    { status: 200 }
+  );
 }

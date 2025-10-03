@@ -216,10 +216,8 @@ export function CheckoutPage() {
         },
       };
 
-      // In development, optionally route via mock session to simplify diagnostics
-      const useMockCheckout =
-        process.env.NEXT_PUBLIC_USE_MOCK_CHECKOUT === "true";
-      if (useMockCheckout) {
+      // Try mock session; server decides if allowed (non-prod and USE_MOCK_CHECKOUT)
+      try {
         const mockPayload = {
           items: checkoutData.items,
           customerInfo: {
@@ -237,16 +235,15 @@ export function CheckoutPage() {
           body: JSON.stringify(mockPayload),
         });
 
-        const mockData = await mockRes.json();
-        if (!mockRes.ok) {
-          throw new Error(
-            mockData?.error || "Failed to create checkout session (mock)"
-          );
+        if (mockRes.ok) {
+          const mockData = await mockRes.json();
+          if (mockData?.url) {
+            window.location.href = mockData.url;
+            return;
+          }
         }
-
-        // Navigate directly in mock mode
-        window.location.href = mockData.url;
-        return;
+      } catch (_) {
+        // If mock route is disabled or fails, fall through to real checkout
       }
 
       // Create Stripe checkout session

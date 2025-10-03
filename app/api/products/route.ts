@@ -42,7 +42,11 @@ export async function GET(request: NextRequest) {
       return null;
     });
     if (!owner) {
-      query = query.eq("active", true).or("in_stock.eq.true,stock_count.gt.0");
+      // Enforce: active = true AND (in_stock = true OR stock_count > 0)
+      // Using explicit grouped OR to avoid accidental top-level OR semantics
+      query = query.or(
+        "and(active.eq.true,in_stock.eq.true),and(active.eq.true,stock_count.gt.0)"
+      );
     } else if (owner === "supplier") {
       if (!user) {
         return NextResponse.json(
@@ -68,11 +72,11 @@ export async function GET(request: NextRequest) {
       query = query.overlaps("region", [region]);
     }
     if (q) {
-      // Search by title, description, or sku with safe encoded pattern
-      const pattern = `%${q}%`;
-      const encoded = encodeURIComponent(pattern);
+      // Search by title, description, or sku with ILIKE using a non-encoded pattern
+      const trimmed = q.slice(0, 200); // basic sanity limit
+      const pattern = `%${trimmed}%`;
       query = query.or(
-        `title.ilike.${encoded},description.ilike.${encoded},sku.ilike.${encoded}`
+        `title.ilike.${pattern},description.ilike.${pattern},sku.ilike.${pattern}`
       );
       // Alternative approach (commented): use a Postgres RPC to combine ORs server-side.
       // This avoids string building entirely but requires a DB function.

@@ -1,4 +1,6 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { ensureTypedClient } from "@/lib/supabase/types";
+import type { TablesInsert } from "@/lib/supabase/database.types";
 import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -17,7 +19,9 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const cookieStore = cookies();
-    const supabase = await createServerSupabaseClient({ cookies: cookieStore });
+    const supabase = ensureTypedClient(
+      await createServerSupabaseClient({ cookies: cookieStore })
+    );
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
@@ -38,11 +42,29 @@ export async function GET(request: NextRequest) {
 
           if (isNewUser) {
             // This is a new user, create their profile before redirecting
-            await supabase.from("profiles").insert({
+            const payload: TablesInsert<"profiles"> = {
               id: user.id,
-              name: user.user_metadata.full_name || user.email,
-              role: "customer", // Default role
-            } as any);
+              name: (user.user_metadata?.full_name as string) || user.email || "",
+              role: "customer",
+            }
+
+            const { error: insertError } = await supabase
+              .from("profiles")
+              .insert(payload);
+
+            if (insertError) {
+              // If the profile already exists (race/duplicate), ignore; otherwise surface
+              const code = (insertError as any).code || "";
+              const msg = insertError.message || "";
+              const isDuplicate = code === "23505" || /duplicate|unique/i.test(msg);
+              if (!isDuplicate) {
+                console.error("profiles insert failed in OAuth callback:", insertError);
+                return NextResponse.redirect(
+                  new URL("/auth/auth-code-error?message=profile-create-failed", request.url)
+                );
+              }
+            }
+
             // New users should go to onboarding
             return NextResponse.redirect(
               new URL("/auth/onboarding", request.url)

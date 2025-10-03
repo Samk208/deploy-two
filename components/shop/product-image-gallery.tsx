@@ -33,15 +33,12 @@ export function ProductImageGallery({
     ? "/placeholder.jpg"
     : safeImages[currentIndex] || "/placeholder.jpg";
 
-  // When the image list changes, clamp index and reset failure map
+  // When the image set changes (identity or length), reset index and failed map
   useEffect(() => {
-    if (currentIndex >= safeImages.length) {
-      setCurrentIndex(0);
-    }
-    // Reset failed states when images set changes to avoid stale flags
+    setCurrentIndex(0);
     setFailed({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [safeImages.length]);
+  }, [images, safeImages.length]);
 
   const nextImage = () => {
     setCurrentIndex((prev) => (prev + 1) % safeImages.length);
@@ -195,7 +192,9 @@ export function ProductImageGallery({
           className="object-cover"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 50vw"
           priority
-          onError={() => setFailed((f) => ({ ...f, [currentIndex]: true }))}
+          onError={() =>
+            setFailed((f) => (f[currentIndex] ? f : { ...f, [currentIndex]: true }))
+          }
         />
         {safeImages.length > 1 && (
           <div className="absolute top-4 right-4 bg-black/50 text-white text-xs px-2 py-1 rounded">

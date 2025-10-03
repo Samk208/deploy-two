@@ -249,17 +249,32 @@ export function EditProductClient({
       const uploadedUrls: string[] = [];
       for (let i = 0; i < valid.length; i++) {
         const file = valid[i];
-        const { url } = await uploadProductImage(file, { productId });
+        let fileProgress = 0;
+        const { url } = await uploadProductImage(file, {
+          productId,
+          onProgress: (fraction) => {
+            // fraction 0..1 for this file → aggregate across all files
+            fileProgress = Math.max(0, Math.min(1, fraction || 0));
+            const aggregate = ((i + fileProgress) / valid.length) * 100;
+            setUploadProgress(Math.max(0, Math.min(100, Math.round(aggregate))));
+          },
+        });
+        // ensure progress reaches next bucket after each file
+        const aggregateDone = ((i + 1) / valid.length) * 100;
+        setUploadProgress(Math.max(0, Math.min(100, Math.round(aggregateDone))));
         uploadedUrls.push(url);
       }
       if (uploadedUrls.length) {
         updateField("images", [...formData.images, ...uploadedUrls]);
       }
       setSuccessMessage("Images uploaded successfully");
+      setUploadProgress(100);
     } catch (err: any) {
       setErrorMessage(err?.message || "Image upload failed");
     } finally {
       setIsUploading(false);
+      // slight reset after completion for UX
+      setTimeout(() => setUploadProgress(0), 500);
     }
   };
 

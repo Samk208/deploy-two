@@ -1,16 +1,17 @@
 import { QueryClient, dehydrate } from "@tanstack/react-query";
 import QueryProvider from "@/app/providers/query-provider";
+import type { CommissionsFilters } from "@/components/dashboard/commissions/client";
 
 export default async function Page() {
   const qc = new QueryClient();
-  const defaultFilters = { owner: "supplier", status: "pending", page: 1, pageSize: 20 } as const;
+  const defaultFilters: CommissionsFilters = { owner: "supplier", status: "pending", page: 1, pageSize: 20 };
 
   await qc.prefetchQuery({
     queryKey: ["commissions", defaultFilters],
     queryFn: async () => {
-      const u = new URL("/api/commissions", "http://localhost");
-      Object.entries(defaultFilters).forEach(([k, v]) => u.searchParams.set(k, String(v)));
-      const r = await fetch(`/api/commissions?${u.searchParams.toString()}`, { cache: "no-store" });
+      const params = new URLSearchParams();
+      Object.entries(defaultFilters).forEach(([k, v]) => params.set(k, String(v)));
+      const r = await fetch(`/api/commissions?${params.toString()}`, { cache: "no-store" });
       if (!r.ok) throw new Error("fetch commissions failed");
       return r.json();
     },
@@ -21,7 +22,7 @@ export default async function Page() {
 
   return (
     <QueryProvider state={state}>
-      <CommissionsClient defaultFilters={defaultFilters as any} />
+      <CommissionsClient defaultFilters={defaultFilters} />
     </QueryProvider>
   );
 }
