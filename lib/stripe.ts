@@ -1,17 +1,21 @@
 import Stripe from "stripe";
 
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY || "";
-let stripeInstance: Stripe | null = null;
+// Exposed for tests to mock via vi.mock("../../lib/stripe", () => ({ stripe: {} }))
+export let stripe: any = null as any;
 
-export function getStripe(): Stripe | null {
-  if (!stripeSecretKey || typeof stripeSecretKey !== "string") return null;
-  if (!stripeInstance) {
-    stripeInstance = new Stripe(stripeSecretKey, {
-      apiVersion: "2023-10-16",
-      typescript: true,
-    });
-  }
-  return stripeInstance;
+export function setStripeClient(client: any) {
+  stripe = client;
+}
+
+export function getStripe(): any {
+  if (stripe) return stripe;
+  const key = process.env.STRIPE_SECRET_KEY || "";
+  if (!key || typeof key !== "string") return null;
+  stripe = new Stripe(key, {
+    apiVersion: "2023-10-16",
+    typescript: true,
+  });
+  return stripe;
 }
 
 export const formatAmountForStripe = (

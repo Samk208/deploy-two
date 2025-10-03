@@ -53,12 +53,12 @@ interface QuickViewProduct {
   title: string;
   description?: string;
   price: number;
-  original_price?: number;
+  originalPrice?: number;
   images?: string[] | string;
   category?: string;
   region?: string;
-  in_stock?: boolean;
-  stock_count?: number;
+  inStock?: boolean;
+  stockCount?: number;
   rating?: number;
   reviews?: number;
   commission?: number;
@@ -179,12 +179,12 @@ export function InfluencerShopClient({
       title: product.title,
       description: "",
       price: product.price,
-      original_price: product.originalPrice,
+      originalPrice: product.originalPrice,
       images: [product.image].filter(Boolean),
       category: product.category,
       region: product.region,
-      in_stock: product.inStock,
-      stock_count: product.stockCount,
+      inStock: product.inStock,
+      stockCount: product.stockCount,
       rating: product.rating,
       reviews: product.reviews,
       commission: 0,
@@ -204,15 +204,15 @@ export function InfluencerShopClient({
       id: String(qv.id),
       title: qv.title,
       price: qv.price,
-      originalPrice: qv.original_price,
+      originalPrice: qv.originalPrice,
       image: Array.isArray(qv.images)
         ? (qv.images[0] ?? "")
         : (qv.images as string | undefined) || "",
       badges: [],
       category: qv.category || "General",
       region: qv.region || "Global",
-      inStock: qv.in_stock !== false,
-      stockCount: qv.stock_count ?? 0,
+      inStock: qv.inStock !== false,
+      stockCount: qv.stockCount ?? 0,
       rating: qv.rating ?? 4.5,
       reviews: qv.reviews ?? 0,
     };

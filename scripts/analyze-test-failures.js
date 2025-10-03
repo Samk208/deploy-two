@@ -125,7 +125,7 @@ class TestFailureAnalyzer {
       slowestTests: [...failures].sort((a, b) => b.duration - a.duration).slice(0, 5)
     };
 
-    fs.mkdirSync(this.outputDir, { recursive: true });
+    fs.mkdirSync(this.outputDir, { recursive: true, mode: 0o755 });
     const jsonPath = path.join(this.outputDir, 'test-analysis-report.json');
     const mdPath = path.join(this.outputDir, 'test-analysis-report.md');
     fs.writeFileSync(jsonPath, JSON.stringify(report, null, 2));

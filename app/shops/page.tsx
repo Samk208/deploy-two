@@ -238,10 +238,12 @@ function ShopCard({ shop }: { shop: Shop }) {
           ))}
         </div>
         <div className="absolute bottom-2 right-2">
-          <div className="flex items-center gap-1 bg-black/50 text-white px-2 py-1 rounded text-xs">
-            <Star className="h-3 w-3 text-amber-400 fill-current" />
-            <span>{shop.rating}</span>
-          </div>
+          {shop.rating > 0 && (
+            <div className="flex items-center gap-1 bg-black/50 text-white px-2 py-1 rounded text-xs">
+              <Star className="h-3 w-3 text-amber-400 fill-current" />
+              <span>{shop.rating}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -378,7 +380,7 @@ export default function ShopsPage() {
               category: Array.isArray(s?.categories) && s.categories.length > 0
                 ? String(s.categories[0])
                 : "General",
-              rating: 4.8,
+              rating: Number.isFinite(Number(s?.rating)) ? Number(s?.rating) : 0,
               totalProducts: Number.isFinite(Number(s?.product_count)) ? Number(s.product_count) : 0,
               totalSales: 0,
               createdAt: typeof s?.created_at === "string" ? s.created_at : (typeof s?.createdAt === "string" ? s.createdAt : undefined),

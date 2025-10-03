@@ -11,8 +11,14 @@ export default async function Page() {
     queryFn: async () => {
       const params = new URLSearchParams();
       Object.entries(defaultFilters).forEach(([k, v]) => params.set(k, String(v)));
-      const r = await fetch(`/api/commissions?${params.toString()}`, { cache: "no-store" });
-      if (!r.ok) throw new Error("fetch commissions failed");
+      const base = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      const url = `${base.replace(/\/$/, "")}/api/commissions?${params.toString()}`;
+      const r = await fetch(url, { cache: "no-store" });
+      if (!r.ok) {
+        let info = "";
+        try { info = await r.text(); } catch {}
+        throw new Error(`fetch commissions failed: ${r.status} ${r.statusText || ""} ${info ? "- " + info : ""}`.trim());
+      }
       return r.json();
     },
   });

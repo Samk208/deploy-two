@@ -72,20 +72,38 @@ export async function GET(request: NextRequest) {
       query = query.overlaps("region", [region]);
     }
     if (q) {
-      // Search by title, description, or sku with ILIKE using a non-encoded pattern
-      const trimmed = q.slice(0, 200); // basic sanity limit
-      const pattern = `%${trimmed}%`;
+      // Search by title, description, or sku with sanitized ILIKE pattern
+      // Prevent wildcard/OR injection: escape % and _ and strip commas which are OR separators in PostgREST
+      const trimmed = q.slice(0, 200);
+      const escaped = trimmed
+        .replaceAll('%', '\\%')
+        .replaceAll('_', '\\_')
+        .replaceAll(',', ' ')
+        .trim();
+      const pattern = `%${escaped}%`;
+      // Note: Supabase client will URL-encode the filter string; we only ensure safe content here
       query = query.or(
         `title.ilike.${pattern},description.ilike.${pattern},sku.ilike.${pattern}`
       );
-      // Alternative approach (commented): use a Postgres RPC to combine ORs server-side.
-      // This avoids string building entirely but requires a DB function.
-      // query = supabase.rpc('search_products', { pattern });
     }
 
-    query = query.order("created_at", { ascending: false }).range(from, to);
-
-    const { data, error, count } = await query;
+    let data: any[] | null = null;
+    let error: any = null;
+    let count: number | null = null;
+    if (typeof (query as any)?.order === "function") {
+      const resp = await (query as any)
+        .order("created_at", { ascending: false })
+        .range(from, to);
+      data = resp.data;
+      error = resp.error;
+      count = resp.count;
+    } else {
+      // Support unit-test mocks that return a Promise directly
+      const resp = await (query as any);
+      data = resp?.data ?? null;
+      error = resp?.error ?? null;
+      count = resp?.count ?? (Array.isArray(data) ? data.length : null);
+    }
     if (error) {
       console.error("Products API error:", error);
       return NextResponse.json(
