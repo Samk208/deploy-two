@@ -38,6 +38,7 @@ export async function signIn(formData: FormData) {
   if (profile?.role === UserRole.SUPPLIER) {
     return redirect("/dashboard/supplier");
   }
-
-  return redirect(redirectTo);
+  // Missing profile or role: send user to onboarding/profile setup instead of arbitrary redirect
+  console.warn("[sign-in] Missing or undefined role for user; redirecting to onboarding");
+  return redirect("/onboarding");
 }

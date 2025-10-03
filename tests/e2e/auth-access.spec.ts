@@ -4,10 +4,8 @@ async function emailPasswordLogin(page: Page, email: string, password: string) {
   await page.goto("/sign-in");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
-  await Promise.all([
-    page.waitForNavigation({ waitUntil: "load" }).catch(() => {}),
-    page.getByRole("button", { name: "Sign In" }).click(),
-  ]);
+  await page.getByRole("button", { name: "Sign In" }).click();
+  // Individual tests perform explicit waits (waitForURL/load) based on role
 }
 
 test.describe("Auth Access - Email/Password and Role Redirects", () => {

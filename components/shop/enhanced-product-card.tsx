@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Eye, Heart, ShoppingCart, Star, Truck, Zap } from "lucide-react";
+import { Heart, ShoppingCart, Star, Truck, Zap } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -38,7 +38,6 @@ interface EnhancedProductCardProps {
   product: Product;
   size?: "sm" | "md" | "lg";
   showSupplier?: boolean;
-  onQuickView?: (product: Product) => void;
   onAddToCart?: (product: Product) => void;
   // New: layout hint from parent grid vs list
   layout?: "grid" | "list";
@@ -48,7 +47,6 @@ export function EnhancedProductCard({
   product,
   size = "md",
   showSupplier = false,
-  onQuickView,
   onAddToCart,
   layout = "grid",
 }: EnhancedProductCardProps) {
@@ -108,27 +106,8 @@ export function EnhancedProductCard({
       onMouseLeave={() => setIsHovered(false)}
     >
       <CardContent className="p-0 h-full flex flex-col">
-        {/* Image / Gallery - clicking opens Quick View when available */}
-        <div
-          className={cn(
-            "cursor-pointer",
-            onQuickView ? "focus:ring-2 focus:ring-blue-500" : ""
-          )}
-          onClick={() => onQuickView?.(product)}
-          role={onQuickView ? "button" : undefined}
-          aria-label={onQuickView ? `Quick view ${product.title}` : undefined}
-          tabIndex={onQuickView ? 0 : undefined}
-          onKeyDown={(e) => {
-            if (!onQuickView) return;
-            if (e.key === "Enter") {
-              e.preventDefault();
-              onQuickView(product);
-            } else if (e.key === " ") {
-              e.preventDefault();
-              onQuickView(product);
-            }
-          }}
-        >
+        {/* Image / Gallery */}
+        <div className={cn("cursor-default")}> 
           <ProductImageGallery
             images={
               Array.isArray(product?.images)
@@ -265,16 +244,6 @@ export function EnhancedProductCard({
               <ShoppingCart className="h-4 w-4 mr-2" />
               Add to Cart
             </Button>
-            {onQuickView && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onQuickView(product)}
-                className="px-3"
-              >
-                <Eye className="h-4 w-4" />
-              </Button>
-            )}
           </div>
 
           {/* Stock Status */}

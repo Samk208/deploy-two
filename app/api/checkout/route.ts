@@ -76,18 +76,8 @@ export async function POST(request: NextRequest) {
     }
     console.log("[checkout] user:", user.id);
 
-    // Initialize Stripe after cheap checks (auth + validation), before DB work
-    const getStripeFn = (stripeLib as any).getStripe as undefined | (()=>any);
-    const stripe = typeof getStripeFn === "function"
-      ? getStripeFn()
-      : ((stripeLib as any).stripe || null);
-    if (!stripe) {
-      console.error("[checkout] Stripe initialization failed");
-      return NextResponse.json(
-        { ok: false, message: "Stripe not configured" },
-        { status: 500 }
-      );
-    }
+    // Defer Stripe initialization until just before creating a session.
+    // In unit tests, we short-circuit to a stubbed response and never touch Stripe.
 
     // Fetch product details and calculate total
     const productIds = items.map((item) => item.productId);
@@ -287,12 +277,15 @@ export async function POST(request: NextRequest) {
         quantity: item.quantity,
       });
 
+      const primaryImage = Array.isArray(imageArray)
+        ? (imageArray[0] ?? "")
+        : "";
       orderItems.push({
         productId: product.id,
         title: product.title,
         price: product.price,
         quantity: item.quantity,
-        image: product.images[0] || "",
+        image: primaryImage,
         supplierId: product.supplier_id,
         commission: product.commission,
       });
@@ -463,6 +456,18 @@ export async function POST(request: NextRequest) {
         },
         message: "Checkout session created successfully (mock)",
       } as ApiResponse);
+    }
+    // Initialize Stripe now (only in non-test environments)
+    const getStripeFn = (stripeLib as any).getStripe as undefined | (()=>any);
+    const stripe = typeof getStripeFn === "function"
+      ? getStripeFn()
+      : ((stripeLib as any).stripe || null);
+    if (!stripe) {
+      console.error("[checkout] Stripe initialization failed");
+      return NextResponse.json(
+        { ok: false, message: "Stripe not configured" },
+        { status: 500 }
+      );
     }
 
     const session = await (stripe as any).checkout.sessions.create(sessionPayload);

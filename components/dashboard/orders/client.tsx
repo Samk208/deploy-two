@@ -1,7 +1,7 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { getOrderById, getSupplierDashboard } from "@/lib/api/client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { DataTable } from "@/components/ui/data-table/table";
 
 type Order = {
@@ -18,6 +18,15 @@ export default function OrdersClient() {
   const [orderId, setOrderId] = useState("");
   const [detail, setDetail] = useState<Order | null>(null);
   const [findError, setFindError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const total = recent.length;
+  const paginatedData = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    return recent.slice(start, end);
+  }, [recent, page, pageSize]);
 
   async function handleFind() {
     setFindError(null);
@@ -59,10 +68,16 @@ export default function OrdersClient() {
           { accessorKey: "total", header: "Total" },
           { accessorKey: "created_at", header: "Date" },
         ]}
-        data={recent}
-        total={recent.length}
-        page={1}
-        pageSize={recent.length || 10}
+        data={paginatedData}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        onPageChange={(p) => setPage(Math.max(1, p))}
+        onPageSizeChange={(s) => {
+          const size = Number.isFinite(s) && s > 0 ? s : 10;
+          setPageSize(size);
+          setPage(1);
+        }}
       />
 
       {detail && (

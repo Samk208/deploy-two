@@ -235,8 +235,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           row.products?.title || (pid ? `Product ${pid}` : "Product");
         const key = pid || `title:${title}`;
         const amount = Number(row.amount) || 0;
-        const rate = Number(row.rate);
-        const estRevenue = rate > 0 ? amount / rate : 0;
+        const rawRate = Number(row.rate);
+        const effectiveRate = Number.isFinite(rawRate)
+          ? (rawRate > 1 ? rawRate / 100 : rawRate)
+          : NaN;
+        const estRevenue = Number.isFinite(effectiveRate) && effectiveRate > 0
+          ? amount / effectiveRate
+          : 0;
 
         const current = byProduct.get(key);
         if (!current) {
@@ -245,16 +250,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             title,
             sales: 1,
             commissionSum: amount,
-            revenueSum: estRevenue,
-            rateSum: Number.isFinite(rate) ? rate : 0,
-            rateCount: Number.isFinite(rate) && rate > 0 ? 1 : 0,
+            revenueSum: (Number.isFinite(effectiveRate) && effectiveRate > 0) ? estRevenue : 0,
+            rateSum: (Number.isFinite(effectiveRate) && effectiveRate > 0) ? effectiveRate : 0,
+            rateCount: (Number.isFinite(effectiveRate) && effectiveRate > 0) ? 1 : 0,
           });
         } else {
           current.sales += 1;
           current.commissionSum += amount;
-          current.revenueSum += estRevenue;
-          if (Number.isFinite(rate) && rate > 0) {
-            current.rateSum += rate;
+          if (Number.isFinite(effectiveRate) && effectiveRate > 0) {
+            current.revenueSum += estRevenue;
+            current.rateSum += effectiveRate;
             current.rateCount += 1;
           }
         }

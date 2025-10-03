@@ -44,12 +44,18 @@ async function openUserMenu(page: import('@playwright/test').Page) {
 async function waitForSession(page: import('@playwright/test').Page) {
   await page
     .waitForResponse(
-      (r) =>
-        r.ok() &&
-        (r.url().includes('/api/auth/session') || r.url().includes('/auth') || r.url().includes('/api')),
+      (r) => {
+        try {
+          const u = new URL(r.url());
+          const isSession = u.pathname === "/api/auth/session" || u.pathname.endsWith("/api/auth/session");
+          const isGet = (r.request()?.method() || "GET").toUpperCase() === "GET";
+          return r.ok() && isSession && isGet;
+        } catch {
+          return false;
+        }
+      },
       { timeout: 15000 }
-    )
-    .catch(() => {});
+    );
 }
 
 /** Perform a deterministic UI sign-in on /sign-in */

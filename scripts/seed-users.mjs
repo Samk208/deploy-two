@@ -76,7 +76,10 @@ async function ensureUser(email, role, name) {
       userId = data.user.id
       info(`User exists: ${email} (${userId})`)
     }
-  } catch {}
+  } catch (err) {
+    // Log lookup failure but proceed to create if needed
+    info(`Lookup failed for ${email}; proceeding to create if missing: ${err?.message || err}`)
+  }
 
   // 2) Create if missing
   if (!userId) {

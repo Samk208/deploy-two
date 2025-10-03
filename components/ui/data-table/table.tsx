@@ -23,7 +23,14 @@ export function DataTable<T>({ columns, data, total, page, pageSize, isLoading, 
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         {onRefresh && (
-          <button className="inline-flex items-center rounded border px-3 py-1 text-sm" onClick={onRefresh}>Refresh</button>
+          <button
+            className="inline-flex items-center rounded border px-3 py-1 text-sm disabled:opacity-50"
+            onClick={onRefresh}
+            aria-label="Refresh data"
+            disabled={!!isLoading}
+          >
+            Refresh
+          </button>
         )}
         {isLoading && <span className="text-sm text-muted-foreground">Loading…</span>}
         {isError && <span className="text-sm text-red-600">Error loading data</span>}
