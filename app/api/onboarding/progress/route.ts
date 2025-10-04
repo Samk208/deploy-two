@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     const { data: rows, error } = await supabaseAdmin
       .from("onboarding_progress" as any)
-      .select("step, current_step, completed_steps, data, role, updated_at")
+      .select("step, current_step, completed_steps, data, role, status, updated_at")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false })
 
@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
     let latestCurrentStep = 1
     const completedUnion = new Set<number>()
     let role: "influencer" | "brand" | undefined
+    let status: "draft" | "completed" | undefined
 
     for (const row of ((rows as any[]) || [])) {
       const step = Number((row as any).step)
@@ -42,6 +43,12 @@ export async function GET(request: NextRequest) {
         completedUnion.add(s)
       }
       role = ((row as any).role as any) || role
+      // Track the latest status (completed takes precedence)
+      if ((row as any).status === "completed") {
+        status = "completed"
+      } else if (!status) {
+        status = (row as any).status
+      }
     }
 
     return NextResponse.json({
@@ -50,6 +57,7 @@ export async function GET(request: NextRequest) {
         role: role || user.role,
         currentStep: latestCurrentStep,
         completedSteps: Array.from(completedUnion).sort((a, b) => a - b),
+        status: status || "draft",
         steps: Object.values(byStep).sort((a: any, b: any) => a.step - b.step),
       },
     })

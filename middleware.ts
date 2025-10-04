@@ -30,9 +30,6 @@ export async function middleware(req: NextRequest) {
     "/auth/auth-code-error",
     "/influencers", // Add influencers page as public
     "/brands", // Add brands page as public
-    "/dashboard/supplier", // allow supplier dashboard in tests (routes enforce auth in UI)
-    "/dashboard/influencer",
-    "/admin/dashboard",
   ];
 
   // API routes that don't require authentication

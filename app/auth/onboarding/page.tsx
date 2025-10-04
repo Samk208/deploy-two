@@ -124,6 +124,50 @@ export default function OnboardingPage() {
     }
   }, [])
 
+  // Guard: Redirect completed users to their dashboard
+  useEffect(() => {
+    let cancelled = false
+    const checkCompletion = async () => {
+      try {
+        // Check if user has already completed onboarding
+        const progressRes = await fetch("/api/onboarding/progress", { cache: "no-store" })
+        if (!progressRes.ok || cancelled) return
+        
+        const progressData = await progressRes.json()
+        if (!progressData?.ok || cancelled) return
+
+        // Check if onboarding is marked as completed
+        const status = progressData.data?.status
+        
+        if (status === "completed") {
+          // User already completed onboarding, redirect to dashboard
+          const meRes = await fetch("/api/me", { cache: "no-store" })
+          if (!meRes.ok || cancelled) return
+          
+          const meData = await meRes.json()
+          const userRole = meData?.role
+          
+          if (userRole && userRole !== "customer") {
+            const redirectPath = userRole === "admin"
+              ? "/admin/dashboard"
+              : userRole === "influencer" 
+                ? "/dashboard/influencer" 
+                : userRole === "supplier"
+                  ? "/dashboard/supplier"
+                  : "/"
+            router.push(redirectPath)
+          }
+        }
+      } catch (e) {
+        console.debug("Completion guard check failed:", e)
+      }
+    }
+    checkCompletion()
+    return () => {
+      cancelled = true
+    }
+  }, [router])
+
   // Also try to restore progress from backend if available (non-blocking, merges with local state)
   useEffect(() => {
     let cancelled = false
@@ -266,8 +310,11 @@ export default function OnboardingPage() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to submit onboarding")
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to submit onboarding")
       }
+
+      const result = await response.json()
 
       // Clear saved data
       localStorage.removeItem(STORAGE_KEY)
@@ -277,9 +324,8 @@ export default function OnboardingPage() {
         description: "Your profile has been submitted for review.",
       })
 
-      // Redirect based on role
-      const redirectPath = data.role === "influencer" ? "/dashboard/influencer" : "/dashboard/supplier/products"
-
+      // Use redirect path from API response (handles admin, influencer, supplier)
+      const redirectPath = result.redirectPath || "/"
       router.push(redirectPath)
     } catch (error) {
       toast({

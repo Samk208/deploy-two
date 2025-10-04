@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { getCurrentUser } from "@/lib/auth-helpers"
 import { supabaseAdmin } from "@/lib/supabase/admin"
+import { mapOnboardingRoleToDbRole } from "@/lib/role-mapper"
 
 const simulateNetworkDelay = () => new Promise((resolve) => setTimeout(resolve, Math.random() * 1000 + 300))
 
@@ -54,6 +55,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Map onboarding role to database role and update profiles.role immediately
+    const dbRole = mapOnboardingRoleToDbRole(body.role)
+    try {
+      await supabaseAdmin
+        .from("profiles")
+        .update({ role: dbRole })
+        .eq("id", user.id)
+    } catch (e) {
+      console.error("Error updating profile role in step-1:", e)
+    }
+
     // Persist partial progress (non-breaking; also keep localStorage behavior on frontend)
     try {
       const safeData = {
@@ -77,7 +89,7 @@ export async function POST(request: NextRequest) {
         .upsert(
           {
             user_id: user.id,
-            role: body.role === "brand" ? "brand" : "influencer",
+            role: dbRole, // Use the mapped database role
             step: 1,
             current_step: currentStep,
             completed_steps: completedSteps,

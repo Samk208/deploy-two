@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { cookies as nextCookies } from "next/headers"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { supabaseAdmin } from "@/lib/supabase/admin"
 import { signUpSchema } from "@/lib/validators"
@@ -134,9 +135,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     console.log('User profile created successfully')
 
-    // Immediately sign the user in to create a session cookie
+    // Immediately sign the user in to create a session cookie (with writable cookies)
     try {
-      const supabase = await createServerSupabaseClient(request)
+      const store = await nextCookies()
+      const supabase = await createServerSupabaseClient({ cookies: store })
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
       if (signInError) {
         console.warn('Sign-in after sign-up failed; user must sign in manually:', signInError)

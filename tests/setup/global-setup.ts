@@ -33,6 +33,41 @@ async function deleteAuthUserByEmail(email: string) {
   }
 }
 
+// Ensure a user exists with the desired credentials/metadata.
+// If the user already exists (e.g., prior delete failed due to FK/constraints), update it in-place.
+async function ensureAuthUser(email: string, password: string, metadata: Record<string, any>) {
+  const supabaseAdmin = getAdminClient();
+  const lc = email.toLowerCase();
+  const { data: list, error: listErr } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  if (listErr) {
+    console.warn("List users failed while ensuring user:", listErr);
+  }
+  const existing = list?.users?.find((u: any) => u.email?.toLowerCase() === lc);
+  if (existing) {
+    // Update password, confirm email, and metadata to desired role/state
+    const { data: upd, error: updErr } = await supabaseAdmin.auth.admin.updateUserById(existing.id, {
+      password,
+      email_confirm: true,
+      user_metadata: metadata,
+    });
+    if (updErr) {
+      console.warn(`Failed to update existing auth user ${email}:`, updErr);
+    }
+    return { user: upd?.user ?? existing };
+  }
+  // Create if not found
+  const { data: created, error: crtErr } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: metadata,
+  });
+  if (crtErr) {
+    console.warn(`Failed to create auth user ${email}:`, crtErr);
+  }
+  return { user: created?.user };
+}
+
 export default async function globalSetup(_config: FullConfig) {
   const supabaseAdmin = getAdminClient();
   const influencerEmail = "test.influencer+e2e@test.local";
@@ -46,11 +81,14 @@ export default async function globalSetup(_config: FullConfig) {
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500";
 
+  // Clean in dependency order to avoid FK violations
   const tables = [
+    "commissions", // depends on orders/products/profiles
+    "influencer_shop_products", // depends on products and profiles
     "orders",
-    "commissions",
     "verification_documents",
     "verification_requests",
+    "shops", // depends on profiles (influencer)
     "products",
     "profiles",
   ] as const;
@@ -74,43 +112,24 @@ export default async function globalSetup(_config: FullConfig) {
     deleteAuthUserByEmail(customerEmail),
   ]);
 
-  const { data: adminUser, error: adminErr } =
-    await supabaseAdmin.auth.admin.createUser({
-      email: adminEmail,
-      password: ADMIN_PASSWORD,
-      email_confirm: true,
-      user_metadata: { role: "admin", full_name: "Test Admin" },
-    });
-  if (adminErr) console.warn("Failed to create admin:", adminErr);
-
-  const { data: influencerUser, error: inflErr } =
-    await supabaseAdmin.auth.admin.createUser({
-      email: influencerEmail,
-      password: INFLUENCER_PASSWORD,
-      email_confirm: true,
-      user_metadata: { role: "influencer", full_name: "Test Influencer" },
-    });
-  if (inflErr) console.warn("Failed to create influencer:", inflErr);
-
-  const { data: brandUser, error: brandErr } =
-    await supabaseAdmin.auth.admin.createUser({
-      email: brandEmail,
-      password: BRAND_PASSWORD,
-      email_confirm: true,
-      // Use 'supplier' to match app roles (dashboard/supplier)
-      user_metadata: { role: "supplier", full_name: "Test Brand" },
-    });
-  if (brandErr) console.warn("Failed to create brand:", brandErr);
-
-  // Create Customer
-  const { data: customerUser, error: custErr } =
-    await supabaseAdmin.auth.admin.createUser({
-      email: customerEmail,
-      password: CUSTOMER_PASSWORD,
-      email_confirm: true,
-      user_metadata: { role: "customer", full_name: "Test Customer" },
-    });
-  if (custErr) console.warn("Failed to create customer:", custErr);
+  // Create or update users to the desired state
+  const adminUser = await ensureAuthUser(adminEmail, ADMIN_PASSWORD, {
+    role: "admin",
+    full_name: "Test Admin",
+  });
+  const influencerUser = await ensureAuthUser(influencerEmail, INFLUENCER_PASSWORD, {
+    role: "influencer",
+    full_name: "Test Influencer",
+  });
+  const brandUser = await ensureAuthUser(brandEmail, BRAND_PASSWORD, {
+    // Use 'supplier' to match app roles (dashboard/supplier)
+    role: "supplier",
+    full_name: "Test Brand",
+  });
+  const customerUser = await ensureAuthUser(customerEmail, CUSTOMER_PASSWORD, {
+    role: "customer",
+    full_name: "Test Customer",
+  });
 
   // Ensure profiles exist with correct roles for middleware/redirects
   try {

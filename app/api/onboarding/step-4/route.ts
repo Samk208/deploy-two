@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { getCurrentUser } from "@/lib/auth-helpers"
 import { supabaseAdmin } from "@/lib/supabase/admin"
+import { mapOnboardingRoleToDbRole } from "@/lib/role-mapper"
 
 const simulateNetworkDelay = () => new Promise((resolve) => setTimeout(resolve, Math.random() * 1000 + 300))
 
@@ -38,12 +39,13 @@ export async function POST(request: NextRequest) {
         const safeData = { defaultCommission, role }
         const currentStep = Number(body.currentStep) || 4
         const completedSteps: number[] = Array.isArray(body.completedSteps) ? body.completedSteps : []
+        const dbRole = mapOnboardingRoleToDbRole(role)
         const { error: upsertError } = await (supabaseAdmin
           .from("onboarding_progress" as any)
           .upsert(
             {
               user_id: user.id,
-              role: role === "brand" ? "brand" : "influencer",
+              role: dbRole,
               step: 4,
               current_step: currentStep,
               completed_steps: completedSteps,
@@ -92,12 +94,13 @@ export async function POST(request: NextRequest) {
         const safeData = { defaultCommission, minCommission, maxCommission, currency, role }
         const currentStep = Number(body.currentStep) || 4
         const completedSteps: number[] = Array.isArray(body.completedSteps) ? body.completedSteps : []
+        const dbRole = mapOnboardingRoleToDbRole(role)
         const { error: upsertError } = await (supabaseAdmin
           .from("onboarding_progress" as any)
           .upsert(
             {
               user_id: user.id,
-              role: role === "brand" ? "brand" : "influencer",
+              role: dbRole,
               step: 4,
               current_step: currentStep,
               completed_steps: completedSteps,
