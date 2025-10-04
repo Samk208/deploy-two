@@ -17,7 +17,10 @@ test.describe('Checkout Visual & Accessibility Tests', () => {
     
     // Add item to cart
     await page.goto(`/shop/${shopHandle}`);
-    await page.click('button:has-text("Add to Cart")').catch(() => {});
+    const addToCart = page.locator('button:has-text("Add to Cart")').first();
+    await expect(addToCart).toBeVisible();
+    await expect(addToCart).toBeEnabled();
+    await addToCart.click();
     
     // Navigate to checkout
     await page.goto('/checkout');
@@ -46,7 +49,9 @@ test.describe('Checkout Visual & Accessibility Tests', () => {
     await page.goto(`/shop/${shopHandle}`);
     
     // Add to cart and open cart
-    await page.click('button:has-text("Add to Cart")').catch(() => {});
+    const addBtn4 = page.locator('button:has-text("Add to Cart")').first();
+    await expect(addBtn4).toBeVisible();
+    await addBtn4.click();
     await page.waitForTimeout(500);
     
     // Open cart
@@ -91,7 +96,9 @@ test.describe('Checkout Visual & Accessibility Tests', () => {
     const shopHandle = process.env.TEST_SHOP_HANDLE || 'test-shop';
     await page.goto(`/shop/${shopHandle}`);
     
-    await page.click('button:has-text("Add to Cart")').catch(() => {});
+    const addBtn6 = page.locator('button:has-text("Add to Cart")').first();
+    await expect(addBtn6).toBeVisible();
+    await addBtn6.click();
     await page.waitForTimeout(500);
     
     const cartButton = page.locator('[aria-label*="cart" i], button:has-text("Cart")').first();
@@ -184,7 +191,9 @@ test.describe('Checkout Visual & Accessibility Tests', () => {
     const shopHandle = process.env.TEST_SHOP_HANDLE || 'test-shop';
     await page.goto(`/shop/${shopHandle}`);
     
-    await page.click('button:has-text("Add to Cart")').catch(() => {});
+    const addBtn7 = page.locator('button:has-text("Add to Cart")').first();
+    await expect(addBtn7).toBeVisible();
+    await addBtn7.click();
     await page.waitForTimeout(500);
     
     // Open cart

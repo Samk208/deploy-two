@@ -8,7 +8,6 @@ import { redirect } from "next/navigation";
 export async function signIn(formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const redirectTo = (formData.get("redirectTo") as string) || "/";
   const cookieStore = await cookies();
   const supabase = await createServerSupabaseClient({ cookies: cookieStore });
 

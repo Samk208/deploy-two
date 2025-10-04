@@ -22,6 +22,14 @@ import {
 import { Suspense } from "react"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 
+interface Profile {
+  role?: "supplier" | "influencer" | "admin" | "customer"
+  name?: string
+  avatar?: string | null
+  verified?: boolean
+  verification_status?: "pending" | "verified" | "rejected" | string
+}
+
 export const metadata: Metadata = {
   title: "Dashboard - One-Link",
   description: "Manage your One-Link account and products",
@@ -64,49 +72,53 @@ export default async function DashboardLayout({
   let influencerShopHandle: string | null = null
 
   if (session?.user) {
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("role,name,avatar,verified,verification_status")
-      .eq("id", session.user.id)
-      .maybeSingle()
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role,name,avatar,verified,verification_status")
+        .eq("id", session.user.id)
+        .maybeSingle<Profile>()
 
-    if (profileError) {
-      console.error("[dashboard/layout] profiles query error", {
-        userId: session.user.id,
-        error: profileError.message,
-        code: (profileError as any)?.code,
-      })
-    }
+      if (profileError) {
+        console.error("[dashboard/layout] profiles query error", {
+          userId: session.user.id,
+          error: profileError.message,
+          code: (profileError as any)?.code,
+        })
+      }
 
     if (profile) {
-      role = (profile as any).role ?? role
-      name = (profile as any).name ?? name
-      avatar = (profile as any).avatar ?? null
-      verified = !!(profile as any).verified
-      verificationStatus = ((profile as any).verification_status ?? "pending") as any
+      role = profile.role ?? role
+      name = profile.name ?? name
+      avatar = profile.avatar ?? null
+      verified = !!profile.verified
+      verificationStatus = (profile.verification_status ?? "pending") as
+        | "pending"
+        | "verified"
+        | "rejected"
     }
 
     if (role === "influencer") {
-      const { data: shop, error: shopError } = await supabase
-        .from("shops")
-        .select("handle")
-        .eq("influencer_id", session.user.id)
-        .maybeSingle()
-      if (shopError) {
-        console.error("[dashboard/layout] shops query error", {
-          userId: session.user.id,
-          error: shopError.message,
-          code: (shopError as any)?.code,
-        })
-        influencerShopHandle = null
-      } else {
-        influencerShopHandle = (shop as any)?.handle ?? null
+        const { data: shop, error: shopError } = await supabase
+          .from("shops")
+          .select("handle")
+          .eq("influencer_id", session.user.id)
+          .maybeSingle<{ handle?: string | null }>()
+
+        if (shopError) {
+          console.error("[dashboard/layout] shops query error", {
+            userId: session.user.id,
+            error: shopError.message,
+            code: (shopError as any)?.code,
+          })
+          influencerShopHandle = null
+        } else {
+          influencerShopHandle = shop?.handle ?? null
+        }
       }
     }
   }
 
   const navItems = role === "influencer" ? influencerNavItems : supplierNavItems
-
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div className="min-h-screen bg-gray-50">

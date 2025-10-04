@@ -1,19 +1,51 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <body>
     <script>
       (async () => {
-        if (!navigator.serviceWorker)
-          throw new Error(`Service workers are not supported.\nMake sure to serve the Trace Viewer (${window.location}) via HTTPS or localhost.`);
-        navigator.serviceWorker.register('sw.bundle.js');
-        if (!navigator.serviceWorker.controller)
-          await new Promise(f => navigator.serviceWorker.oncontrollerchange = f);
-        const traceUrl = new URL(location.href).searchParams.get('trace');
-        const params = new URLSearchParams();
-        params.set('trace', traceUrl);
-        await fetch('contexts?' + params.toString()).then(r => r.json());
-        await location.reload();
+        const RELOAD_FLAG = 'swContextsReloaded';
+        try {
+          if (!navigator.serviceWorker)
+            throw new Error(`Service workers are not supported.\nMake sure to serve the Trace Viewer (${window.location}) via HTTPS or localhost.`);
+
+          // Register the service worker
+          await navigator.serviceWorker.register('sw.bundle.js');
+
+          // Wait for control if needed
+          if (!navigator.serviceWorker.controller) {
+            await new Promise(resolve => (navigator.serviceWorker.oncontrollerchange = resolve));
+          }
+
+          // Build query params
+          const traceUrl = new URL(location.href).searchParams.get('trace');
+          const params = new URLSearchParams();
+          if (traceUrl) params.set('trace', traceUrl);
+
+          // Abortable fetch with timeout
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 8000);
+          try {
+            const resp = await fetch('contexts?' + params.toString(), { signal: controller.signal });
+            // Consume JSON to ensure SW has primed contexts
+            await resp.json().catch(() => {});
+          } finally {
+            clearTimeout(timeout);
+          }
+
+          // Avoid infinite reload loop
+          const alreadyReloaded = sessionStorage.getItem(RELOAD_FLAG) === '1';
+          if (!alreadyReloaded) {
+            sessionStorage.setItem(RELOAD_FLAG, '1');
+            location.reload();
+          } else {
+            // Successful load after one reload, clear flag for future navigations
+            sessionStorage.removeItem(RELOAD_FLAG);
+          }
+        } catch (e) {
+          // On any failure, do not reload repeatedly. Surface error in console.
+          console.error('[Trace Viewer] initialization failed:', e);
+          sessionStorage.removeItem(RELOAD_FLAG);
+        }
       })();
     </script>
     <script src="stall.js"></script>

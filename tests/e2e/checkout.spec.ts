@@ -33,7 +33,6 @@ test.describe("Checkout API", () => {
       !process.env.STRIPE_SECRET_KEY,
       "STRIPE_SECRET_KEY missing; skipping checkout test"
     );
-
     // 1) Get products from the influencer shop API
     const shopRes = await request.get(`${baseURL}/api/shop/${HANDLE}`);
     expect(shopRes.ok()).toBeTruthy();
@@ -43,16 +42,16 @@ test.describe("Checkout API", () => {
     expect(first).toBeTruthy();
 
     // 2) Post to checkout API
+    // Ensure product has a price available; avoid silently using $0
+    expect(first && (first.sale_price != null || first.price != null)).toBeTruthy();
     const payload = {
       items: [
         {
           productId: first!.id,
           quantity: 1,
-          // help route infer influencer context
           shopHandle: HANDLE,
           // provide effectivePrice to allow sale price testing
-          // ensure numeric fallback if both values are missing
-          effectivePrice: (first!.sale_price ?? first!.price ?? 0) as number,
+          effectivePrice: (first!.sale_price ?? first!.price) as number,
           image: first!.image,
           title: first!.title,
         },
@@ -64,7 +63,6 @@ test.describe("Checkout API", () => {
     const res = await request.post(`${baseURL}/api/checkout`, {
       data: payload,
     });
-
     expect(res.ok()).toBeTruthy();
     const json = (await res.json()) as CheckoutResponse;
     expect(json.ok).toBeTruthy();

@@ -37,8 +37,7 @@ export function ProductImageGallery({
   useEffect(() => {
     setCurrentIndex(0);
     setFailed({});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [images, safeImages.length]);
+  }, [safeImages]);
 
   const nextImage = () => {
     setCurrentIndex((prev) => (prev + 1) % safeImages.length);

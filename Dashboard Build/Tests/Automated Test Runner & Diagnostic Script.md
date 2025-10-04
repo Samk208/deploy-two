@@ -184,21 +184,28 @@ class DiagnosticRunner {
       
       const { stdout, stderr } = await execAsync(
         `pnpm test:e2e -- ${path} --reporter=json`,
-        { maxBuffer: 10 * 1024 * 1024 }
+        { maxBuffer: 50 * 1024 * 1024 } // Increase to 50MB to avoid truncation
       );
 
       const duration = Date.now() - startTime;
 
       // Parse JSON output
-      let testData;
+      let testData: any | undefined;
+      let parseError: any | undefined;
       try {
         testData = JSON.parse(stdout);
-      } catch {
-        // Fallback if not JSON
-        testData = { stats: { failures: 0 } };
+      } catch (err) {
+        parseError = err;
       }
 
-      if (testData.stats?.failures === 0) {
+      // Heuristic failure detection if JSON was unparseable
+      const text = `${stdout}\n${stderr}`.toLowerCase();
+      const failureMarkers = [
+        'error', 'failed', 'timeout', 'assertion', 'expect(', 'unhandledrejection', 'uncaught', 'ecode', 'econn', 'timeoutexceeded'
+      ];
+      const looksFailed = failureMarkers.some(m => text.includes(m));
+
+      if (testData && testData.stats?.failures === 0 && !looksFailed) {
         console.log(`  ✅ ${name} passed (${duration}ms)`);
         this.results.push({
           suite: name,
@@ -206,12 +213,26 @@ class DiagnosticRunner {
           duration,
         });
       } else {
+        const errors: string[] = [];
+        if (!testData && parseError) {
+          errors.push(`Could not parse JSON reporter output: ${String(parseError)}`);
+        }
+        errors.push(...this.parseErrors(stderr));
+        if (stdout && stdout.trim()) {
+          errors.push('--- STDOUT ---');
+          errors.push(stdout.slice(0, 20000));
+        }
+        if (stderr && stderr.trim()) {
+          errors.push('--- STDERR ---');
+          errors.push(stderr.slice(0, 20000));
+        }
+
         console.log(`  ⚠️  ${name} had failures (${duration}ms)`);
         this.results.push({
           suite: name,
           status: 'failed',
           duration,
-          errors: this.parseErrors(stderr),
+          errors,
         });
       }
     } catch (error: any) {

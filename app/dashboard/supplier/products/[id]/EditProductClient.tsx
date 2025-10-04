@@ -171,59 +171,7 @@ export function EditProductClient({
     }
   };
 
-  // Helper: basic client-side resize to max 1600px and convert to webp (except gifs)
-  const maybeResizeImage = async (
-    file: File
-  ): Promise<{ blob: Blob; contentType: string; ext: string }> => {
-    const isGif = file.type === "image/gif";
-    const canProcess = file.type.startsWith("image/") && !isGif;
-    if (!canProcess)
-      return {
-        blob: file,
-        contentType: file.type,
-        ext: file.name.split(".").pop() || "bin",
-      };
-
-    const img = document.createElement("img");
-    const reader = new FileReader();
-    const dataUrl: string = await new Promise((resolve, reject) => {
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-    await new Promise((res, rej) => {
-      img.onload = () => res(null);
-      img.onerror = rej;
-      img.src = dataUrl;
-    });
-
-    const max = 1600;
-    let { width, height } = img;
-    const scale = Math.min(1, max / Math.max(width, height));
-    width = Math.round(width * scale);
-    height = Math.round(height * scale);
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx)
-      return {
-        blob: file,
-        contentType: file.type,
-        ext: file.name.split(".").pop() || "bin",
-      };
-    ctx.drawImage(img, 0, 0, width, height);
-
-    const blob: Blob | null = await new Promise((resolve) =>
-      canvas.toBlob((b) => resolve(b), "image/webp", 0.85)
-    );
-    if (!blob) {
-      // Propagate explicit error so caller can handle/report
-      throw new Error("Image processing failed: canvas.toBlob returned null");
-    }
-    return { blob, contentType: "image/webp", ext: "webp" };
-  };
+  
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);

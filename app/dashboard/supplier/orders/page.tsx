@@ -6,7 +6,13 @@ export default async function Page() {
   await qc.prefetchQuery({
     queryKey: ["supplier-dashboard"],
     queryFn: async () => {
-      const r = await fetch(`/api/dashboard/supplier`, { cache: "no-store" });
+      const base =
+        process.env.NEXT_PUBLIC_APP_URL ||
+        process.env.APP_URL ||
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        "http://localhost:3000";
+      const url = `${base.replace(/\/$/, "")}/api/dashboard/supplier`;
+      const r = await fetch(url, { cache: "no-store" });
       if (!r.ok) throw new Error("dashboard fetch failed");
       return r.json();
     },
