@@ -153,6 +153,10 @@ export function InfluencerShopClient({
         handle,
       });
     } catch (_) {}
+    const supplierNameDerived = (product as any)?.supplierName
+      ?? (product as any)?.vendor
+      ?? influencer?.name
+      ?? "Unknown Supplier";
     const cartItem: Omit<CartItem, "quantity"> & { quantity?: number } = {
       id: String(product.id),
       title: product.title,
@@ -163,7 +167,7 @@ export function InfluencerShopClient({
       maxQuantity: product.stockCount,
       // Use influencer handle as a stable, non-empty supplier identifier fallback for dev
       supplierId: handle || influencer.handle || "unknown",
-      supplierName: "Unknown Supplier",
+      supplierName: supplierNameDerived,
       supplierVerified: false,
       shopHandle: handle,
       influencerHandle: influencer.handle,
@@ -277,8 +281,9 @@ export function InfluencerShopClient({
 
                   {/* Social Links */}
                   <div className="flex gap-2">
-                    {Object.entries(influencer.socialLinks).map(
-                      ([platform, url]) => (
+                    {Object.entries(influencer.socialLinks || {})
+                      .filter(([, url]) => typeof url === "string" && url.trim() !== "")
+                      .map(([platform, url]) => (
                         <Link
                           key={platform}
                           href={url}
@@ -288,8 +293,7 @@ export function InfluencerShopClient({
                         >
                           {getSocialIcon(platform)}
                         </Link>
-                      )
-                    )}
+                      ))}
                   </div>
                 </div>
               </div>

@@ -57,22 +57,24 @@ test.describe("Onboarding Submit & Dashboard Redirect", () => {
     await page.getByRole("button", { name: /Continue/i }).click();
 
     // Step 3: Verification - may have file uploads, skip if not required
-    await page.waitForTimeout(1000);
     const continueBtn = page.getByRole("button", { name: /Continue/i });
+    await continueBtn.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
     if (await continueBtn.isVisible()) {
+      await expect(continueBtn).toBeEnabled({ timeout: 5000 });
       await continueBtn.click();
     }
 
     // Step 4: Commission
-    await page.waitForTimeout(1000);
     const commissionContinue = page.getByRole("button", { name: /Continue/i });
+    await commissionContinue.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
     if (await commissionContinue.isVisible()) {
+      await expect(commissionContinue).toBeEnabled({ timeout: 5000 });
       await commissionContinue.click();
     }
 
     // Step 5: Review and Submit
-    await page.waitForTimeout(1000);
     const submitBtn = page.getByRole("button", { name: /Submit|Complete/i });
+    await expect(submitBtn).toBeEnabled({ timeout: 10000 });
     await submitBtn.click();
 
     // Should redirect to influencer dashboard
@@ -125,23 +127,26 @@ test.describe("Onboarding Submit & Dashboard Redirect", () => {
     await page.getByRole("button", { name: /Continue/i }).click();
 
     // Step 2: Business Profile - fill minimal required fields
-    await page.waitForTimeout(1000);
     const businessContinue = page.getByRole("button", { name: /Continue/i });
+    await businessContinue.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
     if (await businessContinue.isVisible()) {
+      await expect(businessContinue).toBeEnabled({ timeout: 5000 });
       await businessContinue.click();
     }
 
     // Step 3: Verification
-    await page.waitForTimeout(1000);
     const verifyContinue = page.getByRole("button", { name: /Continue/i });
+    await verifyContinue.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
     if (await verifyContinue.isVisible()) {
+      await expect(verifyContinue).toBeEnabled({ timeout: 5000 });
       await verifyContinue.click();
     }
 
     // Step 4: Commission
-    await page.waitForTimeout(1000);
     const commissionContinue = page.getByRole("button", { name: /Continue/i });
+    await commissionContinue.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
     if (await commissionContinue.isVisible()) {
+      await expect(commissionContinue).toBeEnabled({ timeout: 5000 });
       await commissionContinue.click();
     }
 
@@ -200,31 +205,33 @@ test.describe("Onboarding Submit & Dashboard Redirect", () => {
     await page.getByRole("button", { name: /Continue/i }).click();
 
     // Skip through other steps
-    await page.waitForTimeout(1000);
     let continueBtn = page.getByRole("button", { name: /Continue/i });
+    await continueBtn.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
     if (await continueBtn.isVisible()) {
+      await expect(continueBtn).toBeEnabled({ timeout: 5000 });
       await continueBtn.click();
     }
     
-    await page.waitForTimeout(1000);
     continueBtn = page.getByRole("button", { name: /Continue/i });
+    await continueBtn.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
     if (await continueBtn.isVisible()) {
+      await expect(continueBtn).toBeEnabled({ timeout: 5000 });
       await continueBtn.click();
     }
     
-    await page.waitForTimeout(1000);
     continueBtn = page.getByRole("button", { name: /Continue/i });
+    await continueBtn.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
     if (await continueBtn.isVisible()) {
+      await expect(continueBtn).toBeEnabled({ timeout: 5000 });
       await continueBtn.click();
     }
 
     // Try to submit without documents
-    await page.waitForTimeout(1000);
     const submitBtn = page.getByRole("button", { name: /Submit|Complete/i });
+    await expect(submitBtn).toBeEnabled({ timeout: 10000 });
     await submitBtn.click();
 
     // Should see error message about missing documents
-    await page.waitForTimeout(2000);
     const errorMessage = page.getByText(/upload.*verification documents/i);
     await expect(errorMessage).toBeVisible({ timeout: 5000 });
     

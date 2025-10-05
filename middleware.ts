@@ -62,6 +62,7 @@ export async function middleware(req: NextRequest) {
 
   // Redirect to sign-in if no session
   if (!session) {
+    console.debug("[middleware] no session", { path: pathname });
     const redirectUrl = new URL("/sign-in", req.url);
     redirectUrl.searchParams.set("redirectTo", pathname);
     return NextResponse.redirect(redirectUrl);
@@ -77,6 +78,7 @@ export async function middleware(req: NextRequest) {
   const { data: user, error } = await query;
 
   if (error || !user) {
+    console.warn("[middleware] user not found for session", { path: pathname, error: error?.message });
     // This case might happen if a user is deleted but their session persists.
     // Clear session by redirecting to sign-in.
     const redirectUrl = new URL("/sign-in", req.url);
@@ -86,6 +88,7 @@ export async function middleware(req: NextRequest) {
 
   // Role-based access control
   const userRole = (user as any).role;
+  console.debug("[middleware] session detected", { path: pathname, role: userRole });
 
   // Admin route protection
   if (pathname.startsWith("/admin/") && pathname !== "/admin/login") {
@@ -105,6 +108,7 @@ export async function middleware(req: NextRequest) {
       // Redirect non-admin users to their correct dashboard or home if they are a customer.
       const redirectPath =
         userRole === "customer" ? "/" : `/dashboard/${userRole}`;
+      console.debug("[middleware] redirecting to role dashboard", { requested: pathname, role: userRole, redirectPath });
       return NextResponse.redirect(new URL(redirectPath, req.url));
     }
   }

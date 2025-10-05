@@ -56,14 +56,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    if (!hasRole(user, [UserRole.SUPPLIER])) {
+    const isAdmin = hasRole(user, [UserRole.ADMIN]);
+    if (!hasRole(user, [UserRole.SUPPLIER]) && !isAdmin) {
       return NextResponse.json(
         { ok: false, error: "Supplier access required" },
         { status: 403 }
       );
     }
 
-    const supplierId = user.id;
+    // Admin can inspect a specific supplier via query param `supplierId`; suppliers are scoped to self
+    const url = new URL(request.url);
+    const requestedSupplierId = url.searchParams.get("supplierId");
+    const supplierId = isAdmin && requestedSupplierId ? requestedSupplierId : user.id;
     const now = new Date();
     const todayStart = new Date(
       now.getFullYear(),

@@ -37,7 +37,12 @@ export function buildApiUrl(
   baseUrl?: string
 ): string {
   const isBrowser = typeof window !== "undefined" && !!(window as any)?.location;
-  const base = baseUrl?.replace(/\/$/, "") || (isBrowser ? window.location.origin : undefined);
+  const base =
+    typeof baseUrl === "string"
+      ? baseUrl.replace(/\/$/, "")
+      : isBrowser
+        ? window.location.origin
+        : undefined;
   if (!base) throw new Error("buildApiUrl: baseUrl is required for SSR");
   const u = new URL(path, base);
   if (params) {
@@ -90,15 +95,7 @@ export async function getProducts<T = any>(
 }
 
 // Additional typed client helpers for dashboard pages
-
-export type PageResp<T> = {
-  ok: boolean;
-  data: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  message?: string;
-};
+export type PageResp<T> = NormalizedPage<T>;
 
 export async function getSupplierDashboard(baseUrl?: string) {
   const endpoint = `${baseUrl ? baseUrl.replace(/\/$/, "") : ""}/api/dashboard/supplier`;
@@ -114,7 +111,7 @@ export async function getSupplierDashboard(baseUrl?: string) {
 export async function getCommissions(
   params: Record<string, string | number | boolean | undefined>,
   baseUrl?: string
-): Promise<PageResp<any>> {
+): Promise<NormalizedPage<any>> {
   const url = buildApiUrl("/api/commissions", params, baseUrl);
   const r = await fetch(url, { credentials: "include" as RequestCredentials });
   if (!r.ok) {
@@ -122,7 +119,19 @@ export async function getCommissions(
     const info = `GET ${url} -> ${r.status} ${r.statusText}`;
     throw new Error(`commissions fetch failed: ${info} :: ${body}`);
   }
-  return r.json() as Promise<PageResp<any>>;
+  const raw = (await r.json()) as RawPageResponse<any>;
+  const page = (params?.page as number) ?? 1;
+  const pageSize = (params?.pageSize as number) ?? PAGE_SIZE;
+  const items = raw.items ?? raw.data ?? raw.products ?? ([] as any[]);
+  const total = (raw.total ?? raw.totalCount ?? 0) as number;
+  return {
+    ok: raw.ok,
+    items,
+    total,
+    page: raw.page ?? page,
+    pageSize: raw.pageSize ?? pageSize,
+    message: raw.message,
+  };
 }
 
 export async function getOrderById(id: string, baseUrl?: string) {

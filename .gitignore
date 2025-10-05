@@ -43,6 +43,10 @@ yarn-error.log*
 /test-results/
 tsconfig.tsbuildinfo
 
+# generated e2e html report data (do not commit)
+Dashboard Build/Reports/html-report/data/
+Dashboard Build/Reports/html-report/**/*.md
+
 # build logs and error reports
 builderror.md
 *error.md

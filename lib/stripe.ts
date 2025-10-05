@@ -1,13 +1,13 @@
 import Stripe from "stripe";
 
 // Exposed for tests to mock via vi.mock("../../lib/stripe", () => ({ stripe: {} }))
-export let stripe: any = null as any;
+export let stripe: Stripe | null = null;
 
-export function setStripeClient(client: any) {
+export function setStripeClient(client: Stripe | null) {
   stripe = client;
 }
 
-export function getStripe(): any {
+export function getStripe(): Stripe | null {
   if (stripe) return stripe;
   const key = process.env.STRIPE_SECRET_KEY || "";
   if (!key || typeof key !== "string") return null;

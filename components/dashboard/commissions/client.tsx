@@ -47,7 +47,7 @@ export default function CommissionsClient({ defaultFilters }: { defaultFilters: 
       />
       <DataTable
         columns={columns}
-        data={query.data?.data ?? []}
+        data={query.data?.items ?? []}
         total={query.data?.total ?? 0}
         page={page}
         pageSize={pageSize}

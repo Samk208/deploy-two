@@ -10,7 +10,8 @@ test.describe("Admin OAuth (GitHub) flow", () => {
 
     // We expect to land on our callback, then be redirected based on role.
     // To keep this test non-flaky in CI without real GitHub creds, we only assert the callback handoff if provider is mocked.
-    await page.waitForURL(/\/api\/auth\/callback|\/admin\/dashboard/, {
+    // Match only exact callback or admin dashboard paths on the current origin
+    await page.waitForURL(/^https?:\/\/[^/]+\/(api\/auth\/callback|admin\/dashboard)(?:[\/?#]|$)/, {
       timeout: 30000,
     });
 

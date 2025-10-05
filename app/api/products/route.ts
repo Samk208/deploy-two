@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ensureTypedClient } from "@/lib/supabase/types";
 import { UserRole } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
+import { executeProductQuery } from "@/lib/supabase/products";
 export const runtime = "nodejs";
 
 // Unified products listing API, supporting both public shop and supplier/admin lists.
@@ -10,10 +11,21 @@ export const runtime = "nodejs";
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
-    const page = Math.max(1, parseInt(url.searchParams.get("page") || "1"));
+    // Parse and validate page
+    const rawPage = url.searchParams.get("page");
+    const parsedPage = parseInt(rawPage ?? "", 10);
+    const safePage = Number.isFinite(parsedPage) && !Number.isNaN(parsedPage) ? parsedPage : 1;
+    const page = Math.max(1, safePage);
+
+    // Parse and validate pageSize / limit
     const pageSizeParam =
       url.searchParams.get("pageSize") || url.searchParams.get("limit") || "12";
-    const pageSize = Math.min(100, Math.max(1, parseInt(pageSizeParam)));
+    const parsedPageSize = parseInt(pageSizeParam, 10);
+    const defaultPageSize = 12;
+    const safePageSize = Number.isFinite(parsedPageSize) && !Number.isNaN(parsedPageSize)
+      ? parsedPageSize
+      : defaultPageSize;
+    const pageSize = Math.min(100, Math.max(1, safePageSize));
     const owner = url.searchParams.get("owner"); // 'supplier' | 'admin' | null
     const region =
       url.searchParams.get("region") || url.searchParams.get("regions") || "";
@@ -87,23 +99,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let data: any[] | null = null;
-    let error: any = null;
-    let count: number | null = null;
-    if (typeof (query as any)?.order === "function") {
-      const resp = await (query as any)
-        .order("created_at", { ascending: false })
-        .range(from, to);
-      data = resp.data;
-      error = resp.error;
-      count = resp.count;
-    } else {
-      // Support unit-test mocks that return a Promise directly
-      const resp = await (query as any);
-      data = resp?.data ?? null;
-      error = resp?.error ?? null;
-      count = resp?.count ?? (Array.isArray(data) ? data.length : null);
-    }
+    const { data, error, count } = await executeProductQuery(query as any, from, to);
     if (error) {
       console.error("Products API error:", error);
       return NextResponse.json(

@@ -21,7 +21,7 @@ export default async function AdminDashboard() {
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    redirect("/admin/login");
+    redirect("/sign-in?redirectTo=%2Fadmin%2Fdashboard");
   }
 
   // Verify admin role (profiles extends auth.users)
@@ -31,8 +31,10 @@ export default async function AdminDashboard() {
     .eq("id", user.id)
     .maybeSingle<{ role: UserRole | null; name?: string | null }>();
 
-  if (!userData || userData.role !== UserRole.ADMIN) {
-    redirect("/admin/login?error=Unauthorized access");
+  const authRole = String((user as any)?.user_metadata?.role || "").toUpperCase();
+  const isAdmin = userData?.role === UserRole.ADMIN || authRole === "ADMIN";
+  if (!isAdmin) {
+    redirect("/sign-in?redirectTo=%2Fadmin%2Fdashboard&error=Unauthorized%20access");
   }
 
   // Get basic stats with per-query failure isolation
@@ -66,7 +68,7 @@ export default async function AdminDashboard() {
     "use server";
     const supabase = await createServerSupabaseClient();
     await supabase.auth.signOut();
-    redirect("/admin/login");
+    redirect("/sign-in");
   }
 
   return (

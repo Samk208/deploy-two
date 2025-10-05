@@ -85,34 +85,14 @@ test.describe("Checkout Flow", () => {
       const cvc = page.locator('[placeholder*="CVC" i], input[name*="cvc" i]').first();
       const zip = page.locator('[placeholder*="ZIP" i], input[name*="postal" i]').first();
 
-      try {
-        await card.waitFor({ state: 'visible', timeout: 10000 });
-        await card.fill('4242424242424242');
-      } catch (e) {
-        console.error('Stripe fill error: card number field not available');
-        throw e;
-      }
-      try {
-        await exp.waitFor({ state: 'visible', timeout: 10000 });
-        await exp.fill('12/34');
-      } catch (e) {
-        console.error('Stripe fill error: expiration field not available');
-        throw e;
-      }
-      try {
-        await cvc.waitFor({ state: 'visible', timeout: 10000 });
-        await cvc.fill('123');
-      } catch (e) {
-        console.error('Stripe fill error: CVC field not available');
-        throw e;
-      }
-      try {
-        await zip.waitFor({ state: 'visible', timeout: 10000 });
-        await zip.fill('12345');
-      } catch (e) {
-        console.error('Stripe fill error: postal/ZIP field not available');
-        throw e;
-      }
+      await card.waitFor({ state: 'visible', timeout: 10000 });
+      await card.fill('4242424242424242');
+      await exp.waitFor({ state: 'visible', timeout: 10000 });
+      await exp.fill('12/34');
+      await cvc.waitFor({ state: 'visible', timeout: 10000 });
+      await cvc.fill('123');
+      await zip.waitFor({ state: 'visible', timeout: 10000 });
+      await zip.fill('12345');
 
       const submit = page.getByRole('button', { name: /pay|complete|submit/i }).first();
       await expect(submit).toBeEnabled({ timeout: 10000 });

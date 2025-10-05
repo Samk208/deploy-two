@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -127,6 +128,13 @@ const mockDisputes = [
 ]
 
 export default function AdminConsole() {
+  const router = useRouter()
+  useEffect(() => {
+    // Consolidate legacy route to canonical admin dashboard
+    router.replace("/admin/dashboard")
+  }, [router])
+  return null
+
   const [activeTab, setActiveTab] = useState("verifications")
   const [selectedVerification, setSelectedVerification] = useState<any>(null)
   const [verificationNote, setVerificationNote] = useState("")

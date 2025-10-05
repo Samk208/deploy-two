@@ -8,22 +8,26 @@ ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 
 -- Suppliers can read their own products
 CREATE POLICY supplier_select_own_products ON public.products FOR
-SELECT USING (auth.uid () = supplier_id);
+SELECT USING (auth.uid() = supplier_id);
 
 -- Suppliers can insert only rows they own
 CREATE POLICY supplier_insert_own_products ON public.products FOR
 INSERT
 WITH
-    CHECK (auth.uid () = supplier_id);
+    CHECK (auth.uid() = supplier_id);
 
 -- Suppliers can update only rows they own
 CREATE POLICY supplier_update_own_products ON public.products FOR
-UPDATE USING (auth.uid () = supplier_id)
+UPDATE USING (auth.uid() = supplier_id)
 WITH
-    CHECK (auth.uid () = supplier_id);
+    CHECK (auth.uid() = supplier_id);
 
 -- Suppliers can delete only rows they own
-CREATE POLICY supplier_delete_own_products ON public.products FOR DELETE USING (auth.uid () = supplier_id);
+CREATE POLICY supplier_delete_own_products ON public.products FOR DELETE USING (auth.uid() = supplier_id);
+
+-- Customers can view all products (read-only browsing)
+CREATE POLICY customer_select_products ON public.products FOR
+SELECT USING (true);
 
 -- Notes:
 -- 1) Admin/service-role bypasses RLS automatically via the service key.

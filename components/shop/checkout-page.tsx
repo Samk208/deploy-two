@@ -98,12 +98,17 @@ export function CheckoutPage() {
         const { data, error } = await supabase.auth.getUser();
         if (!mounted) return;
         if (error || !data?.user) {
+          console.error("[checkout] auth check failed (getUser)", {
+            error: error?.message || error,
+            hasUser: Boolean(data?.user),
+          });
           // Redirect to sign-in with return URL
           if (mounted) router.push(`/sign-in?redirect=/checkout`);
           return;
         }
         setIsAuthed(true);
-      } catch (_) {
+      } catch (err) {
+        console.error("[checkout] auth check threw error", err);
         // On unexpected error, fail safe to sign-in
         if (mounted) router.push(`/sign-in?redirect=/checkout`);
       } finally {

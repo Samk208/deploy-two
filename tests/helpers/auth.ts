@@ -1,10 +1,12 @@
-import { Page, expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect } from "@playwright/test";
+import * as fs from "fs";
+import * as path from "path";
 
 export const TEST_ADMIN_CREDENTIALS = {
   email: process.env.TEST_ADMIN_EMAIL || "test.admin+e2e@test.local",
   password: process.env.TEST_ADMIN_PASSWORD || "TestAdmin123!",
 };
-
 export const TEST_SUPPLIER_CREDENTIALS = {
   email: process.env.TEST_SUPPLIER_EMAIL || "test.brand+e2e@test.local",
   password: process.env.TEST_SUPPLIER_PASSWORD || "NewBrandPassword123!",
@@ -31,23 +33,17 @@ export async function loginAsAdmin(page: Page) {
     .or(page.locator('button[type="submit"]').first())
     .click();
 
-  // Wait for either dashboard or a failure signal; extend timeout to cover SSR
+  // Wait for admin dashboard URL; avoid relying on networkidle which can be flaky
   try {
-    await page.waitForURL("**/admin/dashboard", {
-      timeout: 30000,
-      waitUntil: "networkidle",
-    });
+    await expect(page).toHaveURL(/\/admin\/dashboard$/i, { timeout: 45000 });
   } catch (e) {
     // Capture diagnostics before failing
-    await page
-      .screenshot({
-        path: "test-results/Dashboard Report/test-artifacts/admin-login-failure.png",
-        fullPage: true,
-      })
-      .catch(() => {});
+    const artifactsDir = path.join(process.cwd(), "test-results", "test-artifacts");
+    try { fs.mkdirSync(artifactsDir, { recursive: true }); } catch {}
+    const filePath = path.join(artifactsDir, `admin-login-failure.png`);
+    await page.screenshot({ path: filePath, fullPage: true }).catch(() => {});
     throw e;
   }
-  await expect(page).toHaveURL(/\/admin\/dashboard$/);
   await expect(
     page.getByRole("heading", { name: /Admin Dashboard/i })
   ).toBeVisible({ timeout: 15000 });
@@ -69,20 +65,16 @@ export async function loginAsInfluencer(page: Page) {
     .click();
 
   try {
-    await page.waitForURL("**/dashboard/influencer**", {
-      timeout: 30000,
-      waitUntil: "networkidle",
+    await expect(page).toHaveURL(/\/dashboard\/influencer(\/.*)?$/i, {
+      timeout: 45000,
     });
   } catch (e) {
-    await page
-      .screenshot({
-        path: "test-results/Dashboard Report/test-artifacts/influencer-login-failure.png",
-        fullPage: true,
-      })
-      .catch(() => {});
+    const artifactsDir = path.join(process.cwd(), "test-results", "test-artifacts");
+    try { fs.mkdirSync(artifactsDir, { recursive: true }); } catch {}
+    const filePath = path.join(artifactsDir, `influencer-login-failure.png`);
+    await page.screenshot({ path: filePath, fullPage: true }).catch(() => {});
     throw e;
   }
-  await expect(page).toHaveURL(/\/dashboard\/influencer(\/.*)?$/);
 }
 
 export async function loginAsSupplier(page: Page) {
@@ -101,20 +93,16 @@ export async function loginAsSupplier(page: Page) {
     .click();
 
   try {
-    await page.waitForURL("**/dashboard/supplier**", {
-      timeout: 30000,
-      waitUntil: "networkidle",
+    await expect(page).toHaveURL(/\/dashboard\/supplier(\/.*)?$/i, {
+      timeout: 45000,
     });
   } catch (e) {
-    await page
-      .screenshot({
-        path: "test-results/Dashboard Report/test-artifacts/supplier-login-failure.png",
-        fullPage: true,
-      })
-      .catch(() => {});
+    const artifactsDir = path.join(process.cwd(), "test-results", "test-artifacts");
+    try { fs.mkdirSync(artifactsDir, { recursive: true }); } catch {}
+    const filePath = path.join(artifactsDir, `supplier-login-failure.png`);
+    await page.screenshot({ path: filePath, fullPage: true }).catch(() => {});
     throw e;
   }
-  await expect(page).toHaveURL(/\/dashboard\/supplier(\/.*)?$/);
 }
 
 export async function ensureSignedOut(page: Page) {

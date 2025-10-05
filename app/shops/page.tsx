@@ -51,6 +51,68 @@ export interface Shop {
   };
 }
 
+// Map raw API shop into UI Shop type, returning null if invalid
+export function mapApiShopToShop(apiShop: any): Shop | null {
+  const idVal =
+    (typeof apiShop?.id === "string" && apiShop.id.trim()) ||
+    (typeof apiShop?.id === "number" && String(apiShop.id)) ||
+    "";
+  const handleVal = typeof apiShop?.handle === "string" ? apiShop.handle.trim() : "";
+  const nameVal = typeof apiShop?.name === "string" ? apiShop.name.trim() : "";
+  if (!idVal || !handleVal || !nameVal) return null;
+
+  // Preserve social links if provided as discrete fields or nested object
+  const apiSocial = (apiShop?.socialLinks && typeof apiShop.socialLinks === "object")
+    ? apiShop.socialLinks
+    : {};
+  const socialLinks: Shop["socialLinks"] = {
+    instagram:
+      (typeof apiShop?.instagram === "string" && apiShop.instagram) ||
+      (typeof apiSocial?.instagram === "string" && apiSocial.instagram) ||
+      undefined,
+    twitter:
+      (typeof apiShop?.twitter === "string" && apiShop.twitter) ||
+      (typeof apiSocial?.twitter === "string" && apiSocial.twitter) ||
+      undefined,
+    youtube:
+      (typeof apiShop?.youtube === "string" && apiShop.youtube) ||
+      (typeof apiSocial?.youtube === "string" && apiSocial.youtube) ||
+      undefined,
+  };
+
+  return {
+    id: idVal,
+    handle: handleVal,
+    name: nameVal,
+    bio: typeof apiShop?.description === "string" ? apiShop.description : "",
+    avatar:
+      (typeof apiShop?.influencer_avatar === "string" && apiShop.influencer_avatar) ||
+      "/brand-manager-avatar.png",
+    banner:
+      (typeof apiShop?.banner === "string" && apiShop.banner) ||
+      "/fashion-banner.png",
+    followers: Number.isFinite(Number(apiShop?.followers_count))
+      ? String(apiShop.followers_count)
+      : "0",
+    verified: Boolean(apiShop?.verified),
+    category:
+      Array.isArray(apiShop?.categories) && apiShop.categories.length > 0
+        ? String(apiShop.categories[0])
+        : "General",
+    rating: Number.isFinite(Number(apiShop?.rating)) ? Number(apiShop?.rating) : 0,
+    totalProducts: Number.isFinite(Number(apiShop?.product_count))
+      ? Number(apiShop.product_count)
+      : 0,
+    totalSales: 0,
+    createdAt:
+      (typeof apiShop?.created_at === "string" && apiShop.created_at) ||
+      (typeof apiShop?.createdAt === "string" && apiShop.createdAt) ||
+      undefined,
+    badges: apiShop?.verified ? ["Verified"] : [],
+    socialLinks,
+  };
+}
+
 const mockShops: Shop[] = [
   {
     id: "1",
@@ -347,51 +409,18 @@ export default function ShopsPage() {
     let cancelled = false;
     async function load() {
       try {
-        const res = await fetch("/api/shops/directory", { cache: "no-store" });
+        const res = await fetch("/api/shops/directory", { next: { revalidate: 60 } });
         if (!res.ok) throw new Error("Failed to load directory");
         const json = await res.json();
         const list = json?.data?.shops;
         if (!cancelled && Array.isArray(list) && list.length > 0) {
-          // Validate required fields and coerce safe defaults
-          const valid: Shop[] = [];
-          const invalid: any[] = [];
-          for (const s of list) {
-            const idVal = (typeof s?.id === "string" && s.id.trim()) ||
-              (typeof s?.id === "number" && String(s.id)) || "";
-            const handleVal = typeof s?.handle === "string" ? s.handle.trim() : "";
-            const nameVal = typeof s?.name === "string" ? s.name.trim() : "";
-            if (!idVal || !handleVal || !nameVal) {
-              invalid.push(s);
-              continue;
-            }
-            valid.push({
-              id: idVal,
-              handle: handleVal,
-              name: nameVal,
-              bio: typeof s?.description === "string" ? s.description : "",
-              avatar: typeof s?.influencer_avatar === "string" && s.influencer_avatar
-                ? s.influencer_avatar
-                : "/brand-manager-avatar.png",
-              banner: typeof s?.banner === "string" && s.banner ? s.banner : "/fashion-banner.png",
-              followers: Number.isFinite(Number(s?.followers_count))
-                ? String(s.followers_count)
-                : "0",
-              verified: Boolean(s?.verified),
-              category: Array.isArray(s?.categories) && s.categories.length > 0
-                ? String(s.categories[0])
-                : "General",
-              rating: Number.isFinite(Number(s?.rating)) ? Number(s?.rating) : 0,
-              totalProducts: Number.isFinite(Number(s?.product_count)) ? Number(s.product_count) : 0,
-              totalSales: 0,
-              createdAt: typeof s?.created_at === "string" ? s.created_at : (typeof s?.createdAt === "string" ? s.createdAt : undefined),
-              badges: s?.verified ? ["Verified"] : [],
-              socialLinks: {},
-            });
+          const mapped = list
+            .map((s: any) => mapApiShopToShop(s))
+            .filter((s: Shop | null): s is Shop => s !== null);
+          if (list.length !== mapped.length) {
+            console.warn(`Shops directory contained ${list.length - mapped.length} invalid item(s); skipped.`);
           }
-          if (invalid.length > 0) {
-            console.warn(`Shops directory contained ${invalid.length} invalid item(s); skipped.`);
-          }
-          setShops(valid.length > 0 ? valid : mockShops);
+          setShops(mapped.length > 0 ? mapped : mockShops);
         }
       } catch (e) {
         // Keep mock data on failure

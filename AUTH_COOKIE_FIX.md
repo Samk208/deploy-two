@@ -78,7 +78,6 @@ return NextResponse.json(
 6. ✅ Navigation to `/auth/onboarding` succeeds
 
 ---
-
 ## 🧪 How to Test
 
 ### **Run E2E Tests:**
@@ -87,7 +86,7 @@ npx playwright test tests/e2e/onboarding/submit-and-redirect.spec.ts --headed
 ```
 
 ### **Expected Results:**
-```
+```text
 ✓ influencer onboarding completes and redirects correctly (30-45s)
 ✓ brand/supplier onboarding completes and redirects correctly (30-45s)
 ✓ onboarding submit blocked without required documents (30-45s)
@@ -99,57 +98,13 @@ npx playwright test tests/e2e/onboarding/submit-and-redirect.spec.ts --headed
 1. Go to `/sign-up`
 2. Fill form and create account
 3. **Should now redirect to:** `/auth/onboarding?role=...` ✅
-4. Browser DevTools → Application → Cookies:
-   - Should see `sb-*-auth-token` cookies ✅
-5. Complete onboarding flow
-6. Verify redirect to correct dashboard ✅
-
----
-
-## 📊 Files Modified
-
-### **Total: 9 files**
-
-#### **Auth Cookie Fix (NEW):**
-1. ✅ `app/api/auth/sign-up/route.ts` - Fixed cookie setting
-
-#### **Previous Fixes (Already Applied):**
-2. ✅ `app/api/onboarding/step-1/route.ts` - Role mapping
-3. ✅ `app/api/onboarding/submit/route.ts` - Admin bypass + docs
-4. ✅ `app/api/onboarding/progress/route.ts` - Status field
-5. ✅ `app/auth/onboarding/page.tsx` - Completion guard
-6. ✅ `tests/e2e/onboarding/submit-and-redirect.spec.ts` - Resilience
-
-#### **Documentation:**
-7. ✅ `CHANGES_SUMMARY.md`
-8. ✅ `TEST_FIXES_SUMMARY.md`
-9. ✅ `AUTH_COOKIE_FIX.md` (this file)
-
----
-
-## 🔍 Verification Commands
-
-```bash
-# 1. Check the fix was applied
-git diff app/api/auth/sign-up/route.ts | grep "nextCookies"
-
-# Should show:
-# +import { cookies as nextCookies } from "next/headers"
-# +const cookieStore = await nextCookies()
-
-# 2. Run tests
-npx playwright test tests/e2e/onboarding/submit-and-redirect.spec.ts
-
-# 3. View report
-npx playwright show-report
-```
 
 ---
 
 ## 🎯 What This Fixes
 
 ### **Before (Broken):**
-```
+```text
 1. User signs up → API creates user ✅
 2. API calls signInWithPassword → Session created server-side ✅
 3. Cookies NOT set in response ❌
@@ -160,7 +115,7 @@ npx playwright show-report
 ```
 
 ### **After (Fixed):**
-```
+```text
 1. User signs up → API creates user ✅
 2. API calls signInWithPassword with writable cookies ✅
 3. Set-Cookie headers added to response ✅
@@ -174,7 +129,7 @@ npx playwright show-report
 
 ## 📚 Reference: Cookie Handling in Next.js App Router
 
-### **Read-Only (Request cookies):**
+ 
 ```typescript
 // ❌ Cannot set cookies
 const supabase = await createServerSupabaseClient(request)

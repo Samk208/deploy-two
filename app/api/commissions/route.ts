@@ -73,8 +73,12 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status')
     const userId = searchParams.get('userId')
     const orderId = searchParams.get('orderId')
-    const limit = parseInt(searchParams.get('limit') || '50')
-    const offset = parseInt(searchParams.get('offset') || '0')
+    // Support canonical page/pageSize but keep backward-compat with limit/offset
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
+    const pageSize = Math.max(1, parseInt(searchParams.get('pageSize') || searchParams.get('limit') || '50'))
+    const offsetParam = searchParams.get('offset')
+    const offset = offsetParam !== null ? parseInt(offsetParam) : (page - 1) * pageSize
+    const limit = pageSize
 
     // Build query based on user role
     let query = supabase
@@ -193,16 +197,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      data: {
-        commissions: formattedCommissions,
-        pagination: {
-          total: count || 0,
-          limit,
-          offset,
-          hasMore: (count || 0) > offset + limit
-        }
-      }
-    } as ApiResponse)
+      items: formattedCommissions,
+      total: count || 0,
+      page,
+      pageSize: limit,
+    } as any)
   } catch (error) {
     console.error('Get commissions error:', error)
     return NextResponse.json(

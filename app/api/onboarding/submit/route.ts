@@ -61,93 +61,63 @@ export async function POST(request: NextRequest) {
     // 3. Map onboarding role to database role
     const dbRole = mapOnboardingRoleToDbRole(role)
 
-    // 4. Verify required documents are uploaded (for brands/suppliers)
-    if (dbRole === "supplier") {
-      // Check if verification request exists and has required documents
-      const { data: verificationRequest } = await supabaseAdmin
+    // Helper to validate verification documents
+    async function validateRequiredDocuments(
+      userId: string,
+      requiredDocs: string[],
+      supabaseAdminClient: typeof supabaseAdmin
+    ): Promise<{ ok: true } | { ok: false; error: string; missingDocuments?: string[] }> {
+      const { data: verificationRequest } = await supabaseAdminClient
         .from("verification_requests")
         .select(`
           id,
           status,
           verification_documents!inner (id, doc_type, status)
         `)
-        .eq("user_id", user.id)
-        .in("status", ["draft", "submitted"])
-        .maybeSingle()
+        .eq("user_id", userId)
+        .in("status", ["draft", "submitted"]) 
+        .maybeSingle();
 
-      // Define required document types for brands/suppliers
-      const requiredDocs = [
+      if (!verificationRequest) {
+        return {
+          ok: false,
+          error: "Please upload verification documents before submitting",
+        };
+      }
+
+      const uploadedDocTypes = (verificationRequest.verification_documents || []).map(
+        (doc: any) => doc.doc_type
+      );
+      const missingDocs = requiredDocs.filter((docType) => !uploadedDocTypes.includes(docType));
+      if (missingDocs.length > 0) {
+        return {
+          ok: false,
+          error: "Please upload all required verification documents before submitting",
+          missingDocuments: missingDocs,
+        };
+      }
+      return { ok: true };
+    }
+
+    // 4. Verify required documents are uploaded (for brands/suppliers and influencers)
+    if (dbRole === "supplier") {
+      const check = await validateRequiredDocuments(user.id, [
         "business_registration",
         "authorized_rep_id",
-        "bank_account_book"
-      ]
-
-      if (verificationRequest) {
-        const uploadedDocTypes = (verificationRequest.verification_documents || []).map(
-          (doc: any) => doc.doc_type
-        )
-        const missingDocs = requiredDocs.filter(docType => !uploadedDocTypes.includes(docType))
-        
-        if (missingDocs.length > 0) {
-          return NextResponse.json(
-            { 
-              ok: false, 
-              error: "Please upload all required verification documents before submitting",
-              missingDocuments: missingDocs
-            },
-            { status: 400 }
-          )
-        }
-      } else {
-        return NextResponse.json(
-          { 
-            ok: false, 
-            error: "Please upload verification documents before submitting"
-          },
-          { status: 400 }
-        )
+        "bank_account_book",
+      ], supabaseAdmin);
+      if (!check.ok) {
+        return NextResponse.json({ ok: false, error: check.error, missingDocuments: (check as any).missingDocuments }, { status: 400 });
       }
     }
-    
-    // For influencers, check basic KYC documents
+
     if (dbRole === "influencer") {
-      const { data: verificationRequest } = await supabaseAdmin
-        .from("verification_requests")
-        .select(`
-          id,
-          status,
-          verification_documents!inner (id, doc_type, status)
-        `)
-        .eq("user_id", user.id)
-        .in("status", ["draft", "submitted"])
-        .maybeSingle()
-
-      const requiredDocs = ["id_document", "selfie_photo"]
-
-      if (verificationRequest) {
-        const uploadedDocTypes = (verificationRequest.verification_documents || []).map(
-          (doc: any) => doc.doc_type
-        )
-        const missingDocs = requiredDocs.filter(docType => !uploadedDocTypes.includes(docType))
-        
-        if (missingDocs.length > 0) {
-          return NextResponse.json(
-            { 
-              ok: false, 
-              error: "Please upload all required verification documents before submitting",
-              missingDocuments: missingDocs
-            },
-            { status: 400 }
-          )
-        }
-      } else {
-        return NextResponse.json(
-          { 
-            ok: false, 
-            error: "Please upload verification documents before submitting"
-          },
-          { status: 400 }
-        )
+      const check = await validateRequiredDocuments(user.id, [
+        "id_document",
+        "selfie_photo",
+      ], supabaseAdmin);
+      if (!check.ok) {
+        return NextResponse.json({ ok: false, error: check.error, missingDocuments: (check as any).missingDocuments }, { status: 400 });
       }
     }
 

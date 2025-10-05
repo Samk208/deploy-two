@@ -296,6 +296,9 @@ export async function testAPIRoute(): Promise<boolean> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
   try {
+    const controller = new AbortController();
+    const timeoutMs = 10_000;
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     const response = await fetch(`${apiUrl}/api/checkout`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -321,7 +324,9 @@ export async function testAPIRoute(): Promise<boolean> {
           country: "KR",
         },
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timer);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -373,6 +378,19 @@ export async function testAPIRoute(): Promise<boolean> {
     ]);
     return true;
   } catch (error: any) {
+    if (error?.name === 'AbortError') {
+      addResult(
+        "API Route",
+        "fail",
+        `Request timed out after 10000ms`,
+        undefined,
+        [
+          "Ensure dev server is running: npm run dev",
+          "Check network connectivity and API URL",
+        ]
+      );
+      return false;
+    }
     addResult(
       "API Route",
       "fail",
