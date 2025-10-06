@@ -48,6 +48,49 @@ export async function middleware(req: NextRequest) {
 
   const { pathname } = req.nextUrl;
 
+  // ---------------------------
+  // CORE FREEZE write-lock (read-only mode for onboarding & dashboards)
+  // ---------------------------
+  if (process.env.CORE_FREEZE === "true") {
+    const method = req.method.toUpperCase();
+    const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+    // Allow-listed write endpoints that must keep working (auth, checkout, webhooks)
+    const ALLOW_WRITE_PREFIXES = [
+      "/api/auth",
+      "/api/checkout",
+      "/api/stripe",
+      "/api/webhooks/stripe",
+    ];
+    // Areas that are frozen (onboarding flows including docs uploads; dashboards & role APIs)
+    const isFrozenArea =
+      pathname.startsWith("/api/onboarding") ||
+      pathname.startsWith("/auth/onboarding") ||
+      pathname.startsWith("/dashboard") ||
+      pathname.startsWith("/app/dashboard") ||
+      pathname.startsWith("/api/admin") ||
+      pathname.startsWith("/api/influencer") ||
+      pathname.startsWith("/api/brand") ||
+      pathname.startsWith("/api/supplier");
+
+    if (isFrozenArea) {
+      // Allow safe methods; continue to existing auth/role checks
+      if (!SAFE_METHODS.has(method)) {
+        // Skip block for explicitly allowed system endpoints
+        const isAllowedWrite = ALLOW_WRITE_PREFIXES.some((p) => pathname.startsWith(p));
+        if (!isAllowedWrite) {
+          return new NextResponse(
+            JSON.stringify({
+              ok: false,
+              error:
+                "CORE_FREEZE active: writes are temporarily disabled for onboarding & dashboards.",
+            }),
+            { status: 423, headers: { "content-type": "application/json" } }
+          );
+        }
+      }
+    }
+  }
+
   // Allow public routes by checking if the path starts with any of them
   if (
     publicRoutes.some(

@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Block commits that touch core surfaces while frozen.
+if [ "$CORE_FREEZE" = "true" ] && [ "$ALLOW_CORE_EDITS" != "true" ]; then
+  CHANGED="$(git diff --cached --name-only)"
+  echo "$CHANGED" | grep -E '^(app/(dashboard|api/onboarding|\(onboarding\)|auth/onboarding)/)' >/dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    echo "❌ CORE_FREEZE is on. Changes to dashboards/onboarding are blocked."
+    echo "   To override intentionally for this commit:"
+    echo "     ALLOW_CORE_EDITS=true git commit -m \"...\""
+    exit 1
+  fi
+fi
+
+pnpm -s lint || true
