@@ -9,7 +9,6 @@ import * as z from "zod"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
@@ -84,7 +83,7 @@ export default function BrandKYBStep({ data, updateData, onNext, onPrev }: Brand
     },
   })
 
-  const watchHasRetailPermit = form.watch("hasRetailPermit")
+  // Retail permit is always required; no conditional toggle needed
 
   const startSimulatedProgress = (setState: React.Dispatch<React.SetStateAction<FileUploadState>>) => {
     setState((prev) => ({ ...prev, status: "uploading", progress: 5 }))
@@ -132,9 +131,9 @@ export default function BrandKYBStep({ data, updateData, onNext, onPrev }: Brand
           type === "registration"
             ? "business_registration"
             : type === "permit"
-              ? "business_license"
+              ? "mail_order_sales_report"
               : type === "bank"
-                ? "bank_verification"
+                ? "bank_account_book"
                 : "authorized_rep_id"
 
         try {
@@ -187,19 +186,11 @@ export default function BrandKYBStep({ data, updateData, onNext, onPrev }: Brand
   }
 
   const onSubmit = (formData: BrandKYBForm) => {
-    if (!businessRegistration.file || !bankAccountBook.file || !authorizedRepId.file) {
+    // Require 3 documents for supplier: registration, bank account book, mail order sales report
+    if (!businessRegistration.file || !bankAccountBook.file || !retailPermit.file) {
       toast({
         title: "Missing Documents",
-        description: "Please upload all required documents to continue.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (formData.hasRetailPermit && !retailPermit.file) {
-      toast({
-        title: "Retail Permit Required",
-        description: "Please upload your retail permit or uncheck the option.",
+        description: "Please upload business registration, bank account book, and mail order sales report to continue.",
         variant: "destructive",
       })
       return
@@ -342,22 +333,14 @@ export default function BrandKYBStep({ data, updateData, onNext, onPrev }: Brand
             />
 
             <FileUploadCard
-              title="Bank Account Book / Voided Check"
-              description="Upload your business bank account book or a voided check"
+              title="Business Account Book"
+              description="Upload your business bank account book (first page with account number)"
               icon={CreditCard}
               state={bankAccountBook}
               setState={setBankAccountBook}
               type="bank"
             />
-
-            <FileUploadCard
-              title="Authorized Representative ID"
-              description="Upload ID document of the person authorized to represent the business"
-              icon={User}
-              state={authorizedRepId}
-              setState={setAuthorizedRepId}
-              type="rep"
-            />
+            {/* Authorized Representative ID no longer required */}
           </div>
         </CardContent>
       </Card>
@@ -396,35 +379,15 @@ export default function BrandKYBStep({ data, updateData, onNext, onPrev }: Brand
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="hasRetailPermit"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="text-sm font-normal">I have a mail-order/online retail permit</FormLabel>
-                      <p className="text-xs text-gray-500">
-                        Check this if your business has a specific permit for online retail operations
-                      </p>
-                    </div>
-                  </FormItem>
-                )}
+              <FileUploadCard
+                title="Mail-Order/Online Retail Permit"
+                description="Upload your mail-order or online retail permit"
+                icon={FileText}
+                state={retailPermit}
+                setState={setRetailPermit}
+                type="permit"
+                required={true}
               />
-
-              {watchHasRetailPermit && (
-                <FileUploadCard
-                  title="Mail-Order/Online Retail Permit"
-                  description="Upload your mail-order or online retail permit"
-                  icon={FileText}
-                  state={retailPermit}
-                  setState={setRetailPermit}
-                  type="permit"
-                  required={true}
-                />
-              )}
 
               {/* Navigation */}
               <div className="flex justify-between pt-6">

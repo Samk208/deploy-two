@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const workspaceRoot = path.resolve(process.cwd());
+const workspaceRootNorm = workspaceRoot.replace(/\\/g, '/');
 const reportPath = path.resolve('Dashboard Build/Reports/test-results.json');
 
 function toRelative(p) {
@@ -15,10 +16,10 @@ function toRelative(p) {
   // If already relative, leave it
   if (!/^[A-Za-z]:\//.test(normalized) && !normalized.startsWith('/')) return normalized;
   // Make relative to workspace root
-  let rel = path.relative(workspaceRoot, p).replace(/\\/g, '/');
+  let rel = path.relative(workspaceRootNorm, normalized).replace(/\\/g, '/');
   // Put artifacts under a stable folder if outside repo
   if (rel.startsWith('..')) {
-    const baseName = path.basename(p);
+    const baseName = path.basename(normalized);
     rel = `Dashboard Build/Reports/test-artifacts/${baseName}`;
   }
   return rel;

@@ -12,7 +12,16 @@ export default async function Page() {
       const useAbsolute = base && /^https?:\/\//i.test(base);
       const url = useAbsolute ? `${base}/api/dashboard/supplier` : "/api/dashboard/supplier";
       const r = await fetch(url, { cache: "no-store" });
-      if (!r.ok) throw new Error("dashboard fetch failed");
+      if (!r.ok) {
+        let bodyText = "";
+        try {
+          bodyText = await r.text();
+        } catch (_) {
+          bodyText = "<unreadable body>";
+        }
+        const snippet = bodyText.length > 300 ? `${bodyText.slice(0, 300)}…` : bodyText;
+        throw new Error(`dashboard fetch failed: ${r.status} ${r.url || url} - ${snippet}`);
+      }
       return r.json();
     },
   });

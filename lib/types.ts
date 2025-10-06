@@ -175,7 +175,19 @@ export interface ProductCSV {
 
 export type OnboardingUserRole = 'influencer' | 'brand' | 'customer' | 'admin'
 export type VerificationStatus = 'draft' | 'submitted' | 'in_review' | 'verified' | 'rejected'
-export type DocumentType = 'identity_card' | 'passport' | 'drivers_license' | 'business_registration' | 'tax_certificate' | 'bank_statement' | 'utility_bill' | 'other'
+export type DocumentType =
+  | 'government_id'
+  | 'bank_book'
+  | 'business_registration_optional'
+  | 'business_registration'
+  | 'bank_account_book'
+  | 'mail_order_sales_report'
+  | 'identity_card'
+  | 'passport'
+  | 'drivers_license'
+  | 'tax_certificate'
+  | 'utility_bill'
+  | 'other'
 export type DocumentStatus = 'pending' | 'verified' | 'rejected'
 
 export interface Profile {

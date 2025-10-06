@@ -37,7 +37,7 @@ export function ProductImageGallery({
   useEffect(() => {
     setCurrentIndex(0);
     setFailed({});
-  }, [safeImages]);
+  }, [normalized]);
 
   const nextImage = () => {
     setCurrentIndex((prev) => (prev + 1) % safeImages.length);

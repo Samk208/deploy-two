@@ -57,9 +57,9 @@ test.describe('Influencer shops linkage diagnostics', () => {
     const seen = new Set<string>()
     for (const [handle, items] of Object.entries(results)) {
       for (const p of items) {
-        if (!p?.id) continue
+        expect(p && p.id, `Missing product id in shop ${handle}`).toBeTruthy()
         const key = String(p.id)
-        expect(seen.has(key)).toBeFalsy()
+        expect(seen.has(key), `Duplicate product id ${key} encountered in shop ${handle}`).toBeFalsy()
         seen.add(key)
       }
     }

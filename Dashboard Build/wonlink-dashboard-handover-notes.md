@@ -1,6 +1,6 @@
 # Dashboard Build - Handover Notes
 
-Last updated: 2025-10-02
+Last updated: 2025-10-06
 
 ## Scope
 - Supplier dashboard backend/API and UI status
@@ -154,9 +154,9 @@ Additional (uploads):
 - **CDN tweaks**: Ensure `next.config.mjs` image patterns cover Supabase hosts in all envs; consider AVIF in addition to WebP (already configured).
 
 ### How to test uploads (manual)
-  - **Allowed types/size**: Try 4–5MB JPG/PNG → should upload and convert to WebP; larger files are rejected client-side.
-  - **Edit page flow**: Upload one or more images on `app/dashboard/supplier/products/[id]/EditProductClient.tsx`; thumbnails should render, and saving should persist `images`.
-  - **RLS (when added)**: Attempt to upload to a product the user does not own → should be blocked by RLS.
+- **Allowed types/size**: Try 4–5MB JPG/PNG → should upload and convert to WebP; larger files are rejected client-side.
+- **Edit page flow**: Upload one or more images on `app/dashboard/supplier/products/[id]/EditProductClient.tsx`; thumbnails should render, and saving should persist `images`.
+- **RLS (when added)**: Attempt to upload to a product the user does not own → should be blocked by RLS.
 
 ---
 

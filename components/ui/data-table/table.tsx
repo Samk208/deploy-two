@@ -75,7 +75,7 @@ export function DataTable<T>({ columns, data, total, page, pageSize, isLoading, 
           <button
             className="rounded border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             aria-label="Previous page"
-            aria-disabled={page <= 1}
+            aria-disabled={page <= 1 ? "true" : "false"}
             disabled={page <= 1}
             onClick={() => onPageChange?.(page - 1)}
           >
@@ -84,7 +84,7 @@ export function DataTable<T>({ columns, data, total, page, pageSize, isLoading, 
           <button
             className="rounded border px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             aria-label="Next page"
-            aria-disabled={page >= totalPages}
+            aria-disabled={page >= totalPages ? "true" : "false"}
             disabled={page >= totalPages}
             onClick={() => onPageChange?.(page + 1)}
           >

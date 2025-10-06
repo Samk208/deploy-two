@@ -51,7 +51,8 @@ async function ensureAuthUser(email: string, password: string, metadata: Record<
       user_metadata: metadata,
     });
     if (updErr) {
-      console.warn(`Failed to update existing auth user ${email}:`, updErr);
+      const msg = typeof updErr?.message === "string" ? updErr.message : String(updErr);
+      throw new Error(`ensureAuthUser update failed for email=${email}, userId=${existing.id}: ${msg}`);
     }
     return { user: upd?.user ?? existing };
   }
@@ -63,7 +64,8 @@ async function ensureAuthUser(email: string, password: string, metadata: Record<
     user_metadata: metadata,
   });
   if (crtErr) {
-    console.warn(`Failed to create auth user ${email}:`, crtErr);
+    const msg = typeof crtErr?.message === "string" ? crtErr.message : String(crtErr);
+    throw new Error(`ensureAuthUser create failed for email=${email}: ${msg}`);
   }
   return { user: created?.user };
 }

@@ -52,7 +52,7 @@ export interface Shop {
 }
 
 // Map raw API shop into UI Shop type, returning null if invalid
-export function mapApiShopToShop(apiShop: any): Shop | null {
+function mapApiShopToShop(apiShop: any): Shop | null {
   const idVal =
     (typeof apiShop?.id === "string" && apiShop.id.trim()) ||
     (typeof apiShop?.id === "number" && String(apiShop.id)) ||
@@ -409,7 +409,7 @@ export default function ShopsPage() {
     let cancelled = false;
     async function load() {
       try {
-        const res = await fetch("/api/shops/directory", { next: { revalidate: 60 } });
+        const res = await fetch("/api/shops/directory");
         if (!res.ok) throw new Error("Failed to load directory");
         const json = await res.json();
         const list = json?.data?.shops;
@@ -460,9 +460,16 @@ export default function ShopsPage() {
           const tb = b.createdAt ? new Date(b.createdAt).getTime() : NaN;
           const taValid = Number.isFinite(ta);
           const tbValid = Number.isFinite(tb);
-          if (taValid && tbValid) return tb - ta; // newest first
-          // Fallback to id compare if no reliable timestamps
-          return b.id.localeCompare(a.id);
+          if (taValid && tbValid) {
+            if (tb > ta) return 1;
+            if (tb < ta) return -1;
+            return 0;
+          }
+          // If one is missing/invalid, push it after the valid one
+          if (!taValid && tbValid) return 1; // a missing -> after b
+          if (taValid && !tbValid) return -1; // b missing -> after a
+          // Both missing/invalid: keep original order (stable sort expectation)
+          return 0;
         });
       }
       case "followers":

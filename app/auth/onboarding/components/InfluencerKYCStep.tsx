@@ -142,10 +142,10 @@ export default function InfluencerKYCStep({ data, updateData, onNext, onPrev }: 
           type === "id"
             ? "government_id"
             : type === "selfie"
-              ? "selfie_verification"
+              ? "government_id" // legacy no longer used; normalize to government_id (will be ignored if not rendered)
               : type === "address"
-                ? "proof_of_address"
-                : "bank_statement"
+                ? "business_registration_optional"
+                : "bank_book"
 
         try {
           const form = new FormData()
@@ -170,9 +170,9 @@ export default function InfluencerKYCStep({ data, updateData, onNext, onPrev }: 
             type === "id"
               ? "idDocument"
               : type === "selfie"
-                ? "selfiePhoto"
+                ? "idDocument"
                 : type === "address"
-                  ? "proofOfAddress"
+                  ? "businessRegistrationOptional"
                   : "bankStatement"
           updateData({ [updateKey]: file })
 
@@ -196,9 +196,9 @@ export default function InfluencerKYCStep({ data, updateData, onNext, onPrev }: 
       type === "id"
         ? "idDocument"
         : type === "selfie"
-          ? "selfiePhoto"
+          ? "idDocument"
           : type === "address"
-            ? "proofOfAddress"
+            ? "businessRegistrationOptional"
             : "bankStatement"
     updateData({ [updateKey]: undefined })
   }
@@ -208,10 +208,11 @@ export default function InfluencerKYCStep({ data, updateData, onNext, onPrev }: 
   }
 
   const onSubmit = (formData: InfluencerKYCForm) => {
-    if (!idDocument.file || !selfiePhoto.file || !proofOfAddress.file || !bankStatement.file) {
+    // Require 2 documents: government ID and bank book
+    if (!idDocument.file || !bankStatement.file) {
       toast({
         title: "Missing Documents",
-        description: "Please upload all required documents to continue.",
+        description: "Please upload your ID and bank book to continue.",
         variant: "destructive",
       })
       return
@@ -377,31 +378,23 @@ export default function InfluencerKYCStep({ data, updateData, onNext, onPrev }: 
             />
 
             <FileUploadCard
-              title="Selfie Photo"
-              description="Take a selfie holding your ID document next to your face"
-              icon={Camera}
-              state={selfiePhoto}
-              setState={setSelfiePhoto}
-              type="selfie"
-              accept="image/*"
-            />
-
-            <FileUploadCard
-              title="Proof of Address"
-              description="Upload a utility bill or bank statement from the last 3 months"
-              icon={MapPin}
-              state={proofOfAddress}
-              setState={setProofOfAddress}
-              type="address"
-            />
-
-            <FileUploadCard
-              title="Bank Statement"
-              description="Upload your bank statement or passbook showing account details"
+              title="Bank Book"
+              description="Upload your bank book first page showing account details"
               icon={CreditCard}
               state={bankStatement}
               setState={setBankStatement}
               type="bank"
+              required={true}
+            />
+
+            <FileUploadCard
+              title="Business Registration (Optional)"
+              description="Upload if you are registered as a business"
+              icon={MapPin}
+              state={proofOfAddress}
+              setState={setProofOfAddress}
+              type="address"
+              required={false}
             />
           </div>
         </CardContent>

@@ -70,6 +70,22 @@ export async function POST(request: NextRequest) {
     const dbRole = mapOnboardingRoleToDbRole(role);
 
     // Helper
+    // Verify email before document checks
+    const { data: profileRow, error: profileCheckError } = await supabaseAdmin
+      .from('profiles' as any)
+      .select('email_verified')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (profileCheckError) {
+      console.warn('profiles.email_verified check error:', profileCheckError);
+    }
+    if (!((profileRow as any)?.email_verified === true)) {
+      return NextResponse.json(
+        { ok: false, error: 'Email verification required', message: '이메일 인증이 필요합니다' },
+        { status: 400 }
+      );
+    }
+
     async function validateRequiredDocuments(
       userId: string,
       requiredDocs: string[]
@@ -96,10 +112,33 @@ export async function POST(request: NextRequest) {
         };
       }
 
-      const uploaded = (verificationRequest.verification_documents || []).map(
-        (d: any) => d.doc_type
+      const uploadedRaw = (verificationRequest.verification_documents || []).map(
+        (d: any) => String(d.doc_type)
       );
-      const missing = requiredDocs.filter((req) => !uploaded.includes(req));
+
+      // Alias map to tolerate legacy names
+      const aliasMap: Record<string, string[]> = {
+        // canonical: [legacy aliases]
+        bank_account_book: ["bank_verification"],
+        bank_book: ["bank_statement", "proof_of_address"],
+        government_id: ["id_document", "selfie_photo", "selfie_verification"],
+        mail_order_sales_report: ["business_license"],
+      };
+
+      const uploadedExpanded = new Set<string>();
+      for (const u of uploadedRaw) {
+        uploadedExpanded.add(u);
+        // if this uploaded type is a legacy alias of a new one, also add the new name
+        for (const [canonical, aliases] of Object.entries(aliasMap)) {
+          if (aliases.includes(u)) uploadedExpanded.add(canonical);
+        }
+        // also add all aliases of the uploaded canonical type
+        if (aliasMap[u]) {
+          for (const a of aliasMap[u]) uploadedExpanded.add(a);
+        }
+      }
+
+      const missing = requiredDocs.filter((req) => !uploadedExpanded.has(req));
       if (missing.length > 0) {
         return {
           ok: false,
@@ -113,10 +152,11 @@ export async function POST(request: NextRequest) {
 
     // 5) Validate docs
     if (dbRole === "supplier") {
+      // Supplier requires 3 physical documents
       const check = await validateRequiredDocuments(user.id, [
         "business_registration",
-        "authorized_rep_id",
         "bank_account_book",
+        "mail_order_sales_report",
       ]);
       if (!check.ok) {
         return NextResponse.json(
@@ -129,9 +169,10 @@ export async function POST(request: NextRequest) {
         );
       }
     } else if (dbRole === "influencer") {
+      // Influencer requires 2 physical documents (3rd optional)
       const check = await validateRequiredDocuments(user.id, [
-        "id_document",
-        "selfie_photo",
+        "government_id",
+        "bank_book",
       ]);
       if (!check.ok) {
         return NextResponse.json(

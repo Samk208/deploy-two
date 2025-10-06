@@ -11,6 +11,7 @@ test.describe("Middleware Authentication & Authorization", () => {
     await expect(page.url()).toContain("redirectTo=%2Fdashboard%2Fsupplier");
 
     // Test influencer dashboard redirect
+    await page.goto("/dashboard/influencer");
     await page.waitForURL(/\/sign-in/, { timeout: 10000 });
     await expect(page).toHaveURL(/\/sign-in/);
     await expect(page.url()).toContain("redirectTo=%2Fdashboard%2Finfluencer");

@@ -3,12 +3,16 @@ import { cookies as nextCookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import type { Database } from "./database.types";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error("Missing Supabase environment variables");
 }
+
+// Narrow types after validation for downstream calls
+const SUPABASE_URL: string = supabaseUrl;
+const SUPABASE_ANON_KEY: string = supabaseAnonKey;
 
 // For Pages Router - create server client with request context
 export async function createServerSupabaseClient(
@@ -17,7 +21,7 @@ export async function createServerSupabaseClient(
   // If called with a NextRequest, use its immutable request cookies (read-only)
   if (context && "headers" in (context as any)) {
     const request = context as NextRequest;
-    return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+    return createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
       cookies: {
         getAll() {
           return request.cookies.getAll().map((cookie) => ({
@@ -37,7 +41,7 @@ export async function createServerSupabaseClient(
   if (context && "cookies" in (context as any)) {
     // In App Router, cookies() is async in Next 15. Callers should pass an awaited store.
     const store = (context as { cookies: any }).cookies;
-    return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+    return createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
       cookies: {
         get(name: string) {
           return store?.get?.(name)?.value;
@@ -55,7 +59,7 @@ export async function createServerSupabaseClient(
   // Fallback for when no context is provided - use Next.js App Router cookies store
   // Next 15: cookies() must be awaited when used in a dynamic context
   const store = await nextCookies();
-  return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+  return createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       get(name: string) {
         return store?.get?.(name)?.value;

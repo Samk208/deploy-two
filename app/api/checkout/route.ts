@@ -1,5 +1,6 @@
 import { getCurrentUser } from "@/lib/auth-helpers";
 import * as stripeLib from "@/lib/stripe";
+import { formatAmountForStripe } from "@/lib/stripe";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { type ApiResponse } from "@/lib/types";
 import { checkoutSchema } from "@/lib/validators";
@@ -22,7 +23,15 @@ export async function POST(request: NextRequest) {
     } catch (_) {}
 
     const body = await request.json();
-    const isDev = process.env.NODE_ENV !== "production";
+    const isProd = process.env.NODE_ENV === "production";
+    const devFallbackEnv = String(process.env.DEV_FALLBACK || "").toLowerCase().trim();
+    const devFallbackEnabled = devFallbackEnv === "true" || devFallbackEnv === "1" || devFallbackEnv === "yes";
+    const vercelEnv = String(process.env.VERCEL_ENV || "").toLowerCase();
+    if (isProd && devFallbackEnabled) {
+      // Fail fast on misconfiguration
+      throw new Error("DEV_FALLBACK must not be enabled in production");
+    }
+    const isDev = !isProd;
     if (isDev) {
       console.log(
         "[checkout] request body (dev):",
@@ -94,9 +103,9 @@ export async function POST(request: NextRequest) {
     }
     if (!products || products.length === 0) {
       const msg = "No products found for requested IDs";
-      // In non-production, we may optionally allow a DEV fallback controlled by DEV_FALLBACK flag
-      if (process.env.NODE_ENV !== "production") {
-        if (process.env.DEV_FALLBACK !== "true") {
+      // In non-production, optionally allow a DEV fallback controlled by DEV_FALLBACK flag
+      if (!isProd) {
+        if (!devFallbackEnabled) {
           console.error(
             "[checkout] " +
               msg +
@@ -128,7 +137,7 @@ export async function POST(request: NextRequest) {
       if (!product) {
         const anyItem: any = item as any;
         // Production: never allow fallback
-        if (process.env.NODE_ENV === "production") {
+        if (isProd) {
           console.error(
             "[checkout] Missing product in DB in production:",
             item.productId
@@ -139,7 +148,7 @@ export async function POST(request: NextRequest) {
           );
         }
         // Non-production: require explicit DEV_FALLBACK flag
-        if (process.env.DEV_FALLBACK !== "true") {
+        if (!devFallbackEnabled) {
           console.error(
             "[checkout] DEV_FALLBACK is not enabled; refusing client-derived product",
             { productId: anyItem.productId }
@@ -251,10 +260,15 @@ export async function POST(request: NextRequest) {
       }
 
       // Validate Stripe unit amount: must be > 0 based on business rules
-      const formatAmountForStripe = (stripeLib as any).formatAmountForStripe as undefined | ((n:number, c?:string)=>number);
-      const stripeUnitAmount = typeof formatAmountForStripe === 'function'
-        ? formatAmountForStripe(priceNumber)
-        : Math.round(Number(priceNumber) * 100);
+      let stripeUnitAmount: number;
+      try {
+        stripeUnitAmount = formatAmountForStripe(priceNumber);
+      } catch (e) {
+        console.warn("[checkout] formatAmountForStripe failed; falling back", {
+          message: (e as any)?.message,
+        });
+        stripeUnitAmount = Math.round(Number(priceNumber) * 100);
+      }
       if (
         !(
           typeof stripeUnitAmount === "number" &&

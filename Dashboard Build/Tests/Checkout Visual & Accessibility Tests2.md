@@ -237,7 +237,8 @@ test.describe('Checkout Visual & Accessibility Tests', () => {
     
     // Intercept API call to slow it down
     await page.route('**/api/checkout/**', async (route) => {
-      await page.waitForTimeout(2000); // Artificial delay
+      // Artificial delay (non-blocking)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       await route.continue();
     });
     

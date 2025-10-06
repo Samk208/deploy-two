@@ -8,9 +8,19 @@ import path from 'path'
 // Force Node.js runtime
 export const runtime = 'nodejs'
 
+// Canonical allowed document types (must match lib/types DocumentType)
+const ALLOWED_DOC_TYPES = [
+  'government_id',
+  'bank_book',
+  'business_registration_optional',
+  'business_registration',
+  'bank_account_book',
+  'mail_order_sales_report',
+] as const
+
 // Schema for FormData document upload
 const documentUploadSchema = z.object({
-  documentType: z.string().min(1, 'Document type is required'),
+  documentType: z.enum(ALLOWED_DOC_TYPES),
 })
 
 // File validation schema
