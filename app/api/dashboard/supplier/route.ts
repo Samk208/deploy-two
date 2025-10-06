@@ -46,9 +46,8 @@ export interface SupplierDashboardData {
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const supabase = await createServerSupabaseClient();
-
-    // Get current user and check permissions
     const user = await getCurrentUser(supabase);
+
     if (!user) {
       return NextResponse.json(
         { ok: false, error: "Authentication required" },
@@ -273,7 +272,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         Array.from(byProduct.values()).map((g) => {
           const p = productById[g.id];
           const avgRate = g.rateCount > 0 ? g.rateSum / g.rateCount : undefined;
-          // Prefer product's configured commission if available, else derive from average rate
           const commissionPercent =
             typeof p?.commission === "number"
               ? Number(p.commission)
@@ -290,13 +288,18 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             stock: Number(p?.stock_count) || 0,
           };
         });
-
       aggregatedProducts.sort(
         (a, b) => b.revenue - a.revenue || b.sales - a.sales
       );
       topProducts = aggregatedProducts.slice(0, 5);
     }
 
+    // TODO: Compute influencerPartners by querying the database for distinct influencers
+    // associated with this supplier. Suggested approaches (pick what's available in schema):
+    // - Count DISTINCT influencer_id from a partnerships table linking suppliers<->influencers
+    // - Or count DISTINCT influencer_id from commissions where supplier_id = supplierId
+    // - Or via influencer_shop_products if that represents relationships
+    // Once implemented, set influencerPartners to the distinct influencer count for supplierId.
     const influencerPartners = 0;
 
     const dashboardData: SupplierDashboardData = {

@@ -141,7 +141,7 @@ npx playwright test tests/e2e/onboarding/submit-and-redirect.spec.ts
 ```
 
 **Expected Output:**
-```
+```plaintext
 Running 3 tests using 3 workers
 
   ✓ [chromium] › onboarding/submit-and-redirect.spec.ts:10:3 › Onboarding Submit & Dashboard Redirect › influencer onboarding completes and redirects correctly (45s)

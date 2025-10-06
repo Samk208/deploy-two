@@ -35,16 +35,15 @@ export async function GET(request: NextRequest) {
       ""
     ).trim();
     const category = url.searchParams.get("category") || "";
-
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
     const supabase = ensureTypedClient(
       await createServerSupabaseClient(request)
     );
-
-    // Base query
-    let query = supabase.from("products").select("*", { count: "exact" });
+    let query = supabase
+      .from("products")
+      .select("*, profiles:products_supplier_id_fkey(*)", { count: "exact" });
 
     // Visibility rules:
     // - Public (no owner): only active and in-stock products for the shop

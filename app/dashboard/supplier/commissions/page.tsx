@@ -5,7 +5,6 @@ import type { CommissionsFilters } from "@/components/dashboard/commissions/clie
 export default async function Page() {
   const qc = new QueryClient();
   const defaultFilters: CommissionsFilters = { owner: "supplier", status: "pending", page: 1, pageSize: 20 };
-
   await qc.prefetchQuery({
     queryKey: ["commissions", defaultFilters],
     queryFn: async () => {
@@ -16,8 +15,14 @@ export default async function Page() {
       const r = await fetch(url, { cache: "no-store" });
       if (!r.ok) {
         let info = "";
-        try { info = await r.text(); } catch {}
-        throw new Error(`fetch commissions failed: ${r.status} ${r.statusText || ""} ${info ? "- " + info : ""}`.trim());
+        try {
+          info = await r.text();
+        } catch (e: any) {
+          info = `Failed to read response body: ${e?.message || String(e)}`;
+        }
+        throw new Error(
+          `fetch commissions failed: ${r.status} ${r.statusText || ""} ${info ? "- " + info : ""}`.trim()
+        );
       }
       return r.json();
     },
@@ -25,7 +30,6 @@ export default async function Page() {
 
   const state = dehydrate(qc);
   const CommissionsClient = (await import("@/components/dashboard/commissions/client")).default;
-
   return (
     <QueryProvider state={state}>
       <CommissionsClient defaultFilters={defaultFilters} />
