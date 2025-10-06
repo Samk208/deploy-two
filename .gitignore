@@ -36,7 +36,6 @@ yarn-error.log*
 .vscode/settings.local.json
 
 # vercel
-.vercel
 
 # playwright
 /playwright-report/
@@ -44,14 +43,18 @@ yarn-error.log*
 tsconfig.tsbuildinfo
 
 # generated e2e html report data (do not commit)
+# Ignore the entire Reports directory created by Playwright runs
+Dashboard Build/Reports/
+# (kept for clarity) specific subpaths that may already exist
 Dashboard Build/Reports/html-report/data/
 Dashboard Build/Reports/html-report/**/*.md
+Dashboard Build/Reports/html-report/**/trace/
 
 # build logs and error reports
 builderror.md
 *error.md
 *error.txt
-tsc-errors.txt
+{{ ... }}
 build-errors.log
 
 # analysis and test artifacts
