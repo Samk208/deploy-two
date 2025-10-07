@@ -59,13 +59,19 @@ export default function FilterBar({ total }: Props) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-4">
       <div className="flex-1 flex gap-2">
+        <label className="sr-only" htmlFor="q">Search products</label>
         <input
+          id="q"
+          aria-label="Search products"
           placeholder="Search products…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           className="w-full rounded-xl border px-3 py-2"
         />
+        <label className="sr-only" htmlFor="sort">Sort</label>
         <select
+          id="sort"
+          aria-label="Sort"
           className="rounded-xl border px-3 py-2"
           value={sort}
           onChange={(e) => setSort(e.target.value)}
@@ -75,12 +81,16 @@ export default function FilterBar({ total }: Props) {
       </div>
 
       <div className="grid grid-cols-2 sm:flex gap-2">
-        <input className="rounded-xl border px-3 py-2" placeholder="Category" value={category} onChange={(e)=>setCategory(e.target.value)} />
-        <input className="rounded-xl border px-3 py-2" placeholder="Brand" value={brand} onChange={(e)=>setBrand(e.target.value)} />
-        <input className="rounded-xl border px-3 py-2" type="number" placeholder="Min $" value={minPrice} onChange={(e)=>setMinPrice(e.target.value)} />
-        <input className="rounded-xl border px-3 py-2" type="number" placeholder="Max $" value={maxPrice} onChange={(e)=>setMaxPrice(e.target.value)} />
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={inStockOnly} onChange={(e)=>setInStockOnly(e.target.checked)} />
+        <label className="sr-only" htmlFor="category">Category</label>
+        <input id="category" aria-label="Category" className="rounded-xl border px-3 py-2" placeholder="Category" value={category} onChange={(e)=>setCategory(e.target.value)} />
+        <label className="sr-only" htmlFor="brand">Brand</label>
+        <input id="brand" aria-label="Brand" className="rounded-xl border px-3 py-2" placeholder="Brand" value={brand} onChange={(e)=>setBrand(e.target.value)} />
+        <label className="sr-only" htmlFor="minPrice">Minimum price</label>
+        <input id="minPrice" aria-label="Minimum price" className="rounded-xl border px-3 py-2" type="number" placeholder="Min $" value={minPrice} onChange={(e)=>setMinPrice(e.target.value)} />
+        <label className="sr-only" htmlFor="maxPrice">Maximum price</label>
+        <input id="maxPrice" aria-label="Maximum price" className="rounded-xl border px-3 py-2" type="number" placeholder="Max $" value={maxPrice} onChange={(e)=>setMaxPrice(e.target.value)} />
+        <label className="inline-flex items-center gap-2 text-sm" htmlFor="inStockOnly">
+          <input id="inStockOnly" type="checkbox" checked={inStockOnly} onChange={(e)=>setInStockOnly(e.target.checked)} />
           In stock
         </label>
         <button onClick={apply} className="rounded-xl border px-3 py-2 font-medium">Apply</button>

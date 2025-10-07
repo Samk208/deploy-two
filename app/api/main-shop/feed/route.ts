@@ -18,7 +18,7 @@ function buildBaseQuery(supabase: ReturnType<typeof getSupabaseAdmin>, opts: {
   let query = supabase
     .from("products")
     .select(
-      "id,title,price,primary_image,active,in_stock,stock_count,category,created_at",
+      "id,title,price,primary_image,active,in_stock,stock_count,category,brand,short_description,created_at",
       { count: "exact" }
     )
     .eq("active", true)
@@ -79,6 +79,8 @@ export async function GET(req: Request) {
       in_stock: p.in_stock,
       stock_count: p.stock_count,
       category: p.category,
+      brand: p.brand,
+      short_description: p.short_description ?? null,
       created_at: p.created_at,
     }));
 

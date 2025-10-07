@@ -2,6 +2,7 @@
 import type { FeedResponse, MainShopProduct } from "@/types/catalog";
 import FilterBar from "@/components/shop/FilterBar";
 import PaginationBar from "@/components/shop/PaginationBar";
+import MainShopCard from "@/components/shop/MainShopCard";
 
 export default function MainShopClient({ initial }: { initial: FeedResponse }) {
   const { items, page, hasMore, total } = initial;
@@ -21,23 +22,7 @@ export default function MainShopClient({ initial }: { initial: FeedResponse }) {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((p: MainShopProduct) => (
-            <a data-testid="product-card" key={p.id} href={`/product/${p.id}`} className="block rounded-2xl border p-3 hover:shadow-sm transition">
-              <div className="aspect-[4/3] w-full overflow-hidden rounded-xl bg-neutral-200">
-                {p.primary_image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.primary_image} alt={p.title} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="h-full w-full" />
-                )}
-              </div>
-              <div className="mt-3">
-                <h3 className="text-base font-medium line-clamp-2">{p.title}</h3>
-                <div className="mt-1 text-sm opacity-80">{(p as any).brand || p.category || "—"}</div>
-                <div className="mt-2 text-lg font-semibold">${p.price.toFixed(2)}</div>
-              </div>
-            </a>
-          ))}
+          {items.map((p: MainShopProduct) => <MainShopCard key={p.id} p={p} />)}
         </div>
       )}
 

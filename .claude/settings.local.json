@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm next lint:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(psql:*)",
+      "Bash(pnpm exec next lint:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
