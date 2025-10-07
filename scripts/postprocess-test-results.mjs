@@ -8,7 +8,7 @@ import path from 'node:path';
 
 const workspaceRoot = path.resolve(process.cwd());
 const workspaceRootNorm = workspaceRoot.replace(/\\/g, '/');
-const reportPath = path.resolve('Dashboard Build/Reports/test-results.json');
+const reportPath = path.resolve('dashboard-build/test-results.json');
 
 function toRelative(p) {
   if (!p || typeof p !== 'string') return p;
@@ -20,7 +20,7 @@ function toRelative(p) {
   // Put artifacts under a stable folder if outside repo
   if (rel.startsWith('..')) {
     const baseName = path.basename(normalized);
-    rel = `Dashboard Build/Reports/test-artifacts/${baseName}`;
+    rel = `dashboard-build/test-artifacts/${baseName}`;
   }
   return rel;
 }

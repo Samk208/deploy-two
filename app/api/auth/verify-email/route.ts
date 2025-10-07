@@ -72,26 +72,14 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const now = new Date().toISOString()
-    const { error: updateCodeErr } = await (supabaseAdmin as any)
-      .from("verification_codes")
-      .update({ verified: true, verified_at: now, updated_at: now })
-      .eq("user_id", user.id)
-      .eq("email", email)
-
-    if (updateCodeErr) {
-      console.error("Code update error:", updateCodeErr)
-      return NextResponse.json({ message: "인증에 실패했습니다" }, { status: 500 })
-    }
-
-    const { error: profileUpdateErr } = await supabaseAdmin
-      .from("profiles")
-      .update({ email_verified: true, email_verified_at: now } as any)
-      .eq("id", user.id)
-
-    if (profileUpdateErr) {
-      console.error("Profile update error:", profileUpdateErr)
-      return NextResponse.json({ message: "인증에 실패했습니다" }, { status: 500 })
+    // Atomic DB update: verification_codes + profiles
+    const { error: rpcError } = await (supabaseAdmin as any).rpc('mark_email_verified', {
+      p_user_id: user.id,
+      p_email: email,
+    } as any)
+    if (rpcError) {
+      console.error('Mark email verified RPC error:', rpcError)
+      return NextResponse.json({ message: '인증에 실패했습니다' }, { status: 500 })
     }
 
     return NextResponse.json({ message: "이메일 인증이 완료되었습니다", verified: true })

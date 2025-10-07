@@ -28,7 +28,7 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-// Mock influencer shops data (fallback if API not available)
+// Shop model for UI
 export interface Shop {
   id: string;
   handle: string;
@@ -112,125 +112,37 @@ function mapApiShopToShop(apiShop: any): Shop | null {
     socialLinks,
   };
 }
+// Loading skeleton for shops directory
+function SkeletonGrid() {
+  return (
+    <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="animate-pulse">
+            <div className="h-32 w-full bg-gray-200 rounded-md mb-3" />
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gray-200 rounded-full" />
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded w-2/3 mb-2" />
+                <div className="h-3 bg-gray-200 rounded w-1/3" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </main>
+  )
+}
 
-const mockShops: Shop[] = [
-  {
-    id: "1",
-    handle: "sarah_style",
-    name: "Sarah Chen",
-    bio: "Fashion & lifestyle creator sharing sustainable finds ✨",
-    avatar: "/brand-manager-avatar.png",
-    banner: "/fashion-banner.png",
-    followers: "125K",
-    verified: true,
-    category: "Fashion",
-    rating: 4.8,
-    totalProducts: 45,
-    totalSales: 1250,
-    badges: ["Verified", "Top Seller"],
-    socialLinks: {
-      instagram: "https://instagram.com/sarah_style",
-      twitter: "https://twitter.com/sarah_style",
-      youtube: "https://youtube.com/@sarahstyle",
-    },
-  },
-  {
-    id: "2",
-    handle: "tech_guru_mike",
-    name: "Mike Rodriguez",
-    bio: "Latest tech reviews and gadget recommendations 🔥",
-    avatar: "/brand-manager-avatar.png",
-    banner: "/wireless-earbuds.png",
-    followers: "89K",
-    verified: true,
-    category: "Technology",
-    rating: 4.9,
-    totalProducts: 32,
-    totalSales: 890,
-    badges: ["Verified", "Tech Expert"],
-    socialLinks: {
-      instagram: "https://instagram.com/tech_guru_mike",
-      youtube: "https://youtube.com/@techgurumike",
-    },
-  },
-  {
-    id: "3",
-    handle: "wellness_with_anna",
-    name: "Anna Thompson",
-    bio: "Holistic wellness & natural beauty advocate 🌿",
-    avatar: "/brand-manager-avatar.png",
-    banner: "/skincare-set.png",
-    followers: "67K",
-    verified: true,
-    category: "Health & Beauty",
-    rating: 4.7,
-    totalProducts: 28,
-    totalSales: 650,
-    badges: ["Verified", "Wellness Expert"],
-    socialLinks: {
-      instagram: "https://instagram.com/wellness_with_anna",
-      twitter: "https://twitter.com/wellness_anna",
-    },
-  },
-  {
-    id: "4",
-    handle: "home_decor_lily",
-    name: "Lily Park",
-    bio: "Creating beautiful spaces on any budget 🏠",
-    avatar: "/brand-manager-avatar.png",
-    banner: "/ceramic-mug.png",
-    followers: "45K",
-    verified: false,
-    category: "Home & Garden",
-    rating: 4.6,
-    totalProducts: 38,
-    totalSales: 420,
-    badges: ["Rising Star"],
-    socialLinks: {
-      instagram: "https://instagram.com/home_decor_lily",
-      youtube: "https://youtube.com/@homedecorwithLily",
-    },
-  },
-  {
-    id: "5",
-    handle: "fitness_coach_alex",
-    name: "Alex Johnson",
-    bio: "Fitness equipment & nutrition recommendations 💪",
-    avatar: "/brand-manager-avatar.png",
-    banner: "/cotton-tee.png",
-    followers: "112K",
-    verified: true,
-    category: "Sports & Fitness",
-    rating: 4.8,
-    totalProducts: 52,
-    totalSales: 980,
-    badges: ["Verified", "Fitness Pro"],
-    socialLinks: {
-      instagram: "https://instagram.com/fitness_coach_alex",
-      twitter: "https://twitter.com/fitnessalex",
-      youtube: "https://youtube.com/@fitnesscoachAlex",
-    },
-  },
-  {
-    id: "6",
-    handle: "foodie_adventures",
-    name: "Emma Wilson",
-    bio: "Kitchen essentials & gourmet food discoveries 🍳",
-    avatar: "/brand-manager-avatar.png",
-    banner: "/placeholder.jpg",
-    followers: "78K",
-    verified: true,
-    category: "Food & Kitchen",
-    rating: 4.7,
-    totalProducts: 41,
-    totalSales: 720,
-    badges: ["Verified", "Culinary Expert"],
-    socialLinks: {
-      instagram: "https://instagram.com/foodie_adventures",
-      youtube: "https://youtube.com/@foodieadventures",
-    },
-  },
-];
+function EmptyState() {
+  return (
+    <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+      <Search className="h-12 w-12 mx-auto text-gray-400" />
+      <h3 className="mt-4 text-lg font-medium text-gray-900">No shops found</h3>
+      <p className="text-gray-600">Once creators publish products, shops will appear here.</p>
+    </main>
+  )
+}
 
 const categories = [
   "All",
@@ -402,45 +314,34 @@ export default function ShopsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("popular");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [shops, setShops] = useState<Shop[]>(mockShops);
+  const [shops, setShops] = useState<Shop[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    async function load() {
+    (async () => {
       try {
-        const res = await fetch("/api/shops/directory");
+        const res = await fetch("/api/shops/directory", { cache: "no-store" });
         if (!res.ok) throw new Error("Failed to load directory");
         const json = await res.json();
-        const list = json?.data?.shops;
-        if (!cancelled && Array.isArray(list) && list.length > 0) {
-          const mapped = list
-            .map((s: any) => mapApiShopToShop(s))
-            .filter((s: Shop | null): s is Shop => s !== null);
-          if (list.length !== mapped.length) {
-            console.warn(`Shops directory contained ${list.length - mapped.length} invalid item(s); skipped.`);
-          }
-          setShops(mapped.length > 0 ? mapped : mockShops);
-        }
-      } catch (e) {
-        // Keep mock data on failure
-        console.warn(
-          "Using mock shops; directory API unavailable.",
-          (e as any)?.message || e
-        );
+        const list = Array.isArray(json?.data?.shops) ? json.data.shops : [];
+        const mapped = list
+          .map((s: any) => mapApiShopToShop(s))
+          .filter((s: Shop | null): s is Shop => s !== null);
+        if (!cancelled) setShops(mapped);
+      } catch (_e) {
+        if (!cancelled) setShops([]); // empty-state, not mock data
       } finally {
         if (!cancelled) setLoading(false);
       }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
+    })();
+    return () => { cancelled = true }; 
   }, []);
 
   // Filter and sort shops
   const filteredShops = useMemo(() => {
-    const filtered = shops.filter((shop) => {
+    const baseList = Array.isArray(shops) ? shops : [];
+    const filtered = baseList.filter((shop) => {
       const matchesSearch =
         shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         shop.handle.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -452,10 +353,10 @@ export default function ShopsPage() {
     });
 
     // Sort shops
-    const base = [...filtered];
+    const sorted = [...filtered];
     switch (sortBy) {
       case "newest": {
-        return base.sort((a, b) => {
+        return sorted.sort((a, b) => {
           const ta = a.createdAt ? new Date(a.createdAt).getTime() : NaN;
           const tb = b.createdAt ? new Date(b.createdAt).getTime() : NaN;
           const taValid = Number.isFinite(ta);
@@ -473,20 +374,48 @@ export default function ShopsPage() {
         });
       }
       case "followers":
-        return base.sort(
+        return sorted.sort(
           (a, b) => parseFollowers(b.followers) - parseFollowers(a.followers)
         );
       case "rating":
-        return base.sort((a, b) => b.rating - a.rating);
+        return sorted.sort((a, b) => b.rating - a.rating);
       case "products":
-        return base.sort((a, b) => b.totalProducts - a.totalProducts);
+        return sorted.sort((a, b) => b.totalProducts - a.totalProducts);
       default:
         // Popular: prefer follower count as a meaningful metric
-        return base.sort(
+        return sorted.sort(
           (a, b) => parseFollowers(b.followers) - parseFollowers(a.followers)
         );
     }
   }, [shops, searchQuery, selectedCategory, sortBy]);
+
+  if (shops === null || loading) return (
+    <div className="min-h-screen bg-gray-50">
+      <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center max-w-3xl mx-auto">
+            <h1 className="text-4xl font-bold mb-4">Discover Amazing Shops</h1>
+            <p className="text-xl text-indigo-100 mb-8">Explore curated collections from your favorite influencers and creators</p>
+          </div>
+        </div>
+      </section>
+      <SkeletonGrid />
+    </div>
+  );
+
+  if (Array.isArray(shops) && shops.length === 0) return (
+    <div className="min-h-screen bg-gray-50">
+      <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center max-w-3xl mx-auto">
+            <h1 className="text-4xl font-bold mb-4">Discover Amazing Shops</h1>
+            <p className="text-xl text-indigo-100 mb-8">Explore curated collections from your favorite influencers and creators</p>
+          </div>
+        </div>
+      </section>
+      <EmptyState />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">

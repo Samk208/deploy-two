@@ -1,0 +1,398 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e6]:
+      - link "OL One-Link" [ref=e8] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e10] [cursor=pointer]: OL
+        - generic [ref=e11] [cursor=pointer]: One-Link
+      - navigation "Main navigation" [ref=e12]:
+        - link "Shop" [ref=e13] [cursor=pointer]:
+          - /url: /shop
+        - link "Influencer Shop" [ref=e14] [cursor=pointer]:
+          - /url: /shops
+        - link "For Influencers" [ref=e15] [cursor=pointer]:
+          - /url: /influencers
+        - link "For Brands" [ref=e16] [cursor=pointer]:
+          - /url: /brands
+        - link "Pricing" [ref=e17] [cursor=pointer]:
+          - /url: /pricing
+        - link "Blog" [ref=e18] [cursor=pointer]:
+          - /url: /blog
+      - generic [ref=e20]:
+        - img [ref=e21]
+        - searchbox "Search products and influencers" [ref=e23]
+      - generic [ref=e24]:
+        - button "Cart" [ref=e26]:
+          - img [ref=e27]
+        - button "Language settings" [ref=e29]:
+          - img [ref=e30]
+          - generic [ref=e32]: EN
+          - img [ref=e33]
+        - generic [ref=e35]:
+          - link "Sign In" [ref=e36] [cursor=pointer]:
+            - /url: /sign-in
+          - link "Get Started" [ref=e37] [cursor=pointer]:
+            - /url: /sign-up
+        - button "Open menu" [ref=e38]:
+          - img [ref=e39]
+  - main [ref=e41]:
+    - generic [ref=e42]:
+      - generic [ref=e45]:
+        - heading "Discover Amazing Shops" [level=1] [ref=e46]
+        - paragraph [ref=e47]: Explore curated collections from your favorite influencers and creators
+        - generic [ref=e48]:
+          - img [ref=e49]
+          - textbox "Search shops, creators, or categories..." [ref=e52]
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - button "All" [ref=e57]
+            - button "Fashion" [ref=e58]
+            - button "Technology" [ref=e59]
+            - button "Health & Beauty" [ref=e60]
+            - button "Home & Garden" [ref=e61]
+            - button "Sports & Fitness" [ref=e62]
+            - button "Food & Kitchen" [ref=e63]
+          - generic [ref=e64]:
+            - combobox [ref=e65]:
+              - img
+            - combobox [ref=e66]
+            - generic [ref=e67]:
+              - button [ref=e68]:
+                - img [ref=e69]
+              - button [ref=e71]:
+                - img [ref=e72]
+        - generic [ref=e73]: 6 shops found
+      - main [ref=e74]:
+        - generic [ref=e75]:
+          - generic [ref=e76]:
+            - generic [ref=e77]:
+              - img "Sarah Chen's shop banner" [ref=e80]
+              - generic [ref=e81]:
+                - generic [ref=e82]: Verified
+                - generic [ref=e83]: Top Seller
+              - generic [ref=e85]:
+                - img [ref=e86]
+                - generic [ref=e88]: "4.8"
+            - generic [ref=e89]:
+              - generic [ref=e90]:
+                - generic [ref=e91]:
+                  - img "Sarah Chen" [ref=e93]
+                  - img [ref=e95]
+                - generic [ref=e97]:
+                  - heading "Sarah Chen" [level=3] [ref=e98]:
+                    - link "Sarah Chen" [ref=e99] [cursor=pointer]:
+                      - /url: /shop/sarah_style
+                  - paragraph [ref=e100]: "@sarah_style"
+                  - paragraph [ref=e101]: Fashion & lifestyle creator sharing sustainable finds ✨
+              - generic [ref=e102]:
+                - generic [ref=e103]:
+                  - img [ref=e104]
+                  - generic [ref=e109]: 125K
+                - generic [ref=e110]:
+                  - img [ref=e111]
+                  - generic [ref=e114]: 45 products
+              - generic [ref=e115]:
+                - generic [ref=e116]:
+                  - link [ref=e117] [cursor=pointer]:
+                    - /url: https://instagram.com/sarah_style
+                    - img [ref=e118] [cursor=pointer]
+                  - link [ref=e121] [cursor=pointer]:
+                    - /url: https://twitter.com/sarah_style
+                    - img [ref=e122] [cursor=pointer]
+                  - link [ref=e124] [cursor=pointer]:
+                    - /url: https://youtube.com/@sarahstyle
+                    - img [ref=e125] [cursor=pointer]
+                - link "Visit Shop" [ref=e128] [cursor=pointer]:
+                  - /url: /shop/sarah_style
+                  - text: Visit Shop
+                  - img [ref=e129] [cursor=pointer]
+          - generic [ref=e133]:
+            - generic [ref=e134]:
+              - img "Alex Johnson's shop banner" [ref=e137]
+              - generic [ref=e138]:
+                - generic [ref=e139]: Verified
+                - generic [ref=e140]: Fitness Pro
+              - generic [ref=e142]:
+                - img [ref=e143]
+                - generic [ref=e145]: "4.8"
+            - generic [ref=e146]:
+              - generic [ref=e147]:
+                - generic [ref=e148]:
+                  - img "Alex Johnson" [ref=e150]
+                  - img [ref=e152]
+                - generic [ref=e154]:
+                  - heading "Alex Johnson" [level=3] [ref=e155]:
+                    - link "Alex Johnson" [ref=e156] [cursor=pointer]:
+                      - /url: /shop/fitness_coach_alex
+                  - paragraph [ref=e157]: "@fitness_coach_alex"
+                  - paragraph [ref=e158]: Fitness equipment & nutrition recommendations 💪
+              - generic [ref=e159]:
+                - generic [ref=e160]:
+                  - img [ref=e161]
+                  - generic [ref=e166]: 112K
+                - generic [ref=e167]:
+                  - img [ref=e168]
+                  - generic [ref=e171]: 52 products
+              - generic [ref=e172]:
+                - generic [ref=e173]:
+                  - link [ref=e174] [cursor=pointer]:
+                    - /url: https://instagram.com/fitness_coach_alex
+                    - img [ref=e175] [cursor=pointer]
+                  - link [ref=e178] [cursor=pointer]:
+                    - /url: https://twitter.com/fitnessalex
+                    - img [ref=e179] [cursor=pointer]
+                  - link [ref=e181] [cursor=pointer]:
+                    - /url: https://youtube.com/@fitnesscoachAlex
+                    - img [ref=e182] [cursor=pointer]
+                - link "Visit Shop" [ref=e185] [cursor=pointer]:
+                  - /url: /shop/fitness_coach_alex
+                  - text: Visit Shop
+                  - img [ref=e186] [cursor=pointer]
+          - generic [ref=e190]:
+            - generic [ref=e191]:
+              - img "Mike Rodriguez's shop banner" [ref=e194]
+              - generic [ref=e195]:
+                - generic [ref=e196]: Verified
+                - generic [ref=e197]: Tech Expert
+              - generic [ref=e199]:
+                - img [ref=e200]
+                - generic [ref=e202]: "4.9"
+            - generic [ref=e203]:
+              - generic [ref=e204]:
+                - generic [ref=e205]:
+                  - img "Mike Rodriguez" [ref=e207]
+                  - img [ref=e209]
+                - generic [ref=e211]:
+                  - heading "Mike Rodriguez" [level=3] [ref=e212]:
+                    - link "Mike Rodriguez" [ref=e213] [cursor=pointer]:
+                      - /url: /shop/tech_guru_mike
+                  - paragraph [ref=e214]: "@tech_guru_mike"
+                  - paragraph [ref=e215]: Latest tech reviews and gadget recommendations 🔥
+              - generic [ref=e216]:
+                - generic [ref=e217]:
+                  - img [ref=e218]
+                  - generic [ref=e223]: 89K
+                - generic [ref=e224]:
+                  - img [ref=e225]
+                  - generic [ref=e228]: 32 products
+              - generic [ref=e229]:
+                - generic [ref=e230]:
+                  - link [ref=e231] [cursor=pointer]:
+                    - /url: https://instagram.com/tech_guru_mike
+                    - img [ref=e232] [cursor=pointer]
+                  - link [ref=e235] [cursor=pointer]:
+                    - /url: https://youtube.com/@techgurumike
+                    - img [ref=e236] [cursor=pointer]
+                - link "Visit Shop" [ref=e239] [cursor=pointer]:
+                  - /url: /shop/tech_guru_mike
+                  - text: Visit Shop
+                  - img [ref=e240] [cursor=pointer]
+          - generic [ref=e244]:
+            - generic [ref=e245]:
+              - img "Emma Wilson's shop banner" [ref=e248]
+              - generic [ref=e249]:
+                - generic [ref=e250]: Verified
+                - generic [ref=e251]: Culinary Expert
+              - generic [ref=e253]:
+                - img [ref=e254]
+                - generic [ref=e256]: "4.7"
+            - generic [ref=e257]:
+              - generic [ref=e258]:
+                - generic [ref=e259]:
+                  - img "Emma Wilson" [ref=e261]
+                  - img [ref=e263]
+                - generic [ref=e265]:
+                  - heading "Emma Wilson" [level=3] [ref=e266]:
+                    - link "Emma Wilson" [ref=e267] [cursor=pointer]:
+                      - /url: /shop/foodie_adventures
+                  - paragraph [ref=e268]: "@foodie_adventures"
+                  - paragraph [ref=e269]: Kitchen essentials & gourmet food discoveries 🍳
+              - generic [ref=e270]:
+                - generic [ref=e271]:
+                  - img [ref=e272]
+                  - generic [ref=e277]: 78K
+                - generic [ref=e278]:
+                  - img [ref=e279]
+                  - generic [ref=e282]: 41 products
+              - generic [ref=e283]:
+                - generic [ref=e284]:
+                  - link [ref=e285] [cursor=pointer]:
+                    - /url: https://instagram.com/foodie_adventures
+                    - img [ref=e286] [cursor=pointer]
+                  - link [ref=e289] [cursor=pointer]:
+                    - /url: https://youtube.com/@foodieadventures
+                    - img [ref=e290] [cursor=pointer]
+                - link "Visit Shop" [ref=e293] [cursor=pointer]:
+                  - /url: /shop/foodie_adventures
+                  - text: Visit Shop
+                  - img [ref=e294] [cursor=pointer]
+          - generic [ref=e298]:
+            - generic [ref=e299]:
+              - img "Anna Thompson's shop banner" [ref=e302]
+              - generic [ref=e303]:
+                - generic [ref=e304]: Verified
+                - generic [ref=e305]: Wellness Expert
+              - generic [ref=e307]:
+                - img [ref=e308]
+                - generic [ref=e310]: "4.7"
+            - generic [ref=e311]:
+              - generic [ref=e312]:
+                - generic [ref=e313]:
+                  - img "Anna Thompson" [ref=e315]
+                  - img [ref=e317]
+                - generic [ref=e319]:
+                  - heading "Anna Thompson" [level=3] [ref=e320]:
+                    - link "Anna Thompson" [ref=e321] [cursor=pointer]:
+                      - /url: /shop/wellness_with_anna
+                  - paragraph [ref=e322]: "@wellness_with_anna"
+                  - paragraph [ref=e323]: Holistic wellness & natural beauty advocate 🌿
+              - generic [ref=e324]:
+                - generic [ref=e325]:
+                  - img [ref=e326]
+                  - generic [ref=e331]: 67K
+                - generic [ref=e332]:
+                  - img [ref=e333]
+                  - generic [ref=e336]: 28 products
+              - generic [ref=e337]:
+                - generic [ref=e338]:
+                  - link [ref=e339] [cursor=pointer]:
+                    - /url: https://instagram.com/wellness_with_anna
+                    - img [ref=e340] [cursor=pointer]
+                  - link [ref=e343] [cursor=pointer]:
+                    - /url: https://twitter.com/wellness_anna
+                    - img [ref=e344] [cursor=pointer]
+                - link "Visit Shop" [ref=e346] [cursor=pointer]:
+                  - /url: /shop/wellness_with_anna
+                  - text: Visit Shop
+                  - img [ref=e347] [cursor=pointer]
+          - generic [ref=e351]:
+            - generic [ref=e352]:
+              - img "Lily Park's shop banner" [ref=e355]
+              - generic [ref=e357]: Rising Star
+              - generic [ref=e359]:
+                - img [ref=e360]
+                - generic [ref=e362]: "4.6"
+            - generic [ref=e363]:
+              - generic [ref=e364]:
+                - img "Lily Park" [ref=e367]
+                - generic [ref=e368]:
+                  - heading "Lily Park" [level=3] [ref=e369]:
+                    - link "Lily Park" [ref=e370] [cursor=pointer]:
+                      - /url: /shop/home_decor_lily
+                  - paragraph [ref=e371]: "@home_decor_lily"
+                  - paragraph [ref=e372]: Creating beautiful spaces on any budget 🏠
+              - generic [ref=e373]:
+                - generic [ref=e374]:
+                  - img [ref=e375]
+                  - generic [ref=e380]: 45K
+                - generic [ref=e381]:
+                  - img [ref=e382]
+                  - generic [ref=e385]: 38 products
+              - generic [ref=e386]:
+                - generic [ref=e387]:
+                  - link [ref=e388] [cursor=pointer]:
+                    - /url: https://instagram.com/home_decor_lily
+                    - img [ref=e389] [cursor=pointer]
+                  - link [ref=e392] [cursor=pointer]:
+                    - /url: https://youtube.com/@homedecorwithLily
+                    - img [ref=e393] [cursor=pointer]
+                - link "Visit Shop" [ref=e396] [cursor=pointer]:
+                  - /url: /shop/home_decor_lily
+                  - text: Visit Shop
+                  - img [ref=e397] [cursor=pointer]
+  - contentinfo [ref=e401]:
+    - generic [ref=e402]:
+      - generic [ref=e403]:
+        - heading "Stay updated with One-Link" [level=3] [ref=e404]
+        - paragraph [ref=e405]: Get the latest updates on new features, success stories, and tips to grow your business.
+        - generic [ref=e406]:
+          - textbox "Newsletter signup" [ref=e407]
+          - button "Subscribe" [ref=e408]
+      - generic [ref=e409]:
+        - generic [ref=e410]:
+          - heading "Company" [level=4] [ref=e411]
+          - list [ref=e412]:
+            - listitem [ref=e413]:
+              - link "About Us" [ref=e414] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e415]:
+              - link "Careers" [ref=e416] [cursor=pointer]:
+                - /url: /careers
+            - listitem [ref=e417]:
+              - link "Press" [ref=e418] [cursor=pointer]:
+                - /url: /press
+            - listitem [ref=e419]:
+              - link "Blog" [ref=e420] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e421]:
+              - link "Contact" [ref=e422] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e423]:
+          - heading "Legal" [level=4] [ref=e424]
+          - list [ref=e425]:
+            - listitem [ref=e426]:
+              - link "Privacy Policy" [ref=e427] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e428]:
+              - link "Terms of Service" [ref=e429] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e430]:
+              - link "Cookie Policy" [ref=e431] [cursor=pointer]:
+                - /url: /cookies
+            - listitem [ref=e432]:
+              - link "GDPR" [ref=e433] [cursor=pointer]:
+                - /url: /gdpr
+            - listitem [ref=e434]:
+              - link "Compliance" [ref=e435] [cursor=pointer]:
+                - /url: /compliance
+        - generic [ref=e436]:
+          - heading "Support" [level=4] [ref=e437]
+          - list [ref=e438]:
+            - listitem [ref=e439]:
+              - link "Help Center" [ref=e440] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e441]:
+              - link "Community" [ref=e442] [cursor=pointer]:
+                - /url: /community
+            - listitem [ref=e443]:
+              - link "API Documentation" [ref=e444] [cursor=pointer]:
+                - /url: /docs
+            - listitem [ref=e445]:
+              - link "Status" [ref=e446] [cursor=pointer]:
+                - /url: /status
+            - listitem [ref=e447]:
+              - link "Report Issue" [ref=e448] [cursor=pointer]:
+                - /url: /report
+        - generic [ref=e449]:
+          - heading "Follow Us" [level=4] [ref=e450]
+          - generic [ref=e451]:
+            - link "Facebook" [ref=e452] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e453] [cursor=pointer]
+            - link "Twitter" [ref=e455] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e456] [cursor=pointer]
+            - link "Instagram" [ref=e458] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e459] [cursor=pointer]
+            - link "LinkedIn" [ref=e461] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e462] [cursor=pointer]
+            - link "YouTube" [ref=e464] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e465] [cursor=pointer]
+      - generic [ref=e467]:
+        - generic [ref=e468]:
+          - generic [ref=e470]: OL
+          - generic [ref=e471]: One-Link
+        - paragraph [ref=e472]: © 2025 One-Link. All rights reserved.
+```

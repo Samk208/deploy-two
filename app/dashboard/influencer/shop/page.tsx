@@ -352,12 +352,11 @@ export default function MyShopBuilder() {
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold text-orange-600">
-                  {Math.round(
-                    shopProducts.reduce(
-                      (sum, p) => sum + (p.salePrice || 0),
-                      0
-                    ) / shopProducts.length || 0
-                  )}
+                  {(() => {
+                    const total = shopProducts.reduce((sum, p) => sum + (p.salePrice || 0), 0)
+                    const avg = shopProducts.length > 0 ? total / shopProducts.length : 0
+                    return Math.round(avg)
+                  })()}
                 </div>
                 <p className="text-sm text-gray-600">Avg. Price</p>
               </CardContent>

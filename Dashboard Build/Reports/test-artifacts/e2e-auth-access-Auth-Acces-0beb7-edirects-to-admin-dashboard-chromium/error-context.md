@@ -1,0 +1,134 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e6]:
+      - link "OL One-Link" [ref=e8] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e10] [cursor=pointer]: OL
+        - generic [ref=e11] [cursor=pointer]: One-Link
+      - navigation "Main navigation" [ref=e12]:
+        - link "Shop" [ref=e13] [cursor=pointer]:
+          - /url: /shop
+        - link "Influencer Shop" [ref=e14] [cursor=pointer]:
+          - /url: /shops
+        - link "For Influencers" [ref=e15] [cursor=pointer]:
+          - /url: /influencers
+        - link "For Brands" [ref=e16] [cursor=pointer]:
+          - /url: /brands
+        - link "Pricing" [ref=e17] [cursor=pointer]:
+          - /url: /pricing
+        - link "Blog" [ref=e18] [cursor=pointer]:
+          - /url: /blog
+      - generic [ref=e20]:
+        - img [ref=e21]
+        - searchbox "Search products and influencers" [ref=e23]
+      - generic [ref=e24]:
+        - button "Cart" [ref=e26]:
+          - img [ref=e27]
+        - button "Language settings" [ref=e29]:
+          - img [ref=e30]
+          - generic [ref=e32]: EN
+          - img [ref=e33]
+        - generic [ref=e35]:
+          - link "Sign In" [ref=e36] [cursor=pointer]:
+            - /url: /sign-in
+          - link "Get Started" [ref=e37] [cursor=pointer]:
+            - /url: /sign-up
+        - button "Open menu" [ref=e38]:
+          - img [ref=e39]
+  - main [ref=e41]:
+    - generic [ref=e43]: Loading...
+  - contentinfo [ref=e44]:
+    - generic [ref=e45]:
+      - generic [ref=e46]:
+        - heading "Stay updated with One-Link" [level=3] [ref=e47]
+        - paragraph [ref=e48]: Get the latest updates on new features, success stories, and tips to grow your business.
+        - generic [ref=e49]:
+          - textbox "Newsletter signup" [ref=e50]
+          - button "Subscribe" [ref=e51]
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - heading "Company" [level=4] [ref=e54]
+          - list [ref=e55]:
+            - listitem [ref=e56]:
+              - link "About Us" [ref=e57] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e58]:
+              - link "Careers" [ref=e59] [cursor=pointer]:
+                - /url: /careers
+            - listitem [ref=e60]:
+              - link "Press" [ref=e61] [cursor=pointer]:
+                - /url: /press
+            - listitem [ref=e62]:
+              - link "Blog" [ref=e63] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e64]:
+              - link "Contact" [ref=e65] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e66]:
+          - heading "Legal" [level=4] [ref=e67]
+          - list [ref=e68]:
+            - listitem [ref=e69]:
+              - link "Privacy Policy" [ref=e70] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e71]:
+              - link "Terms of Service" [ref=e72] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e73]:
+              - link "Cookie Policy" [ref=e74] [cursor=pointer]:
+                - /url: /cookies
+            - listitem [ref=e75]:
+              - link "GDPR" [ref=e76] [cursor=pointer]:
+                - /url: /gdpr
+            - listitem [ref=e77]:
+              - link "Compliance" [ref=e78] [cursor=pointer]:
+                - /url: /compliance
+        - generic [ref=e79]:
+          - heading "Support" [level=4] [ref=e80]
+          - list [ref=e81]:
+            - listitem [ref=e82]:
+              - link "Help Center" [ref=e83] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e84]:
+              - link "Community" [ref=e85] [cursor=pointer]:
+                - /url: /community
+            - listitem [ref=e86]:
+              - link "API Documentation" [ref=e87] [cursor=pointer]:
+                - /url: /docs
+            - listitem [ref=e88]:
+              - link "Status" [ref=e89] [cursor=pointer]:
+                - /url: /status
+            - listitem [ref=e90]:
+              - link "Report Issue" [ref=e91] [cursor=pointer]:
+                - /url: /report
+        - generic [ref=e92]:
+          - heading "Follow Us" [level=4] [ref=e93]
+          - generic [ref=e94]:
+            - link "Facebook" [ref=e95] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e96] [cursor=pointer]
+            - link "Twitter" [ref=e98] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e99] [cursor=pointer]
+            - link "Instagram" [ref=e101] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e102] [cursor=pointer]
+            - link "LinkedIn" [ref=e104] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e105] [cursor=pointer]
+            - link "YouTube" [ref=e107] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e108] [cursor=pointer]
+      - generic [ref=e110]:
+        - generic [ref=e111]:
+          - generic [ref=e113]: OL
+          - generic [ref=e114]: One-Link
+        - paragraph [ref=e115]: © 2025 One-Link. All rights reserved.
+```

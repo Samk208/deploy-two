@@ -43,12 +43,15 @@ export async function GET(request: NextRequest) {
         completedUnion.add(s)
       }
       role = ((row as any).role as any) || role
-      // Track the latest status (completed takes precedence)
-      if ((row as any).status === "completed") {
+      // Track the latest status (completed takes precedence) with runtime validation
+      const rawStatus = String((row as any).status || "")
+      const isCompleted = rawStatus === "completed"
+      const isDraft = rawStatus === "draft"
+      if (isCompleted) {
         status = "completed"
-      } else if (!status) {
-        status = (row as any).status
-      }
+      } else if (isDraft && !status) {
+        status = "draft"
+      } // Unknown statuses are ignored to avoid propagating invalid values
     }
 
     return NextResponse.json({

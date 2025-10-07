@@ -62,3 +62,35 @@ CREATE TRIGGER trg_update_verification_codes_updated_at
   BEFORE UPDATE ON verification_codes
   FOR EACH ROW
   EXECUTE FUNCTION update_verification_codes_updated_at();
+
+-- Atomic function to mark email verified: updates both verification_codes and profiles
+CREATE OR REPLACE FUNCTION mark_email_verified(p_user_id UUID, p_email TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  now_ts TIMESTAMPTZ := NOW();
+  updated_count INT;
+BEGIN
+  UPDATE verification_codes
+  SET verified = TRUE,
+      verified_at = now_ts,
+      updated_at = now_ts
+  WHERE user_id = p_user_id AND email = p_email;
+
+  GET DIAGNOSTICS updated_count = ROW_COUNT;
+  IF updated_count = 0 THEN
+    RAISE EXCEPTION 'Verification code not found for user % and email %', p_user_id, p_email;
+  END IF;
+
+  UPDATE profiles
+  SET email_verified = TRUE,
+      email_verified_at = now_ts
+  WHERE id = p_user_id;
+
+  GET DIAGNOSTICS updated_count = ROW_COUNT;
+  IF updated_count = 0 THEN
+    RAISE EXCEPTION 'Profile not found for user %', p_user_id;
+  END IF;
+END;
+$$;

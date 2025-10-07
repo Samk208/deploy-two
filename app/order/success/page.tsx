@@ -23,7 +23,7 @@ const mockOrder = {
       price: 45,
       quantity: 2,
       image: "/cotton-tee.png",
-      influencer: { handle: "sarah_style", name: "Sarah Chen", avatar: "/fashion-influencer-avatar.png" },
+      influencer: { handle: "creator", name: "Creator", avatar: "/brand-manager-avatar.png" },
       supplier: { name: "EcoWear Co.", verified: true },
     },
     {
@@ -32,7 +32,7 @@ const mockOrder = {
       price: 89,
       quantity: 1,
       image: "/gold-necklace.png",
-      influencer: { handle: "sarah_style", name: "Sarah Chen", avatar: "/fashion-influencer-avatar.png" },
+      influencer: { handle: "creator", name: "Creator", avatar: "/brand-manager-avatar.png" },
       supplier: { name: "Luxe Jewelry", verified: true },
     },
   ],
@@ -230,9 +230,9 @@ export default function OrderSuccessPage() {
                 Download Receipt
               </Button>
 
-              <Link href="/shop/sarah_style" className="block">
+              <Link href="/shops" className="block">
                 <Button variant="outline" size="lg" className="w-full bg-transparent">
-                  Return to @sarah_style's Shop
+                  Discover More Shops
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
@@ -270,9 +270,7 @@ export default function OrderSuccessPage() {
                   ))}
                 </div>
                 <h3 className="font-medium text-amber-900 mb-2">Love your purchase?</h3>
-                <p className="text-sm text-amber-800 mb-3">
-                  Help other shoppers by leaving a review for @sarah_style's curation.
-                </p>
+                <p className="text-sm text-amber-800 mb-3">Share your feedback to help other shoppers.</p>
                 <Button
                   variant="outline"
                   size="sm"

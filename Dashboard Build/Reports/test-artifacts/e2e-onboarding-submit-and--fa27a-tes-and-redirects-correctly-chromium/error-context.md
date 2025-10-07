@@ -1,0 +1,260 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e6]:
+      - link "OL One-Link" [ref=e8] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e10] [cursor=pointer]: OL
+        - generic [ref=e11] [cursor=pointer]: One-Link
+      - navigation "Main navigation" [ref=e12]:
+        - link "Shop" [ref=e13] [cursor=pointer]:
+          - /url: /shop
+        - link "Influencer Shop" [ref=e14] [cursor=pointer]:
+          - /url: /shops
+        - link "For Influencers" [ref=e15] [cursor=pointer]:
+          - /url: /influencers
+        - link "For Brands" [ref=e16] [cursor=pointer]:
+          - /url: /brands
+        - link "Pricing" [ref=e17] [cursor=pointer]:
+          - /url: /pricing
+        - link "Blog" [ref=e18] [cursor=pointer]:
+          - /url: /blog
+      - generic [ref=e20]:
+        - img [ref=e21]
+        - searchbox "Search products and influencers" [ref=e23]
+      - generic [ref=e24]:
+        - button "Cart" [ref=e26]:
+          - img [ref=e27]
+        - button "Language settings" [ref=e29]:
+          - img [ref=e30]
+          - generic [ref=e32]: EN
+          - img [ref=e33]
+        - button "User menu" [ref=e36]:
+          - img "E2E Influencer" [ref=e37]
+          - generic [ref=e38]: E2E Influencer
+          - img [ref=e39]
+        - button "Open menu" [ref=e41]:
+          - img [ref=e42]
+  - main [ref=e44]:
+    - generic [ref=e45]:
+      - link "Skip to main content" [ref=e46] [cursor=pointer]:
+        - /url: "#main-content"
+      - main [ref=e47]:
+        - generic [ref=e49]:
+          - link "Skip to main content" [ref=e50] [cursor=pointer]:
+            - /url: "#main-content"
+          - generic [ref=e51]:
+            - link "One-Link" [ref=e52] [cursor=pointer]:
+              - /url: /
+              - heading "One-Link" [level=1] [ref=e53] [cursor=pointer]
+            - heading "Create your account" [level=2] [ref=e54]
+            - paragraph [ref=e55]: Join thousands of suppliers, influencers, and customers
+          - generic [ref=e56]:
+            - generic [ref=e57]:
+              - generic [ref=e58]: Sign Up
+              - generic [ref=e59]: Choose your account type and create your profile
+            - generic [ref=e60]:
+              - generic [ref=e61]:
+                - button "Sign up with Google" [ref=e62]:
+                  - img [ref=e63]
+                  - text: Google
+                - button "Sign up with GitHub" [ref=e68]:
+                  - img [ref=e69]
+                  - text: GitHub
+                - button "Sign up with Kakao" [ref=e71]:
+                  - img [ref=e72]
+                  - text: Kakao
+              - generic [ref=e77]: Or continue with email
+              - generic [ref=e78]:
+                - generic [ref=e79]:
+                  - generic [ref=e80]: I am a... *
+                  - radiogroup [ref=e81]:
+                    - generic [ref=e82]:
+                      - radio "Supplier" [ref=e83]
+                      - radio
+                      - generic [ref=e88] [cursor=pointer]:
+                        - generic [ref=e89] [cursor=pointer]:
+                          - generic [ref=e90] [cursor=pointer]: Supplier
+                          - generic [ref=e91] [cursor=pointer]: Business
+                        - generic [ref=e92] [cursor=pointer]: I want to sell products through influencers
+                        - generic [ref=e93] [cursor=pointer]:
+                          - generic [ref=e94] [cursor=pointer]: Product management
+                          - generic [ref=e96] [cursor=pointer]: Commission tracking
+                          - generic [ref=e98] [cursor=pointer]: Analytics dashboard
+                          - generic [ref=e100] [cursor=pointer]: Brand verification
+                    - generic [ref=e102]:
+                      - radio "Influencer" [checked] [ref=e103]:
+                        - img [ref=e104]
+                      - radio [checked]
+                      - generic [ref=e110] [cursor=pointer]:
+                        - generic [ref=e111] [cursor=pointer]:
+                          - generic [ref=e112] [cursor=pointer]: Influencer
+                          - generic [ref=e113] [cursor=pointer]: Creator
+                        - generic [ref=e114] [cursor=pointer]: I want to create my shop and earn commissions
+                        - generic [ref=e115] [cursor=pointer]:
+                          - generic [ref=e116] [cursor=pointer]: Personal storefront
+                          - generic [ref=e118] [cursor=pointer]: Commission earnings
+                          - generic [ref=e120] [cursor=pointer]: Social media integration
+                          - generic [ref=e122] [cursor=pointer]: Identity verification
+                    - generic [ref=e124]:
+                      - radio "Customer" [ref=e125]
+                      - radio
+                      - generic [ref=e130] [cursor=pointer]:
+                        - generic [ref=e131] [cursor=pointer]:
+                          - generic [ref=e132] [cursor=pointer]: Customer
+                          - generic [ref=e133] [cursor=pointer]: Shopper
+                        - generic [ref=e134] [cursor=pointer]: I want to shop from my favorite influencers
+                        - generic [ref=e135] [cursor=pointer]:
+                          - generic [ref=e136] [cursor=pointer]: Personalized shopping
+                          - generic [ref=e138] [cursor=pointer]: Follow creators
+                          - generic [ref=e140] [cursor=pointer]: Exclusive deals
+                          - generic [ref=e142] [cursor=pointer]: Easy checkout
+                - generic [ref=e144]:
+                  - heading "🚀 What happens next?" [level=4] [ref=e145]
+                  - paragraph [ref=e146]: "After creating your account, you'll complete a comprehensive onboarding process including:"
+                  - generic [ref=e147]:
+                    - generic [ref=e148]: ✓ Profile setup
+                    - generic [ref=e149]: ✓ Identity verification
+                    - generic [ref=e150]: ✓ Document upload
+                    - generic [ref=e151]: ✓ Payment setup
+                - generic [ref=e152]:
+                  - generic [ref=e153]:
+                    - generic [ref=e154]: First name
+                    - generic [ref=e155]:
+                      - img [ref=e156]
+                      - textbox "First name" [ref=e158]: E2E
+                  - generic [ref=e159]:
+                    - generic [ref=e160]: Last name
+                    - generic [ref=e161]:
+                      - img [ref=e162]
+                      - textbox "Last name" [ref=e164]: Influencer
+                - generic [ref=e165]:
+                  - generic [ref=e166]: Email address
+                  - generic [ref=e167]:
+                    - img [ref=e168]
+                    - textbox "Enter your email" [ref=e170]: e2e.influencer.submit+575755@example.com
+                - generic [ref=e171]:
+                  - generic [ref=e172]:
+                    - generic [ref=e173]: Password
+                    - generic [ref=e174]:
+                      - img [ref=e175]
+                      - textbox "Create password" [ref=e177]: Passw0rd!
+                      - button "Show password" [ref=e178]:
+                        - img [ref=e179]
+                  - generic [ref=e182]:
+                    - generic [ref=e183]: Confirm password
+                    - generic [ref=e184]:
+                      - img [ref=e185]
+                      - textbox "Confirm password" [ref=e187]: Passw0rd!
+                      - button "Show password" [ref=e188]:
+                        - img [ref=e189]
+                - button "Create account" [ref=e192]
+              - paragraph [ref=e194]:
+                - text: Already have an account?
+                - link "Sign in" [ref=e195] [cursor=pointer]:
+                  - /url: /sign-in
+              - paragraph [ref=e196]:
+                - text: By continuing, you agree to our
+                - link "Terms of Service" [ref=e197] [cursor=pointer]:
+                  - /url: /terms
+                - text: and
+                - link "Privacy Policy" [ref=e198] [cursor=pointer]:
+                  - /url: /privacy
+  - contentinfo [ref=e199]:
+    - generic [ref=e200]:
+      - generic [ref=e201]:
+        - heading "Stay updated with One-Link" [level=3] [ref=e202]
+        - paragraph [ref=e203]: Get the latest updates on new features, success stories, and tips to grow your business.
+        - generic [ref=e204]:
+          - textbox "Newsletter signup" [ref=e205]
+          - button "Subscribe" [ref=e206]
+      - generic [ref=e207]:
+        - generic [ref=e208]:
+          - heading "Company" [level=4] [ref=e209]
+          - list [ref=e210]:
+            - listitem [ref=e211]:
+              - link "About Us" [ref=e212] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e213]:
+              - link "Careers" [ref=e214] [cursor=pointer]:
+                - /url: /careers
+            - listitem [ref=e215]:
+              - link "Press" [ref=e216] [cursor=pointer]:
+                - /url: /press
+            - listitem [ref=e217]:
+              - link "Blog" [ref=e218] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e219]:
+              - link "Contact" [ref=e220] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e221]:
+          - heading "Legal" [level=4] [ref=e222]
+          - list [ref=e223]:
+            - listitem [ref=e224]:
+              - link "Privacy Policy" [ref=e225] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e226]:
+              - link "Terms of Service" [ref=e227] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e228]:
+              - link "Cookie Policy" [ref=e229] [cursor=pointer]:
+                - /url: /cookies
+            - listitem [ref=e230]:
+              - link "GDPR" [ref=e231] [cursor=pointer]:
+                - /url: /gdpr
+            - listitem [ref=e232]:
+              - link "Compliance" [ref=e233] [cursor=pointer]:
+                - /url: /compliance
+        - generic [ref=e234]:
+          - heading "Support" [level=4] [ref=e235]
+          - list [ref=e236]:
+            - listitem [ref=e237]:
+              - link "Help Center" [ref=e238] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e239]:
+              - link "Community" [ref=e240] [cursor=pointer]:
+                - /url: /community
+            - listitem [ref=e241]:
+              - link "API Documentation" [ref=e242] [cursor=pointer]:
+                - /url: /docs
+            - listitem [ref=e243]:
+              - link "Status" [ref=e244] [cursor=pointer]:
+                - /url: /status
+            - listitem [ref=e245]:
+              - link "Report Issue" [ref=e246] [cursor=pointer]:
+                - /url: /report
+        - generic [ref=e247]:
+          - heading "Follow Us" [level=4] [ref=e248]
+          - generic [ref=e249]:
+            - link "Facebook" [ref=e250] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e251] [cursor=pointer]
+            - link "Twitter" [ref=e253] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e254] [cursor=pointer]
+            - link "Instagram" [ref=e256] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e257] [cursor=pointer]
+            - link "LinkedIn" [ref=e259] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e260] [cursor=pointer]
+            - link "YouTube" [ref=e262] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e263] [cursor=pointer]
+      - generic [ref=e265]:
+        - generic [ref=e266]:
+          - generic [ref=e268]: OL
+          - generic [ref=e269]: One-Link
+        - paragraph [ref=e270]: © 2025 One-Link. All rights reserved.
+  - button "Open Next.js Dev Tools" [ref=e276] [cursor=pointer]:
+    - img [ref=e277] [cursor=pointer]
+  - alert [ref=e280]
+  - img [ref=e283]
+```

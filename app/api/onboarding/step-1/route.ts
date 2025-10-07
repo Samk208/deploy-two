@@ -55,15 +55,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Map onboarding role to database role and update profiles.role immediately
-    const dbRole = mapOnboardingRoleToDbRole(body.role)
-    try {
-      await supabaseAdmin
-        .from("profiles")
-        .update({ role: dbRole })
-        .eq("id", user.id)
-    } catch (e) {
-      console.error("Error updating profile role in step-1:", e)
+    // Validate and map onboarding role to database role, then update profiles.role
+    const allowedRoles = ["influencer", "brand"] as const
+    const incomingRole = String(body?.role || "")
+    if (!allowedRoles.includes(incomingRole as any)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid role. Must be influencer or brand" },
+        { status: 400 },
+      )
+    }
+    const dbRole = mapOnboardingRoleToDbRole(incomingRole as any)
+    const { error: profileUpdateError } = await supabaseAdmin
+      .from("profiles")
+      .update({ role: dbRole } as any)
+      .eq("id", user.id)
+    if (profileUpdateError) {
+      console.error("Error updating profile role in step-1:", profileUpdateError)
+      return NextResponse.json(
+        { success: false, error: "Failed to update role" },
+        { status: 500 },
+      )
     }
 
     // Persist partial progress (non-breaking; also keep localStorage behavior on frontend)
@@ -76,7 +87,7 @@ export async function POST(request: NextRequest) {
         preferredLanguage,
         marketingOptIn: Boolean(marketingOptIn),
         phoneVerified: Boolean(body.phoneVerified),
-        role: body.role,
+        role: incomingRole,
       }
 
       // Determine current/completed steps from body if present

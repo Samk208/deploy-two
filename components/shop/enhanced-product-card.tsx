@@ -107,7 +107,7 @@ export function EnhancedProductCard({
     >
       <CardContent className="p-0 h-full flex flex-col">
         {/* Image / Gallery */}
-        <div className={cn("cursor-default")}> 
+        <div> 
           <ProductImageGallery
             images={
               Array.isArray(product?.images)

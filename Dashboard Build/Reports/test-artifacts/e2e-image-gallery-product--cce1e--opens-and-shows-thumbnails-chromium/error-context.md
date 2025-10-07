@@ -1,0 +1,311 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e6]:
+      - link "OL One-Link" [ref=e8] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e10] [cursor=pointer]: OL
+        - generic [ref=e11] [cursor=pointer]: One-Link
+      - navigation "Main navigation" [ref=e12]:
+        - link "Shop" [ref=e13] [cursor=pointer]:
+          - /url: /shop
+        - link "Influencer Shop" [ref=e14] [cursor=pointer]:
+          - /url: /shops
+        - link "For Influencers" [ref=e15] [cursor=pointer]:
+          - /url: /influencers
+        - link "For Brands" [ref=e16] [cursor=pointer]:
+          - /url: /brands
+        - link "Pricing" [ref=e17] [cursor=pointer]:
+          - /url: /pricing
+        - link "Blog" [ref=e18] [cursor=pointer]:
+          - /url: /blog
+      - generic [ref=e20]:
+        - img [ref=e21]
+        - searchbox "Search products and influencers" [ref=e23]
+      - generic [ref=e24]:
+        - button "Cart" [ref=e26]:
+          - img [ref=e27]
+        - button "Language settings" [ref=e29]:
+          - img [ref=e30]
+          - generic [ref=e32]: EN
+          - img [ref=e33]
+        - generic [ref=e35]:
+          - link "Sign In" [ref=e36] [cursor=pointer]:
+            - /url: /sign-in
+          - link "Get Started" [ref=e37] [cursor=pointer]:
+            - /url: /sign-up
+        - button "Open menu" [ref=e38]:
+          - img [ref=e39]
+  - main [ref=e41]:
+    - generic [ref=e42]:
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - img
+          - text: Powering the future of social commerce
+        - heading "Connect. Create. Commerce." [level=1] [ref=e47]:
+          - text: Connect. Create.
+          - generic [ref=e48]: Commerce.
+        - paragraph [ref=e49]: The all-in-one platform where suppliers, influencers, and customers come together to create authentic shopping experiences that drive real results.
+        - generic [ref=e50]:
+          - link "Get Started Free" [ref=e51] [cursor=pointer]:
+            - /url: /sign-up
+            - text: Get Started Free
+            - img [ref=e52] [cursor=pointer]
+          - link "Watch Demo" [ref=e54] [cursor=pointer]:
+            - /url: /demo
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - generic [ref=e57]: 10K+
+            - generic [ref=e58]: Active Influencers
+          - generic [ref=e59]:
+            - generic [ref=e60]: 500+
+            - generic [ref=e61]: Brand Partners
+          - generic [ref=e62]:
+            - generic [ref=e63]: $2M+
+            - generic [ref=e64]: Creator Earnings
+          - generic [ref=e65]:
+            - generic [ref=e66]: 50+
+            - generic [ref=e67]: Countries
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - heading "Built for Everyone in the Commerce Ecosystem" [level=2] [ref=e71]
+          - paragraph [ref=e72]: Whether you're creating, selling, or shopping, One-Link provides the tools you need to succeed.
+        - generic [ref=e73]:
+          - generic [ref=e75]:
+            - img [ref=e77]
+            - heading "For Influencers" [level=3] [ref=e82]
+            - paragraph [ref=e83]: Create your personalized shop, curate products, and earn commissions from every sale.
+            - list [ref=e84]:
+              - listitem [ref=e85]:
+                - img [ref=e86]
+                - text: Custom shop pages
+              - listitem [ref=e89]:
+                - img [ref=e90]
+                - text: Product curation tools
+              - listitem [ref=e93]:
+                - img [ref=e94]
+                - text: Real-time analytics
+              - listitem [ref=e97]:
+                - img [ref=e98]
+                - text: Flexible pricing
+            - link "Start Your Shop" [ref=e101] [cursor=pointer]:
+              - /url: /influencers
+              - text: Start Your Shop
+              - img [ref=e102] [cursor=pointer]
+          - generic [ref=e105]:
+            - img [ref=e107]
+            - heading "For Suppliers" [level=3] [ref=e110]
+            - paragraph [ref=e111]: Reach thousands of influencers and expand your market reach with our platform.
+            - list [ref=e112]:
+              - listitem [ref=e113]:
+                - img [ref=e114]
+                - text: Global influencer network
+              - listitem [ref=e117]:
+                - img [ref=e118]
+                - text: Inventory management
+              - listitem [ref=e121]:
+                - img [ref=e122]
+                - text: Commission tracking
+              - listitem [ref=e125]:
+                - img [ref=e126]
+                - text: Regional targeting
+            - link "List Your Products" [ref=e129] [cursor=pointer]:
+              - /url: /brands
+              - text: List Your Products
+              - img [ref=e130] [cursor=pointer]
+          - generic [ref=e133]:
+            - img [ref=e135]
+            - heading "For Customers" [level=3] [ref=e138]
+            - paragraph [ref=e139]: Discover curated products from your favorite influencers and shop with confidence.
+            - list [ref=e140]:
+              - listitem [ref=e141]:
+                - img [ref=e142]
+                - text: Curated selections
+              - listitem [ref=e145]:
+                - img [ref=e146]
+                - text: Trusted recommendations
+              - listitem [ref=e149]:
+                - img [ref=e150]
+                - text: Secure payments
+              - listitem [ref=e153]:
+                - img [ref=e154]
+                - text: Fast shipping
+            - link "Start Shopping" [ref=e157] [cursor=pointer]:
+              - /url: /shop
+              - text: Start Shopping
+              - img [ref=e158] [cursor=pointer]
+      - generic [ref=e161]:
+        - generic [ref=e162]:
+          - heading "Trusted by Creators and Brands Worldwide" [level=2] [ref=e163]
+          - paragraph [ref=e164]: Join thousands who are already growing their business with One-Link
+        - generic [ref=e165]:
+          - generic [ref=e167]:
+            - generic [ref=e168]:
+              - img [ref=e169]
+              - img [ref=e171]
+              - img [ref=e173]
+              - img [ref=e175]
+              - img [ref=e177]
+            - paragraph [ref=e179]: "\"One-Link transformed how I monetize my content. Setting up my shop was effortless, and my earnings have tripled!\""
+            - generic [ref=e180]:
+              - img "Sarah Chen" [ref=e181]
+              - generic [ref=e182]:
+                - generic [ref=e183]: Sarah Chen
+                - generic [ref=e184]: Fashion Influencer
+          - generic [ref=e186]:
+            - generic [ref=e187]:
+              - img [ref=e188]
+              - img [ref=e190]
+              - img [ref=e192]
+              - img [ref=e194]
+              - img [ref=e196]
+            - paragraph [ref=e198]: "\"The reach we've achieved through One-Link's influencer network is incredible. Our sales increased by 300% in just 3 months.\""
+            - generic [ref=e199]:
+              - img "Marcus Rodriguez" [ref=e200]
+              - generic [ref=e201]:
+                - generic [ref=e202]: Marcus Rodriguez
+                - generic [ref=e203]: Brand Manager at StyleCo
+          - generic [ref=e205]:
+            - generic [ref=e206]:
+              - img [ref=e207]
+              - img [ref=e209]
+              - img [ref=e211]
+              - img [ref=e213]
+              - img [ref=e215]
+            - paragraph [ref=e217]: "\"I love discovering new products through my favorite creators. The shopping experience is seamless and trustworthy.\""
+            - generic [ref=e218]:
+              - img "Emma Thompson" [ref=e219]
+              - generic [ref=e220]:
+                - generic [ref=e221]: Emma Thompson
+                - generic [ref=e222]: Customer
+      - generic [ref=e225]:
+        - heading "Ready to Transform Your Commerce Experience?" [level=2] [ref=e226]
+        - paragraph [ref=e227]: Join One-Link today and start building meaningful connections that drive real business results.
+        - generic [ref=e228]:
+          - link "Start Your Journey" [ref=e229] [cursor=pointer]:
+            - /url: /sign-up
+            - text: Start Your Journey
+            - img [ref=e230] [cursor=pointer]
+          - link "Talk to Sales" [ref=e232] [cursor=pointer]:
+            - /url: /contact
+        - generic [ref=e233]:
+          - generic [ref=e234]:
+            - img [ref=e235]
+            - generic [ref=e237]: Enterprise Security
+          - generic [ref=e238]:
+            - img [ref=e239]
+            - generic [ref=e242]: Global Reach
+          - generic [ref=e243]:
+            - img [ref=e244]
+            - generic [ref=e246]: Lightning Fast
+  - contentinfo [ref=e247]:
+    - generic [ref=e248]:
+      - generic [ref=e249]:
+        - heading "Stay updated with One-Link" [level=3] [ref=e250]
+        - paragraph [ref=e251]: Get the latest updates on new features, success stories, and tips to grow your business.
+        - generic [ref=e252]:
+          - textbox "Newsletter signup" [ref=e253]
+          - button "Subscribe" [ref=e254]
+      - generic [ref=e255]:
+        - generic [ref=e256]:
+          - heading "Company" [level=4] [ref=e257]
+          - list [ref=e258]:
+            - listitem [ref=e259]:
+              - link "About Us" [ref=e260] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e261]:
+              - link "Careers" [ref=e262] [cursor=pointer]:
+                - /url: /careers
+            - listitem [ref=e263]:
+              - link "Press" [ref=e264] [cursor=pointer]:
+                - /url: /press
+            - listitem [ref=e265]:
+              - link "Blog" [ref=e266] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e267]:
+              - link "Contact" [ref=e268] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e269]:
+          - heading "Legal" [level=4] [ref=e270]
+          - list [ref=e271]:
+            - listitem [ref=e272]:
+              - link "Privacy Policy" [ref=e273] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e274]:
+              - link "Terms of Service" [ref=e275] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e276]:
+              - link "Cookie Policy" [ref=e277] [cursor=pointer]:
+                - /url: /cookies
+            - listitem [ref=e278]:
+              - link "GDPR" [ref=e279] [cursor=pointer]:
+                - /url: /gdpr
+            - listitem [ref=e280]:
+              - link "Compliance" [ref=e281] [cursor=pointer]:
+                - /url: /compliance
+        - generic [ref=e282]:
+          - heading "Support" [level=4] [ref=e283]
+          - list [ref=e284]:
+            - listitem [ref=e285]:
+              - link "Help Center" [ref=e286] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e287]:
+              - link "Community" [ref=e288] [cursor=pointer]:
+                - /url: /community
+            - listitem [ref=e289]:
+              - link "API Documentation" [ref=e290] [cursor=pointer]:
+                - /url: /docs
+            - listitem [ref=e291]:
+              - link "Status" [ref=e292] [cursor=pointer]:
+                - /url: /status
+            - listitem [ref=e293]:
+              - link "Report Issue" [ref=e294] [cursor=pointer]:
+                - /url: /report
+        - generic [ref=e295]:
+          - heading "Follow Us" [level=4] [ref=e296]
+          - generic [ref=e297]:
+            - link "Facebook" [ref=e298] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e299] [cursor=pointer]
+            - link "Twitter" [ref=e301] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e302] [cursor=pointer]
+            - link "Instagram" [ref=e304] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e305] [cursor=pointer]
+            - link "LinkedIn" [ref=e307] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e308] [cursor=pointer]
+            - link "YouTube" [ref=e310] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e311] [cursor=pointer]
+      - generic [ref=e313]:
+        - generic [ref=e314]:
+          - generic [ref=e316]: OL
+          - generic [ref=e317]: One-Link
+        - paragraph [ref=e318]: © 2025 One-Link. All rights reserved.
+  - button "Open Next.js Dev Tools" [ref=e324] [cursor=pointer]:
+    - img [ref=e325] [cursor=pointer]
+  - alert [ref=e328]
+  - banner "Cookie consent" [ref=e329]:
+    - generic [ref=e331]:
+      - generic [ref=e332]:
+        - img [ref=e333]
+        - paragraph [ref=e336]:
+          - text: We use cookies to enhance your experience, analyze site traffic, and personalize content.
+          - link "Learn more about our cookie policy" [ref=e337] [cursor=pointer]:
+            - /url: /cookies
+      - generic [ref=e338]:
+        - button "Decline" [ref=e339]
+        - button "Accept All" [ref=e340]
+        - button "Close cookie banner" [ref=e341]:
+          - img [ref=e342]
+  - img [ref=e346]
+```

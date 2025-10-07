@@ -18,6 +18,8 @@ export async function middleware(req: NextRequest) {
   const publicRoutes = [
     "/",
     "/shop",
+    "/main-shop", // Main shop catalog
+    "/product", // Product detail pages
     "/cart",
     "/checkout",
     "/demo", // Add demo routes as public
@@ -40,6 +42,7 @@ export async function middleware(req: NextRequest) {
     "/api/auth/callback",
     "/api/products", // Public product listing
     "/api/shop", // Public influencer shop data for SSR
+    "/api/main-shop", // Main shop feed (read-only aggregated catalog)
     "/api/debug", // Local diagnostic endpoints
     "/api/stripe", // Stripe diagnostics and other public Stripe endpoints
     "/api/checkout", // Allow checkout endpoint to return JSON (route enforces auth/roles itself)

@@ -33,11 +33,11 @@ import {
   AlertTriangle,
 } from "lucide-react"
 
-// Mock data
+// Mock influencer (neutral placeholder; not a real handle)
 const mockInfluencer = {
-  handle: "sarah_style",
-  name: "Sarah Chen",
-  avatar: "/fashion-influencer-avatar.png",
+  handle: "creator",
+  name: "Creator",
+  avatar: "/brand-manager-avatar.png",
   verified: true,
 }
 
@@ -199,7 +199,7 @@ export default function ProductDetailPageClient({ params }: ProductDetailPagePro
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href={`/shop/${params.handle}`}>@{mockInfluencer.handle}</BreadcrumbLink>
+                <BreadcrumbLink href={`/shop/${params.handle}`}>@{params.handle}</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>

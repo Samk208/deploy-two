@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests",
-  testMatch: ["**/e2e/**/*.spec.ts"],
+  testMatch: ["**/e2e/**/*.spec.ts", "**/smoke/**/*.spec.ts"],
   timeout: 45_000,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -12,20 +12,20 @@ export default defineConfig({
     [
       "html",
       {
-        outputFolder: "Dashboard Build/Reports/html-report",
+        outputFolder: "dashboard-build/html-report",
         open: "never",
       },
     ],
     [
       "json",
       {
-        outputFile: "Dashboard Build/Reports/test-results.json",
+        outputFile: "dashboard-build/test-results.json",
       },
     ],
     [
       "junit",
       {
-        outputFile: "Dashboard Build/Reports/junit-results.xml",
+        outputFile: "dashboard-build/junit-results.xml",
       },
     ],
   ],
@@ -37,7 +37,7 @@ export default defineConfig({
     actionTimeout: 10_000,
   },
   // Artifacts (traces, screenshots, videos)
-  outputDir: "Dashboard Build/Reports/test-artifacts",
+  outputDir: "dashboard-build/test-artifacts",
   projects: [
     {
       name: "chromium",

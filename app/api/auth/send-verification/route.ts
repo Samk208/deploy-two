@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import crypto from "crypto"
 import { z } from "zod"
 import { createServerSupabaseClient } from "@/lib/supabase/server"
 import { getCurrentUser } from "@/lib/auth-helpers"
@@ -12,7 +13,8 @@ const sendVerificationSchema = z.object({
 })
 
 function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString()
+  const n = crypto.randomInt(0, 1_000_000)
+  return n.toString().padStart(6, "0")
 }
 
 export async function POST(req: NextRequest) {

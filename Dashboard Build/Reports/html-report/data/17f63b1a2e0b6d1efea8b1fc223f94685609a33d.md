@@ -1,0 +1,195 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e6]:
+      - link "OL One-Link" [ref=e8] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e10] [cursor=pointer]: OL
+        - generic [ref=e11] [cursor=pointer]: One-Link
+      - navigation "Main navigation" [ref=e12]:
+        - link "Shop" [ref=e13] [cursor=pointer]:
+          - /url: /shop
+        - link "Influencer Shop" [ref=e14] [cursor=pointer]:
+          - /url: /shops
+        - link "For Influencers" [ref=e15] [cursor=pointer]:
+          - /url: /influencers
+        - link "For Brands" [ref=e16] [cursor=pointer]:
+          - /url: /brands
+        - link "Pricing" [ref=e17] [cursor=pointer]:
+          - /url: /pricing
+        - link "Blog" [ref=e18] [cursor=pointer]:
+          - /url: /blog
+      - generic [ref=e20]:
+        - img [ref=e21]
+        - searchbox "Search products and influencers" [ref=e23]
+      - generic [ref=e24]:
+        - button "Cart" [ref=e26]:
+          - img [ref=e27]
+        - button "Language settings" [ref=e29]:
+          - img [ref=e30]
+          - generic [ref=e32]: EN
+          - img [ref=e33]
+        - button "User menu" [ref=e36]:
+          - img "Test Brand" [ref=e37]
+          - generic [ref=e38]: Test Brand
+          - img [ref=e39]
+        - button "Open menu" [ref=e41]:
+          - img [ref=e42]
+  - main [ref=e44]:
+    - generic [ref=e45]:
+      - heading "Commissions" [level=1] [ref=e46]
+      - generic [ref=e47]:
+        - generic [ref=e48]:
+          - generic [ref=e49]: Status
+          - combobox [ref=e50]:
+            - option "All"
+            - option "Pending" [selected]
+            - option "Approved"
+            - option "Paid"
+            - option "Rejected"
+        - generic [ref=e51]:
+          - generic [ref=e52]: From
+          - textbox [ref=e53]
+        - generic [ref=e54]:
+          - generic [ref=e55]: To
+          - textbox [ref=e56]
+        - generic [ref=e57]:
+          - generic [ref=e58]: Search
+          - textbox "Order ID or Product title" [ref=e59]
+      - generic [ref=e60]:
+        - generic [ref=e61]:
+          - button "Refresh data" [disabled] [ref=e62]: Refresh
+          - generic [ref=e63]: Loading…
+        - table [ref=e65]:
+          - rowgroup [ref=e66]:
+            - row "Date Order Product Amount Rate (%) Status" [ref=e67]:
+              - cell "Date" [ref=e68]
+              - cell "Order" [ref=e69]
+              - cell "Product" [ref=e70]
+              - cell "Amount" [ref=e71]
+              - cell "Rate (%)" [ref=e72]
+              - cell "Status" [ref=e73]
+          - rowgroup [ref=e74]:
+            - row "No data" [ref=e75]:
+              - cell "No data" [ref=e76]
+        - generic [ref=e77]:
+          - generic [ref=e78]: Page 1 of 1 • 0 total
+          - generic [ref=e79]:
+            - button "Previous page" [disabled] [ref=e80]: Prev
+            - button "Next page" [disabled] [ref=e81]: Next
+            - generic [ref=e82]: Rows per page
+            - combobox "Rows per page" [ref=e83]:
+              - option "10 / page"
+              - option "20 / page" [selected]
+              - option "50 / page"
+  - contentinfo [ref=e84]:
+    - generic [ref=e85]:
+      - generic [ref=e86]:
+        - heading "Stay updated with One-Link" [level=3] [ref=e87]
+        - paragraph [ref=e88]: Get the latest updates on new features, success stories, and tips to grow your business.
+        - generic [ref=e89]:
+          - textbox "Newsletter signup" [ref=e90]
+          - button "Subscribe" [ref=e91]
+      - generic [ref=e92]:
+        - generic [ref=e93]:
+          - heading "Company" [level=4] [ref=e94]
+          - list [ref=e95]:
+            - listitem [ref=e96]:
+              - link "About Us" [ref=e97] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e98]:
+              - link "Careers" [ref=e99] [cursor=pointer]:
+                - /url: /careers
+            - listitem [ref=e100]:
+              - link "Press" [ref=e101] [cursor=pointer]:
+                - /url: /press
+            - listitem [ref=e102]:
+              - link "Blog" [ref=e103] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e104]:
+              - link "Contact" [ref=e105] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e106]:
+          - heading "Legal" [level=4] [ref=e107]
+          - list [ref=e108]:
+            - listitem [ref=e109]:
+              - link "Privacy Policy" [ref=e110] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e111]:
+              - link "Terms of Service" [ref=e112] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e113]:
+              - link "Cookie Policy" [ref=e114] [cursor=pointer]:
+                - /url: /cookies
+            - listitem [ref=e115]:
+              - link "GDPR" [ref=e116] [cursor=pointer]:
+                - /url: /gdpr
+            - listitem [ref=e117]:
+              - link "Compliance" [ref=e118] [cursor=pointer]:
+                - /url: /compliance
+        - generic [ref=e119]:
+          - heading "Support" [level=4] [ref=e120]
+          - list [ref=e121]:
+            - listitem [ref=e122]:
+              - link "Help Center" [ref=e123] [cursor=pointer]:
+                - /url: /help
+            - listitem [ref=e124]:
+              - link "Community" [ref=e125] [cursor=pointer]:
+                - /url: /community
+            - listitem [ref=e126]:
+              - link "API Documentation" [ref=e127] [cursor=pointer]:
+                - /url: /docs
+            - listitem [ref=e128]:
+              - link "Status" [ref=e129] [cursor=pointer]:
+                - /url: /status
+            - listitem [ref=e130]:
+              - link "Report Issue" [ref=e131] [cursor=pointer]:
+                - /url: /report
+        - generic [ref=e132]:
+          - heading "Follow Us" [level=4] [ref=e133]
+          - generic [ref=e134]:
+            - link "Facebook" [ref=e135] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e136] [cursor=pointer]
+            - link "Twitter" [ref=e138] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e139] [cursor=pointer]
+            - link "Instagram" [ref=e141] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e142] [cursor=pointer]
+            - link "LinkedIn" [ref=e144] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e145] [cursor=pointer]
+            - link "YouTube" [ref=e147] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e148] [cursor=pointer]
+      - generic [ref=e150]:
+        - generic [ref=e151]:
+          - generic [ref=e153]: OL
+          - generic [ref=e154]: One-Link
+        - paragraph [ref=e155]: © 2025 One-Link. All rights reserved.
+  - button "Open Next.js Dev Tools" [ref=e161] [cursor=pointer]:
+    - img [ref=e162] [cursor=pointer]
+  - alert [ref=e165]
+  - banner "Cookie consent" [ref=e166]:
+    - generic [ref=e168]:
+      - generic [ref=e169]:
+        - img [ref=e170]
+        - paragraph [ref=e173]:
+          - text: We use cookies to enhance your experience, analyze site traffic, and personalize content.
+          - link "Learn more about our cookie policy" [ref=e174] [cursor=pointer]:
+            - /url: /cookies
+      - generic [ref=e175]:
+        - button "Decline" [ref=e176]
+        - button "Accept All" [ref=e177]
+        - button "Close cookie banner" [ref=e178]:
+          - img [ref=e179]
+  - img [ref=e183]
+```

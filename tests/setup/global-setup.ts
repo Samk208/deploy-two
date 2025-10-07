@@ -7,6 +7,11 @@ dotenvConfig({ path: path.resolve(process.cwd(), ".env.local") });
 
 // Defer importing supabase admin until after env is loaded (CommonJS require to avoid ESM import error)
 function getAdminClient() {
+  // If test project vars are provided, override the default env consumed by lib/supabase/admin
+  if (process.env.SUPABASE_TEST_URL && process.env.SUPABASE_TEST_SERVICE_ROLE) {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.SUPABASE_TEST_URL;
+    process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_TEST_SERVICE_ROLE;
+  }
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const mod = require("../../lib/supabase/admin") as { supabaseAdmin: any };
   return mod.supabaseAdmin;
@@ -71,6 +76,11 @@ async function ensureAuthUser(email: string, password: string, metadata: Record<
 }
 
 export default async function globalSetup(_config: FullConfig) {
+  // Guard: only seed when explicitly requested for E2E
+  if (process.env.E2E_SEED !== 'true') {
+    console.log('[global-setup] E2E_SEED not set — skipping seed.');
+    return;
+  }
   const supabaseAdmin = getAdminClient();
   const influencerEmail = "test.influencer+e2e@test.local";
   const brandEmail = "test.brand+e2e@test.local";
