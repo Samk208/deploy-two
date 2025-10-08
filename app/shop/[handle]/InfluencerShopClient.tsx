@@ -38,6 +38,7 @@ interface Product {
   price: number;
   originalPrice?: number;
   image: string;
+  images: string[];
   badges: string[];
   category: string;
   region: string;
@@ -153,10 +154,11 @@ export function InfluencerShopClient({
         handle,
       });
     } catch (_) {}
-    const supplierNameDerived = (product as any)?.supplierName
-      ?? (product as any)?.vendor
-      ?? influencer?.name
-      ?? "Unknown Supplier";
+    const supplierNameDerived =
+      (product as any)?.supplierName ??
+      (product as any)?.vendor ??
+      influencer?.name ??
+      "Unknown Supplier";
     const cartItem: Omit<CartItem, "quantity"> & { quantity?: number } = {
       id: String(product.id),
       title: product.title,
@@ -184,7 +186,7 @@ export function InfluencerShopClient({
       description: "",
       price: product.price,
       originalPrice: product.originalPrice,
-      images: [product.image].filter(Boolean),
+      images: product.images,
       category: product.category,
       region: product.region,
       inStock: product.inStock,
@@ -212,6 +214,9 @@ export function InfluencerShopClient({
       image: Array.isArray(qv.images)
         ? (qv.images[0] ?? "")
         : (qv.images as string | undefined) || "",
+      images: Array.isArray(qv.images)
+        ? qv.images
+        : [qv.images as string].filter(Boolean),
       badges: [],
       category: qv.category || "General",
       region: qv.region || "Global",
@@ -282,7 +287,10 @@ export function InfluencerShopClient({
                   {/* Social Links */}
                   <div className="flex gap-2">
                     {Object.entries(influencer.socialLinks || {})
-                      .filter(([, url]) => typeof url === "string" && url.trim() !== "")
+                      .filter(
+                        ([, url]) =>
+                          typeof url === "string" && url.trim() !== ""
+                      )
                       .map(([platform, url]) => (
                         <Link
                           key={platform}
@@ -408,25 +416,33 @@ export function InfluencerShopClient({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
+              {filteredProducts.map((product, index) => (
                 <Card
                   key={product.id}
                   className="group hover:shadow-lg transition-shadow overflow-hidden"
                 >
                   <div className="relative">
-                    <button
-                      type="button"
+                    <div
+                      className="cursor-pointer"
                       onClick={() => openQuickView(product)}
-                      className="w-full text-left"
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          openQuickView(product);
+                        }
+                      }}
                       aria-label={`Quick view ${product.title}`}
                     >
                       <ProductImageGallery
-                        images={[product.image]}
+                        images={product.images}
                         productName={product.title}
                         layout="grid"
                         className="w-full"
+                        priority={index < 4}
                       />
-                    </button>
+                    </div>
 
                     {/* Badges */}
                     <div className="absolute top-2 left-2 flex flex-wrap gap-1">

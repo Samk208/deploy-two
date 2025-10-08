@@ -1,11 +1,20 @@
 "use client";
+import type { MainShopProduct } from "@/types/catalog";
 import Image from "next/image";
 import Link from "next/link";
-import type { MainShopProduct } from "@/types/catalog";
 
-const fmt = new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" });
+const fmt = new Intl.NumberFormat(undefined, {
+  style: "currency",
+  currency: "USD",
+});
 
-export default function MainShopCard({ p }: { p: MainShopProduct }) {
+export default function MainShopCard({
+  p,
+  index = 0,
+}: {
+  p: MainShopProduct;
+  index?: number;
+}) {
   return (
     <Link
       data-testid="product-card"
@@ -20,17 +29,22 @@ export default function MainShopCard({ p }: { p: MainShopProduct }) {
           fill
           className="object-cover"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          priority={index < 6}
         />
       </div>
       <div className="mt-3">
         <h3 className="text-base font-medium line-clamp-2">{p.title}</h3>
-        <div className="mt-1 text-sm opacity-80">{p.brand || p.category || "—"}</div>
+        <div className="mt-1 text-sm opacity-80">
+          {p.brand || p.category || "—"}
+        </div>
         {p.short_description ? (
           <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
             {p.short_description}
           </p>
         ) : null}
-        <div className="mt-2 text-lg font-semibold">{fmt.format(p.price ?? 0)}</div>
+        <div className="mt-2 text-lg font-semibold">
+          {fmt.format(p.price ?? 0)}
+        </div>
       </div>
     </Link>
   );

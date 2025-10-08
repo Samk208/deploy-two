@@ -1,5 +1,4 @@
 "use client";
-import * as React from "react";
 
 type RHFRegister = (name: string) => any;
 type RHFSetValue = (name: string, value: any, opts?: any) => void;
@@ -41,7 +40,7 @@ export default function ProductDescriptionsFields(props: {
     shortValue,
     longValue,
     onShortChange,
-    onLongChange
+    onLongChange,
   } = props;
 
   const shortLen = (watch?.("short_description")?.length ??
@@ -63,11 +62,13 @@ export default function ProductDescriptionsFields(props: {
           className="w-full rounded-xl border px-3 py-2"
           placeholder="A concise one-liner used on cards and SEO snippets."
           {...(register ? register("short_description") : {})}
-          value={register ? undefined : shortValue ?? ""}
+          value={register ? undefined : (shortValue ?? "")}
           onChange={(e) => {
-            register
-              ? setValue?.("short_description", e.target.value)
-              : onShortChange?.(e.target.value);
+            if (register) {
+              setValue?.("short_description", e.target.value);
+            } else {
+              onShortChange?.(e.target.value);
+            }
           }}
         />
         <div className="text-xs opacity-70">{shortLen}/160</div>
@@ -85,11 +86,13 @@ export default function ProductDescriptionsFields(props: {
           className="w-full rounded-xl border px-3 py-2"
           placeholder="Features, materials, sizing, care, what's included, warranty, etc."
           {...(register ? register("description") : {})}
-          value={register ? undefined : longValue ?? ""}
+          value={register ? undefined : (longValue ?? "")}
           onChange={(e) => {
-            register
-              ? setValue?.("description", e.target.value)
-              : onLongChange?.(e.target.value);
+            if (register) {
+              setValue?.("description", e.target.value);
+            } else {
+              onLongChange?.(e.target.value);
+            }
           }}
         />
         <div className="text-xs opacity-70">

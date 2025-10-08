@@ -22,6 +22,7 @@ async function fetchFeed(searchParams: Record<string, string | string[] | undefi
   const q = (typeof searchParams.q === "string" ? searchParams.q : "").trim();
   const sort = (searchParams.sort as string) ?? "new";
   const category = (typeof searchParams.category === "string" ? searchParams.category : "").trim() || undefined;
+  const brand = (typeof searchParams.brand === "string" ? searchParams.brand : "").trim() || undefined;
   const minPriceParam = searchParams.minPrice;
   const maxPriceParam = searchParams.maxPrice;
   const minPrice = typeof minPriceParam === "string" && minPriceParam !== "" ? Number(minPriceParam) : undefined;
@@ -31,11 +32,11 @@ async function fetchFeed(searchParams: Record<string, string | string[] | undefi
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
-  // Build query - select available fields
+  // Build query - NOW INCLUDING brand, short_description, primary_image
   let query = supabase
     .from("products")
     .select(
-      "id,title,price,images,active,in_stock,stock_count,category,created_at",
+      "id,title,price,images,primary_image,active,in_stock,stock_count,category,brand,short_description,created_at",
       { count: "exact" }
     )
     .eq("active", true)
@@ -44,6 +45,7 @@ async function fetchFeed(searchParams: Record<string, string | string[] | undefi
   if (inStockOnly) query = query.eq("in_stock", true);
   if (q) query = query.ilike("title", `%${q}%`);
   if (category) query = query.eq("category", category);
+  if (brand) query = query.eq("brand", brand);  // NEW: Brand filtering
   if (typeof minPrice === "number") query = query.gte("price", minPrice);
   if (typeof maxPrice === "number") query = query.lte("price", maxPrice);
 
@@ -65,12 +67,13 @@ async function fetchFeed(searchParams: Record<string, string | string[] | undefi
     id: p.id,
     title: p.title,
     price: p.price,
-    primary_image: p.images?.[0] ?? null,  // Use first image from array
+    primary_image: p.primary_image ?? p.images?.[0] ?? null,  // Use primary_image first, fallback to images[0]
     active: p.active,
     in_stock: p.in_stock,
     stock_count: p.stock_count,
-    category: p.category,
-    brand: null,  // Brand column doesn't exist yet
+    category: p.category ?? null,
+    brand: p.brand ?? null,  // ✅ Now using real brand data
+    short_description: p.short_description ?? null,  // ✅ Now using real description
     created_at: p.created_at,
   }));
 

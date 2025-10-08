@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import { normalizeAll } from "@/lib/images/normalizeUnsplash";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 
 export interface ProductImageGalleryProps {
   images: string[];
   productName: string;
   layout?: "grid" | "list" | "detail";
   className?: string;
+  priority?: boolean;
 }
 
 export function ProductImageGallery({
@@ -18,6 +19,7 @@ export function ProductImageGallery({
   productName,
   layout = "grid",
   className,
+  priority = false,
 }: ProductImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [failed, setFailed] = useState<Record<number, boolean>>({});
@@ -44,7 +46,9 @@ export function ProductImageGallery({
   };
 
   const prevImage = () => {
-    setCurrentIndex((prev) => (prev - 1 + safeImages.length) % safeImages.length);
+    setCurrentIndex(
+      (prev) => (prev - 1 + safeImages.length) % safeImages.length
+    );
   };
 
   // Card views: optimized for mobile and desktop
@@ -93,7 +97,9 @@ export function ProductImageGallery({
         <div
           className={cn(
             "relative overflow-hidden bg-gray-100 w-full shrink-0 rounded-t-lg",
-            layout === "grid" ? "aspect-[4/3]" : "aspect-[3/2] h-32 sm:h-40 lg:h-48"
+            layout === "grid"
+              ? "aspect-[4/3]"
+              : "aspect-[3/2] h-32 sm:h-40 lg:h-48"
           )}
         >
           <Image
@@ -102,9 +108,9 @@ export function ProductImageGallery({
             alt={`${productName} - Image ${currentIndex + 1}`}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
             decoding="async"
-            fetchPriority="low"
+            fetchPriority={priority ? "high" : "low"}
             placeholder="blur"
             blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlZWUiIC8+PC9zdmc+"
             sizes={
@@ -112,9 +118,11 @@ export function ProductImageGallery({
                 ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 : "(max-width: 640px) 100vw, 50vw"
             }
-            priority={false}
+            priority={priority}
             onError={() =>
-              setFailed((f) => (f[currentIndex] ? f : { ...f, [currentIndex]: true }))
+              setFailed((f) =>
+                f[currentIndex] ? f : { ...f, [currentIndex]: true }
+              )
             }
           />
 
@@ -168,7 +176,9 @@ export function ProductImageGallery({
                   className={cn(
                     "rounded-full transition-all touch-manipulation",
                     "w-2 h-2 sm:w-1.5 sm:h-1.5",
-                    idx === currentIndex ? "bg-white w-6 sm:w-4" : "bg-white/60 active:bg-white/80"
+                    idx === currentIndex
+                      ? "bg-white w-6 sm:w-4"
+                      : "bg-white/60 active:bg-white/80"
                   )}
                   aria-label={`Go to image ${idx + 1}`}
                 />
@@ -192,7 +202,9 @@ export function ProductImageGallery({
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 70vw, 50vw"
           priority
           onError={() =>
-            setFailed((f) => (f[currentIndex] ? f : { ...f, [currentIndex]: true }))
+            setFailed((f) =>
+              f[currentIndex] ? f : { ...f, [currentIndex]: true }
+            )
           }
         />
         {safeImages.length > 1 && (
