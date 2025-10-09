@@ -115,6 +115,9 @@ export function useAuth() {
   return context
 }
 
+// Alias for consistency with server-side getUserWithRoles
+export const useUser = useAuth
+
 // Mock data for development
 const mockUsers = {
   'supplier@onelink.com': {

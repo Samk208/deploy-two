@@ -70,17 +70,17 @@ export async function GET(req: Request) {
     const { data, error, count } = await query.range(from, to);
     if (error) throw error;
 
+    // Map to ShopFeedItem format with images array (images[0] = primary)
     const items = (data ?? []).map((p: any) => ({
       id: p.id,
       title: p.title,
       price: p.price,
-      primary_image: p.primary_image,
-      active: p.active,
-      in_stock: p.in_stock,
-      stock_count: p.stock_count,
+      images: p.primary_image ? [p.primary_image] : [],  // Consistent: images[0] is primary
       category: p.category,
       brand: p.brand,
       short_description: p.short_description ?? null,
+      in_stock: p.in_stock,
+      stock_count: p.stock_count,
       created_at: p.created_at,
     }));
 

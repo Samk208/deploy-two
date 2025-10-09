@@ -5,6 +5,7 @@ export interface MainShopProduct {
   title: string;
   price: number;
   primary_image: string | null;
+  images?: string[] | null; // Added for carousel functionality
   active: boolean;
   in_stock: boolean;
   stock_count: number;

@@ -1,6 +1,7 @@
 "use client";
 
 import GoogleTranslate from "@/components/global/GoogleTranslate";
+import { GoogleTranslateErrorBoundary } from "@/components/global/GoogleTranslateErrorBoundary";
 import { CartSidebar } from "@/components/shop/cart-sidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -271,18 +272,31 @@ export function Header() {
 
   // Sync header label with Google Translate cookie
   useEffect(() => {
-    const get = (window as any).getTranslateLanguage as
-      | (() => "auto" | "en" | "ko" | "zh-CN")
-      | undefined;
-    if (typeof get === "function") {
-      setCurrentLang(get());
-    }
-    const id = setInterval(() => {
-      const g = (window as any).getTranslateLanguage as
+    try {
+      const get = (window as any).getTranslateLanguage as
         | (() => "auto" | "en" | "ko" | "zh-CN")
         | undefined;
-      if (typeof g === "function") {
-        setCurrentLang(g());
+      if (typeof get === "function") {
+        setCurrentLang(get());
+      }
+    } catch (e) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Error accessing getTranslateLanguage:", e);
+      }
+    }
+
+    const id = setInterval(() => {
+      try {
+        const g = (window as any).getTranslateLanguage as
+          | (() => "auto" | "en" | "ko" | "zh-CN")
+          | undefined;
+        if (typeof g === "function") {
+          setCurrentLang(g());
+        }
+      } catch (e) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("Error in language sync interval:", e);
+        }
       }
     }, 1500);
     return () => clearInterval(id);
@@ -370,7 +384,9 @@ export function Header() {
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
             {/* Google Translate Widget */}
-            <GoogleTranslate />
+            <GoogleTranslateErrorBoundary>
+              <GoogleTranslate />
+            </GoogleTranslateErrorBoundary>
             {/* Cart Icon */}
             <CartIcon />
             {/* Language Toggle (EN / KO / 中文) */}

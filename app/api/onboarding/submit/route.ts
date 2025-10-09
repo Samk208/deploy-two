@@ -23,6 +23,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { role } = body;
 
+    // 3) Check if we're in dry-run mode (freeze protection)
+    const isDryRun =
+      process.env.DRY_RUN_ONBOARDING === "true" ||
+      process.env.CORE_FREEZE === "true";
+
     // 3) Admin check
     const { data: currentProfile } = await supabaseAdmin
       .from("profiles")
@@ -33,6 +38,17 @@ export async function POST(request: NextRequest) {
     const isAdmin = currentProfile?.role === "admin";
 
     if (isAdmin) {
+      // Dry-run mode for admin onboarding
+      if (isDryRun) {
+        return NextResponse.json({
+          ok: true,
+          dryRun: true,
+          role: "admin",
+          redirectPath: "/admin/dashboard",
+          message: "DRY RUN: Would finalize admin onboarding and redirect to /admin/dashboard",
+        });
+      }
+
       const { error: adminOnboardingError } = (supabaseAdmin as any)
         .from("onboarding_progress")
         .update({
@@ -186,7 +202,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 6) Update profiles.role
+    // 6) Dry-run mode: Skip all writes and return "would do" response
+    const redirectPath =
+      dbRole === "influencer" ? "/dashboard/influencer" : "/dashboard/supplier";
+
+    if (isDryRun) {
+      return NextResponse.json({
+        ok: true,
+        dryRun: true,
+        role: dbRole,
+        redirectPath,
+        message: `DRY RUN: Would update role to '${dbRole}', mark onboarding complete, and redirect to ${redirectPath}. Validation passed for all required documents.`,
+      });
+    }
+
+    // 7) Update profiles.role
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
       .update({
@@ -203,7 +233,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 7) Mark verification request submitted (non-fatal)
+    // 8) Mark verification request submitted (non-fatal)
     const { error: verificationError } = await supabaseAdmin
       .from("verification_requests")
       .update({
@@ -217,7 +247,7 @@ export async function POST(request: NextRequest) {
       console.warn("Could not update verification request:", verificationError);
     }
 
-    // 8) Complete onboarding (fatal on error)
+    // 9) Complete onboarding (fatal on error)
     const { error: onboardingError } = (supabaseAdmin as any)
       .from("onboarding_progress")
       .update({
@@ -233,9 +263,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 9) Redirect
-    const redirectPath =
-      dbRole === "influencer" ? "/dashboard/influencer" : "/dashboard/supplier";
+    // 10) Return success with redirect
     return NextResponse.json({
       ok: true,
       role: dbRole,

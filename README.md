@@ -40,3 +40,24 @@ Sensitive test user credentials were removed from the repository and rotated.
 Important:
 
 - Supabase keys and any leaked credentials were rotated. Pull updated secrets before testing.
+
+## Freeze Controls & Safety Scripts
+
+- Run `pnpm freeze:all:on` to develop with both core and shop freezes enforced (default).
+- Run `pnpm shops:freeze:on` for a read-only shop session while onboarding stays writable.
+- Use `pwsh ./scripts/toggle-local-unfreeze.ps1` for a controlled local unfreeze; it backs up `.env.local`, flips all freeze flags off, starts `pnpm dev`, then restores the backup when you exit.
+- Verify middleware coverage with `pnpm test:shops-freeze` (Node smoke test) and `pwsh ./scripts/integration-smoke.ps1` (PowerShell matrix of read/write checks).
+- See `docs/integration-plan.md` for the phased integration PRD, runbook, and disaster recovery steps.
+
+### Freeze verification (local)
+1. Start the dev server: `pnpm dev`
+2. Confirm freeze flags: open <http://localhost:3000/api/debug/freezes> and verify all values are `false` while running unfrozen checks.
+3. Execute the smoke scripts:
+
+   ```powershell
+   $env:BASE_URL="http://localhost:3000"
+   pnpm test:shops-freeze
+   .\scripts\integration-smoke.ps1
+   ```
+
+Expected (unfrozen): GET requests return 200 (or any non-423), and POST/PATCH/DELETE return non-423 codes while freezes are disabled.

@@ -50,21 +50,48 @@ export async function middleware(req: NextRequest) {
   ];
 
   const { pathname } = req.nextUrl;
+  const method = req.method.toUpperCase();
+  const isWrite = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+  const coreFrozen =
+    (process.env.CORE_FREEZE ?? "false").toLowerCase() === "true";
+  const shopsFrozen =
+    (process.env.SHOPS_FREEZE ?? "false").toLowerCase() === "true";
 
-  // ---------------------------
-  // CORE FREEZE write-lock (read-only mode for onboarding & dashboards)
-  // ---------------------------
-  if (process.env.CORE_FREEZE === "true") {
-    const method = req.method.toUpperCase();
+  if (process.env.NODE_ENV !== "production") {
+    console.log("[MW]", { coreFrozen, shopsFrozen, method, path: pathname });
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // CORE FREEZE: Onboarding & Dashboard Write Lock
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // When CORE_FREEZE=true, blocks all write operations (POST/PUT/PATCH/DELETE) to:
+  //   - /api/onboarding/*  (document uploads, profile updates, role assignments)
+  //   - /auth/onboarding   (UI pages - for completeness)
+  //   - /dashboard/*       (all dashboard routes)
+  //   - /api/admin/*       (admin management endpoints)
+  //   - /api/influencer/*  (influencer-specific APIs like shop curation)
+  //   - /api/brand/*       (brand/supplier-specific APIs)
+  //   - /api/supplier/*    (supplier management endpoints)
+  //
+  // EXCEPTIONS (always allowed, even when frozen):
+  //   - /api/auth/*        (sign-in, sign-up, password reset)
+  //   - /api/checkout/*    (checkout session creation)
+  //   - /api/webhooks/*    (Stripe webhooks must remain accessible)
+  //
+  // READ operations (GET, HEAD, OPTIONS) are always permitted.
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  if (coreFrozen) {
     const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
-    // Allow-listed write endpoints that must keep working (auth, checkout, webhooks)
+
+    // System endpoints that must continue working for auth/payments/webhooks
     const ALLOW_WRITE_PREFIXES = [
       "/api/auth",
       "/api/checkout",
       "/api/stripe",
       "/api/webhooks/stripe",
     ];
-    // Areas that are frozen (onboarding flows including docs uploads; dashboards & role APIs)
+
+    // Areas frozen: onboarding, dashboards, and role-specific APIs
     const isFrozenArea =
       pathname.startsWith("/api/onboarding") ||
       pathname.startsWith("/auth/onboarding") ||
@@ -76,10 +103,12 @@ export async function middleware(req: NextRequest) {
       pathname.startsWith("/api/supplier");
 
     if (isFrozenArea) {
-      // Allow safe methods; continue to existing auth/role checks
-      if (!SAFE_METHODS.has(method)) {
-        // Skip block for explicitly allowed system endpoints
-        const isAllowedWrite = ALLOW_WRITE_PREFIXES.some((p) => pathname.startsWith(p));
+      // Allow safe read methods
+      if (!SAFE_METHODS.has(method) && isWrite) {
+        // Check if this is an allowed system write endpoint
+        const isAllowedWrite = ALLOW_WRITE_PREFIXES.some((p) =>
+          pathname.startsWith(p)
+        );
         if (!isAllowedWrite) {
           return new NextResponse(
             JSON.stringify({
@@ -91,6 +120,46 @@ export async function middleware(req: NextRequest) {
           );
         }
       }
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // SHOPS FREEZE: Product & Shop Write Lock
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // When SHOPS_FREEZE=true, blocks all write operations (POST/PUT/PATCH/DELETE) to:
+  //   - /api/products/*           (supplier product management: create, update, delete)
+  //   - /api/shop/*               (shop configuration updates)
+  //   - /api/influencer-shop/*    (influencer shop curation: add/remove products)
+  //   - /api/influencer/shop/*    (alternative influencer shop endpoint)
+  //
+  // This protects shop UIs and product data from accidental modifications.
+  // READ operations (GET) for feeds and product listings are always permitted.
+  //
+  // USE CASE: Enable during integration work to prevent breaking working shop features.
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  if (shopsFrozen) {
+    const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
+    // Patterns matching shop write endpoints
+    const SHOP_WRITE_PATTERNS = [
+      /^\/api\/products($|\/)/,          // Product CRUD operations
+      /^\/api\/shop($|\/)/,              // Shop configuration
+      /^\/api\/influencer-shop($|\/)/,   // Influencer shop curation
+      /^\/api\/influencer\/shop($|\/)/,  // Alternative influencer shop endpoint
+    ];
+
+    const isShopWriteEndpoint = SHOP_WRITE_PATTERNS.some((pattern) =>
+      pattern.test(pathname)
+    );
+
+    if (isShopWriteEndpoint && !SAFE_METHODS.has(method) && isWrite) {
+      return new NextResponse(
+        JSON.stringify({
+          ok: false,
+          error: "SHOPS_FREEZE active: shop and product writes are temporarily disabled.",
+        }),
+        { status: 423, headers: { "content-type": "application/json" } }
+      );
     }
   }
 
@@ -124,7 +193,10 @@ export async function middleware(req: NextRequest) {
   const { data: user, error } = await query;
 
   if (error || !user) {
-    console.warn("[middleware] user not found for session", { path: pathname, error: error?.message });
+    console.warn("[middleware] user not found for session", {
+      path: pathname,
+      error: error?.message,
+    });
     // This case might happen if a user is deleted but their session persists.
     // Clear session by redirecting to sign-in.
     const redirectUrl = new URL("/sign-in", req.url);
@@ -134,7 +206,10 @@ export async function middleware(req: NextRequest) {
 
   // Role-based access control
   const userRole = (user as any).role;
-  console.debug("[middleware] session detected", { path: pathname, role: userRole });
+  console.debug("[middleware] session detected", {
+    path: pathname,
+    role: userRole,
+  });
 
   // Admin route protection
   if (pathname.startsWith("/admin/") && pathname !== "/admin/login") {
@@ -154,7 +229,11 @@ export async function middleware(req: NextRequest) {
       // Redirect non-admin users to their correct dashboard or home if they are a customer.
       const redirectPath =
         userRole === "customer" ? "/" : `/dashboard/${userRole}`;
-      console.debug("[middleware] redirecting to role dashboard", { requested: pathname, role: userRole, redirectPath });
+      console.debug("[middleware] redirecting to role dashboard", {
+        requested: pathname,
+        role: userRole,
+        redirectPath,
+      });
       return NextResponse.redirect(new URL(redirectPath, req.url));
     }
   }
