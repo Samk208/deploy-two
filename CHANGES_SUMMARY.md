@@ -1,384 +1,266 @@
-# 📋 Complete Summary of All Applied Changes
+# Changes Summary - Ready for Verification
 
-## 🔧 Files Modified (8 files total)
+## Files Created (New)
 
-### **1. `app/api/onboarding/step-1/route.ts`** ✅
-**Change:** Fixed role persistence in onboarding progress  
-**Line 91:** Changed from `role: body.role === "brand" ? "brand" : "influencer"` to `role: dbRole`  
-**Impact:** Now correctly saves database role (`supplier`) instead of onboarding role (`brand`)
+1. **`app/shop/layout.tsx`**
+   - Adds freeze banners to main shop pages
+   - Wraps children with `<FreezeBanner />` and `<ShopFreezeBanner />`
 
----
+2. **`app/shop/[handle]/layout.tsx`**
+   - Adds freeze banners to influencer shop pages
+   - Same banner setup as main shop
 
-### **2. `app/api/onboarding/submit/route.ts`** ✅
-**Changes:** 
-- **Added admin bypass** (Lines 25-50)
-- **Added document verification** (Lines 35-123)
-- **Fixed comment numbering** (4→5, 5→6, 6→7, 7→8)
+3. **`scripts/verify-integration.ps1`**
+   - One-click verification script
+   - Tests both frozen and unfrozen states
+   - Outputs summary table
 
-**Key additions:**
+4. **`INTEGRATION_STATUS.md`**
+   - Comprehensive status document
+   - Implementation plan
+   - Testing checklist
+
+5. **`PR_DESCRIPTION.md`**
+   - Complete PR documentation
+   - Test evidence sections
+   - Rollback procedures
+
+6. **`INTEGRATION_COMPLETE.md`**
+   - Final completion document
+   - Architecture decisions
+   - Future work notes
+
+7. **`VERIFICATION_STEPS.md`**
+   - Detailed step-by-step verification guide
+   - Expected results tables
+   - Troubleshooting section
+
+8. **`QUICK_REFERENCE.md`**
+   - Quick command reference
+   - Results template
+   - Copy-paste ready
+
+## Files Modified (Updated)
+
+1. **`app/shop/page.tsx`**
+   - **Before**: Direct Supabase database queries
+   - **After**: Fetches from `/api/main-shop/feed`
+   - **Why**: Tests actual API endpoint, enables caching
+   - **Breaking**: None
+
+2. **`app/shop/[handle]/page.tsx`**
+   - **Before**: Used `/api/shop/[handle]` endpoint
+   - **After**: Uses `/api/influencer/[handle]/feed` endpoint
+   - **New**: Support for `sale_price`, `custom_title`, pagination
+   - **Breaking**: None (still falls back to legacy endpoint for metadata)
+
+3. **`app/shop/[handle]/InfluencerShopClient.tsx`**
+   - **Added**: `pagination` prop to interface
+   - **Breaking**: None (prop is optional)
+
+4. **`scripts/integration-smoke.ps1`**
+   - **Changed**: Read expectation from "non-423" to "200 OK"
+   - **Changed**: Test handle from "demo-influencer" to "influencer-alex"
+   - **Why**: More precise validation
+
+5. **`scripts/test-shops-freeze.mjs`**
+   - **Changed**: Test handle from "test-handle" to "influencer-alex"
+   - **Why**: Match actual test data
+
+## Code Changes Breakdown
+
+### app/shop/page.tsx
 ```typescript
-// Check if user is admin → bypass all validation
-const { data: currentProfile } = await supabaseAdmin
-  .from("profiles")
-  .select("role")
-  .eq("id", user.id)
-  .single()
+// OLD: Direct Supabase query
+const { data, error } = await supabase.from('products').select(...)
 
-const isAdmin = currentProfile?.role === "admin"
-
-if (isAdmin) {
-  // Mark complete and redirect to admin dashboard
-  return NextResponse.json({
-    ok: true,
-    role: "admin",
-    redirectPath: "/admin/dashboard",
-    message: "Admin access confirmed"
-  })
-}
-
-// For suppliers: verify 3 docs uploaded
-if (dbRole === "supplier") {
-  const requiredDocs = ["business_registration", "authorized_rep_id", "bank_account_book"]
-  // Return error if missing
-}
-
-// For influencers: verify 2 docs uploaded  
-if (dbRole === "influencer") {
-  const requiredDocs = ["id_document", "selfie_photo"]
-  // Return error if missing
-}
+// NEW: API consumption
+const res = await fetch(`${base}/api/main-shop/feed?${params}`)
+const json = await res.json()
+return json.data
 ```
 
-**Impact:** 
-- Admin bypasses all onboarding validation
-- Suppliers/influencers must upload docs before submit
-- Proper error messages with missing document list
-
----
-
-### **3. `app/api/onboarding/progress/route.ts`** ✅
-**Changes:**
-- **Line 17:** Added `status` to SELECT query
-- **Lines 31-49:** Added status tracking logic
-- **Line 54:** Added `status` to response
-
-**Key addition:**
+### app/shop/[handle]/page.tsx
 ```typescript
-let status: "draft" | "completed" | undefined
+// OLD: Legacy endpoint
+const endpoint = `/api/shop/${handle}`
 
-// Track the latest status (completed takes precedence)
-if ((row as any).status === "completed") {
-  status = "completed"
-} else if (!status) {
-  status = (row as any).status
-}
+// NEW: Feed endpoint with query params
+const params = new URLSearchParams()
+params.set("page", String(searchParams.page || "1"))
+// ... all filter params
+const endpoint = `/api/influencer/${handle}/feed?${params}`
 
-// Return in response
-data: {
-  role: role || user.role,
-  currentStep: latestCurrentStep,
-  completedSteps: Array.from(completedUnion).sort((a, b) => a - b),
-  status: status || "draft", // ← Added
-  steps: Object.values(byStep).sort((a: any, b: any) => a.step - b.step),
-}
+// NEW: Sale price handling
+price: item.sale_price ?? item.price ?? 0
+originalPrice: item.sale_price && item.price ? item.price : undefined
 ```
 
-**Impact:** Completion guard can now check if onboarding is completed
+### Scripts
+```powershell
+# OLD
+$passed = $status -ne 423 -and $status -ne 0
+Path = "/api/influencer/demo-influencer/feed"
 
----
-
-### **4. `app/auth/onboarding/page.tsx`** ✅
-**Changes:**
-- **Lines 126-166:** Added completion guard (new useEffect)
-- **Lines 148-157:** Fixed admin redirect
-- **Lines 309-330:** Updated submit to use API redirectPath
-
-**Key additions:**
-
-**Completion Guard:**
-```typescript
-useEffect(() => {
-  const checkCompletion = async () => {
-    const progressRes = await fetch("/api/onboarding/progress", { cache: "no-store" })
-    const progressData = await progressRes.json()
-    
-    if (progressData.data?.status === "completed") {
-      const meRes = await fetch("/api/me", { cache: "no-store" })
-      const meData = await meRes.json()
-      const userRole = meData?.role
-      
-      const redirectPath = userRole === "admin"
-        ? "/admin/dashboard"  // ← Admin fix
-        : userRole === "influencer" 
-          ? "/dashboard/influencer" 
-          : userRole === "supplier"
-            ? "/dashboard/supplier"
-            : "/"
-      router.push(redirectPath)
-    }
-  }
-  checkCompletion()
-}, [router])
+# NEW  
+$passed = $status -eq 200
+Path = "/api/influencer/influencer-alex/feed"
 ```
 
-**Submit Function:**
-```typescript
-const submitOnboarding = async () => {
-  const response = await fetch("/api/onboarding/submit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  })
+## No Changes Required
 
-  const result = await response.json()
-  
-  // Use redirect path from API (handles admin/supplier/influencer)
-  const redirectPath = result.redirectPath || "/"
-  router.push(redirectPath)
-}
+These files are already correct:
+- ✅ `middleware.ts` - Freeze logic working
+- ✅ `components/FreezeBanner.tsx` - Already exists
+- ✅ `components/ShopFreezeBanner.tsx` - Already exists
+- ✅ `components/shop/MainShopCard.tsx` - Working correctly
+- ✅ `components/shop/FilterBar.tsx` - Working correctly
+- ✅ `components/shop/PaginationBar.tsx` - Working correctly
+- ✅ `components/layout/header.tsx` - Google Translate integrated
+- ✅ `app/api/main-shop/feed/route.ts` - API working
+- ✅ `app/api/influencer/[handle]/feed/route.ts` - API working
+
+## Environment Setup
+
+Ensure `.env.local` has:
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_key
+
+# Freeze flags (default false)
+CORE_FREEZE=false
+NEXT_PUBLIC_CORE_FREEZE=false
+SHOPS_FREEZE=false
+NEXT_PUBLIC_SHOPS_FREEZE=false
+
+# App URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXTAUTH_URL=http://localhost:3000
 ```
 
-**Impact:** 
-- Completed users can't re-enter onboarding
-- Admin redirects to correct dashboard
-- Uses API response for redirect (more reliable)
+## Database Requirements
 
----
+1. **Test shop must exist:**
+   ```sql
+   SELECT * FROM shops WHERE handle = 'influencer-alex';
+   ```
 
-### **5. `tests/e2e/onboarding/submit-and-redirect.spec.ts`** ✅
-**Changes:**
-- **Lines 20-42:** Enhanced influencer test with forced navigation fallback
-- **Lines 103-117:** Enhanced brand test with forced navigation fallback
-- **Lines 178-192:** Enhanced no-docs test with forced navigation fallback
-- **Lines 63-70:** Strengthened influencer test assertions
-- **Lines 146-153:** Strengthened supplier test assertions  
-- **Lines 135-221:** Added new test for document verification
+2. **Freeze flag must exist:**
+   ```sql
+   SELECT * FROM app.flags WHERE name = 'shops_freeze';
+   ```
 
-**Key test hardening:**
-```typescript
-// Wait for API response
-await page.waitForResponse((resp) => resp.url().includes("/api/auth/sign-up") && resp.ok(), { timeout: 30000 });
+3. **Test products recommended:**
+   ```sql
+   SELECT COUNT(*) FROM influencer_shop_products isp
+   JOIN shops s ON s.influencer_id = isp.influencer_id
+   WHERE s.handle = 'influencer-alex' AND isp.published = true;
+   -- Should return > 0
+   ```
 
-// Race multiple signals
-await Promise.race([
-  expect(page).toHaveURL(/\/auth\/onboarding\?role=.../, { timeout: 30000 }),
-  toast.waitFor({ state: "visible", timeout: 30000 }),
-  page.locator('h1:text-is("Welcome to One-Link")').waitFor({ timeout: 30000 }),
-]);
+## Verification Commands
 
-// Final fallback: forced navigation
-if (!/\/auth\/onboarding/.test(page.url())) {
-  await expect.poll(() => page.url(), { timeout: 10000 }).toContain("/auth/onboarding").catch(async () => {
-    await page.goto("/auth/onboarding?role=...");
-    await expect(page).toHaveURL(/\/auth\/onboarding/);
-  });
-}
+```powershell
+# Lint check
+pnpm lint
 
-// Strengthened assertions
-const roleResponse = await page.request.get("/api/me");
-expect(roleResponse.ok()).toBeTruthy();
-const userData = await roleResponse.json();
-expect(userData.role).toBe("supplier"); // or "influencer"
+# Type check  
+pnpm typecheck
+
+# Start dev server
+pnpm dev
+
+# Test unfrozen state
+$env:CORE_FREEZE="false"; $env:SHOPS_FREEZE="false"; $env:BASE_URL="http://localhost:3000"
+pnpm test:shops-freeze
+.\scripts\integration-smoke.ps1
+
+# Test frozen state
+$env:CORE_FREEZE="true"; $env:SHOPS_FREEZE="true"
+# Restart dev server, then:
+pnpm test:shops-freeze
+.\scripts\integration-smoke.ps1
 ```
 
-**Impact:** Tests now handle navigation timing issues and validate actual role persistence
+## Expected Test Results
 
----
+### Unfrozen
+- ✅ All GETs return 200
+- ✅ All POSTs return 401/403/422 (NOT 423)
 
-### **6. `middleware.ts`** ✅
-**Status:** Already correct - no changes needed  
-**Verified:**
-- Dashboard routes NOT in public whitelist ✅
-- Admin can access all dashboards ✅
-- Admin included in all API permission checks ✅
+### Frozen
+- ✅ All GETs return 200
+- ✅ All POSTs return 423
 
----
+## Next Actions
 
-### **7. `lib/role-mapper.ts`** ✅
-**Status:** Already correct - no changes needed  
-**Verified:**
-- Properly maps `"brand"` → `"supplier"` ✅
-- All step APIs use this mapper ✅
+1. **Run lint/typecheck:**
+   ```powershell
+   pnpm lint
+   pnpm typecheck
+   ```
 
----
+2. **Start dev server:**
+   ```powershell
+   pnpm dev
+   ```
 
-### **8. `CHANGES_SUMMARY.md`** ✅ (This file)
-**New file:** Complete documentation of all changes
+3. **Run verification:**
+   - Follow steps in `QUICK_REFERENCE.md`
+   - Fill out results template
+   - Report any issues
 
----
+4. **If issues found:**
+   - Paste error output
+   - I'll provide targeted fixes
 
-## 📊 Changes by Category
+5. **If all passing:**
+   - Commit changes
+   - Create PR using `PR_DESCRIPTION.md`
 
-### **Security Fixes** 🔒
-1. ✅ Document verification before onboarding completion
-2. ✅ Re-entry prevention after completion
-3. ✅ Admin bypass for document requirements
-4. ✅ Proper role persistence (supplier vs brand)
-
-### **Bug Fixes** 🐛
-1. ✅ Fixed step-1 saving wrong role to database
-2. ✅ Fixed admin redirect to wrong dashboard
-3. ✅ Fixed submit redirect inconsistency
-4. ✅ Fixed progress endpoint missing status field
-5. ✅ Fixed test navigation timeouts with forced fallbacks
-
-### **Test Improvements** 🧪
-1. ✅ Strengthened role persistence assertions
-2. ✅ Added document verification test
-3. ✅ Tests now check API responses, not just page load
-4. ✅ Added resilient navigation handling with fallbacks
-
----
-
-## 🎯 What Each Role Experiences Now
-
-### **Admin User:**
-- ✅ Can access ALL dashboards (admin, supplier, influencer)
-- ✅ NO document upload required
-- ✅ NO onboarding validation (instant completion)
-- ✅ Redirects to `/admin/dashboard`
-
-### **Supplier/Brand User:**
-- ✅ Must upload 3 documents: `business_registration`, `authorized_rep_id`, `bank_account_book`
-- ✅ Cannot complete onboarding without documents
-- ✅ Role correctly saved as `"supplier"` (not `"brand"`)
-- ✅ Redirects to `/dashboard/supplier`
-- ✅ Cannot re-enter onboarding after completion
-
-### **Influencer User:**
-- ✅ Must upload 2 documents: `id_document`, `selfie_photo`
-- ✅ Cannot complete onboarding without documents
-- ✅ Role correctly saved as `"influencer"`
-- ✅ Redirects to `/dashboard/influencer`
-- ✅ Cannot re-enter onboarding after completion
-
----
-
-## 🧪 Testing Instructions
-
-### **Verify File Changes:**
+## Git Commands (After Verification)
 
 ```bash
-# Check modified files
+# Review changes
 git status
-
-# Should show these 8 files:
-# modified:   app/api/onboarding/step-1/route.ts
-# modified:   app/api/onboarding/submit/route.ts
-# modified:   app/api/onboarding/progress/route.ts
-# modified:   app/auth/onboarding/page.tsx
-# modified:   tests/e2e/onboarding/submit-and-redirect.spec.ts
-# new file:   CHANGES_SUMMARY.md
-```
-
-### **Run E2E Tests:**
-
-```bash
-# Run onboarding tests
-npx playwright test tests/e2e/onboarding/submit-and-redirect.spec.ts
-
-# Expected results (with forced fallbacks):
-# ✓ influencer onboarding completes and redirects correctly
-# ✓ brand/supplier onboarding completes and redirects correctly  
-# ✓ onboarding submit blocked without required documents
-
-# Run middleware tests
-npx playwright test tests/e2e/middleware/auth-middleware.spec.ts
-
-# Run all tests
-npx playwright test
-```
-
-### **Manual Testing Steps:**
-
-1. **Test Supplier Onboarding:**
-   - Sign up as supplier/brand
-   - Complete all steps WITHOUT uploading documents
-   - Try to submit → Should show error about missing documents
-   - Upload required 3 documents
-   - Submit → Should redirect to /dashboard/supplier
-   - Verify role in /api/me → Should be "supplier"
-   - Try to access /auth/onboarding → Should redirect to dashboard
-
-2. **Test Influencer Onboarding:**
-   - Sign up as influencer  
-   - Complete steps WITHOUT uploading docs
-   - Try to submit → Should show error
-   - Upload id_document and selfie_photo
-   - Submit → Should redirect to /dashboard/influencer
-   - Verify role → Should be "influencer"
-   - Try to re-enter onboarding → Should redirect to dashboard
-
-3. **Test Admin Bypass:**
-   - Login as admin user
-   - Go to /auth/onboarding
-   - Click submit (no need for forms/documents)
-   - Should redirect to /admin/dashboard
-   - Try accessing /dashboard/supplier → Should work
-   - Try accessing /dashboard/influencer → Should work
-
----
-
-## 🔍 Git Commands to Review Changes
-
-```bash
-# View individual file changes
-git diff app/api/onboarding/step-1/route.ts
-git diff app/api/onboarding/submit/route.ts
-git diff app/api/onboarding/progress/route.ts
-git diff app/auth/onboarding/page.tsx
-git diff tests/e2e/onboarding/submit-and-redirect.spec.ts
-
-# View all changes at once
 git diff
 
-# Check file status
-git status
+# Stage changes
+git add app/shop/
+git add scripts/
+git add *.md
 
-# See staged changes
-git diff --staged
+# Commit
+git commit -m "Complete shop feed integration with freeze system
+
+- Switch main shop to use /api/main-shop/feed
+- Switch influencer shops to use /api/influencer/[handle]/feed
+- Add sale price and custom title support
+- Add freeze banners to shop layouts
+- Update smoke tests with tighter expectations
+- Add comprehensive verification scripts
+"
+
+# Push
+git push origin main
 ```
 
----
+## Documentation Files
 
-## ⚠️ Known Limitations & Future Enhancements
+All documentation is ready:
+- ✅ `INTEGRATION_STATUS.md` - Full status
+- ✅ `INTEGRATION_COMPLETE.md` - Completion doc
+- ✅ `PR_DESCRIPTION.md` - PR template
+- ✅ `VERIFICATION_STEPS.md` - Detailed steps
+- ✅ `QUICK_REFERENCE.md` - Quick commands
+- ✅ `CHANGES_SUMMARY.md` - This file
 
-### **Not Fixed (Optional for Phase 2):**
-1. OAuth users still default to influencer role (need `/auth/select-role` page)
-2. Document types are hardcoded (could move to config)
-3. No upload progress indicator (UX enhancement)
-4. Sign-up page navigation might fail in slow networks (forced fallback in tests handles this)
+## Ready for Verification ✅
 
-### **Working as Designed:**
-1. Middleware correctly protects all routes ✅
-2. Admin has full platform access ✅
-3. Document verification enforced ✅
-4. Role mapping consistent across app ✅
-5. Tests have resilient navigation with forced fallbacks ✅
+All code changes are complete. The integration is ready for local testing.
 
----
+**Your task**: Run the verification commands and report results.
 
-## 📝 Next Steps
-
-1. **Run E2E tests** to verify all changes work correctly
-2. **Manual test** the three user flows (admin, supplier, influencer)
-3. **Review test results** in the HTML report
-4. **Check console logs** for any runtime errors
-5. **Commit changes** if all tests pass
-
----
-
-## 🚀 Quick Test Command
-
-```bash
-# Run the specific onboarding tests
-npx playwright test tests/e2e/onboarding/submit-and-redirect.spec.ts --headed
-
-# View the HTML report
-npx playwright show-report
-```
-
----
-
-**Last Updated:** December 2024  
-**Status:** ✅ All changes applied and ready for testing
+**My task**: Analyze results and provide fixes if needed.

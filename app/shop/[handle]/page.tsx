@@ -6,12 +6,15 @@ import { InfluencerShopClient } from "./InfluencerShopClient";
 
 interface PageProps {
   params: Promise<{ handle: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-// Fetch influencer shop data from our API route
-async function fetchShopData(handle: string) {
+// Fetch influencer shop data from the feed API endpoint
+async function fetchShopData(
+  handle: string,
+  searchParams: Record<string, string | string[] | undefined>
+) {
   // Build an absolute endpoint for server-side fetch
-  // Priority: explicit service URL env -> derive from incoming request headers -> fallback localhost
   let base = process.env.SHOP_SERVICE_URL || process.env.BASE_URL || "";
 
   if (!base) {
@@ -24,12 +27,36 @@ async function fetchShopData(handle: string) {
   }
 
   if (!base) {
-    // Last-resort fallback for local dev so server fetch never uses a relative URL
     const port = process.env.PORT || "3000";
     base = `http://localhost:${port}`;
   }
 
-  const endpoint = new URL(`/api/shop/${handle}`, base).toString();
+  // Build query params for feed endpoint
+  const params = new URLSearchParams();
+  params.set("page", String(searchParams.page || "1"));
+  params.set("limit", String(searchParams.limit || "24"));
+  
+  if (searchParams.q && typeof searchParams.q === "string") {
+    params.set("q", searchParams.q);
+  }
+  if (searchParams.sort && typeof searchParams.sort === "string") {
+    params.set("sort", searchParams.sort);
+  }
+  if (searchParams.category && typeof searchParams.category === "string") {
+    params.set("category", searchParams.category);
+  }
+  if (searchParams.minPrice && typeof searchParams.minPrice === "string") {
+    params.set("minPrice", searchParams.minPrice);
+  }
+  if (searchParams.maxPrice && typeof searchParams.maxPrice === "string") {
+    params.set("maxPrice", searchParams.maxPrice);
+  }
+  params.set("inStockOnly", String(searchParams.inStockOnly ?? "true"));
+
+  const endpoint = new URL(
+    `/api/influencer/${handle}/feed?${params.toString()}`,
+    base
+  ).toString();
 
   let res: Response;
   try {
@@ -37,7 +64,6 @@ async function fetchShopData(handle: string) {
       cache: "no-store",
     });
   } catch (err) {
-    // Surface server-side fetch failures clearly during SSR
     console.error(
       `Failed to fetch shop data for handle="${handle}" from ${endpoint}:`,
       err
@@ -45,63 +71,101 @@ async function fetchShopData(handle: string) {
     throw err;
   }
 
-  if (!res.ok) return null;
-  const json = await res.json();
-  if (!json?.ok || !json?.data) return null;
-
-  // Map API response to the client component props
-  const influencer = {
-    handle: json.data.influencer.handle,
-    name: json.data.influencer.name,
-    bio: json.data.influencer.bio ?? "",
-    avatar: json.data.influencer.avatar ?? "/brand-manager-avatar.png",
-    banner: json.data.influencer.banner ?? "/fashion-banner.png",
-    followers: json.data.influencer.followers ?? "0",
-    verified: !!json.data.influencer.verified,
-    socialLinks: json.data.influencer.socialLinks ?? {},
-  };
-
-  // API product shape returned by /api/shop/[handle]
-  interface ApiProduct {
-    id: string | number;
-    customTitle?: string;
-    title?: string;
-    price?: number;
-    originalPrice?: number;
-    image?: string;
-    images?: string[];
-    badges?: unknown[];
-    category?: string;
-    region?: string | string[];
-    inStock?: boolean;
-    stockCount?: number;
-    rating?: number;
-    reviews?: number;
+  if (!res.ok) {
+    console.error(`Feed API returned ${res.status} for handle="${handle}"`);
+    return null;
   }
 
-  const products = (json.data.products ?? []).map((p: ApiProduct) => ({
-    id: String(p.id),
-    title: p.customTitle || p.title || "Untitled",
-    price: Number(p.price ?? 0),
+  const json = await res.json();
+  if (!json?.ok || !json?.data) {
+    console.error("Invalid feed API response:", json);
+    return null;
+  }
+
+  // Also fetch shop metadata from /api/shop/[handle] for influencer info
+  const shopEndpoint = new URL(`/api/shop/${handle}`, base).toString();
+  let shopRes: Response | undefined;
+  try {
+    shopRes = await fetch(shopEndpoint, { cache: "no-store" });
+  } catch (err) {
+    console.error("Failed to fetch shop metadata:", err);
+    // Continue with feed data only
+  }
+
+  let influencer = {
+    handle,
+    name: handle,
+    bio: "",
+    avatar: "/brand-manager-avatar.png",
+    banner: "/fashion-banner.png",
+    followers: "0",
+    verified: false,
+    socialLinks: {},
+  };
+
+  if (shopRes && shopRes.ok) {
+    const shopJson = await shopRes.json();
+    if (shopJson?.ok && shopJson?.data?.influencer) {
+      const inf = shopJson.data.influencer;
+      influencer = {
+        handle: inf.handle || handle,
+        name: inf.name || handle,
+        bio: inf.bio || "",
+        avatar: inf.avatar || "/brand-manager-avatar.png",
+        banner: inf.banner || "/fashion-banner.png",
+        followers: inf.followers || "0",
+        verified: !!inf.verified,
+        socialLinks: inf.socialLinks || {},
+      };
+    }
+  }
+
+  // Feed API response structure
+  interface FeedItem {
+    id: string;
+    title: string;
+    price?: number | null;
+    sale_price?: number | null;
+    brand?: string | null;
+    images: string[];
+    custom_title?: string | null;
+    category?: string | null;
+    short_description?: string | null;
+    in_stock?: boolean | null;
+    stock_count?: number | null;
+    created_at?: string | null;
+  }
+
+  const feedItems = (json.data.items ?? []) as FeedItem[];
+
+  // Map feed items to client component format
+  const products = feedItems.map((item) => ({
+    id: String(item.id),
+    title: item.custom_title || item.title || "Untitled",
+    price: item.sale_price ?? item.price ?? 0, // Use sale_price if available
     originalPrice:
-      typeof p.originalPrice === "number" ? p.originalPrice : undefined,
-    image: p.image || "/placeholder-product.png",
-    images:
-      Array.isArray(p.images) && p.images.length > 0
-        ? p.images
-        : [p.image || "/placeholder-product.png"],
-    badges: Array.isArray(p.badges) ? p.badges : [],
-    category: p.category || "General",
-    region: Array.isArray(p.region)
-      ? p.region[0] || "Global"
-      : p.region || "Global",
-    inStock: !!p.inStock,
-    stockCount: Number(p.stockCount ?? 0),
-    rating: Number(p.rating ?? 4.5),
-    reviews: Number(p.reviews ?? 0),
+      item.sale_price !== null && item.sale_price !== undefined && item.price
+        ? item.price
+        : undefined,
+    image: item.images?.[0] || "/placeholder-product.png",
+    images: item.images && item.images.length > 0 ? item.images : ["/placeholder-product.png"],
+    badges: item.sale_price ? ["Sale"] : [],
+    category: item.category || "General",
+    region: "Global",
+    inStock: item.in_stock ?? true,
+    stockCount: item.stock_count ?? 0,
+    rating: 4.5,
+    reviews: 0,
   }));
 
-  return { influencer, products };
+  const pagination = {
+    page: json.data.page ?? 1,
+    limit: json.data.limit ?? 24,
+    total: json.data.total ?? 0,
+    hasMore: json.data.hasMore ?? false,
+  };
+
+  return { influencer, products, pagination };
 }
 
 function InfluencerShopSkeleton() {
@@ -147,10 +211,11 @@ function InfluencerShopSkeleton() {
   );
 }
 
-export default async function InfluencerShopPage({ params }: PageProps) {
+export default async function InfluencerShopPage({ params, searchParams }: PageProps) {
   const { handle } = await params;
+  const sp = await searchParams;
 
-  const data = await fetchShopData(handle);
+  const data = await fetchShopData(handle, sp);
   if (!data) return notFound();
 
   return (
@@ -159,6 +224,7 @@ export default async function InfluencerShopPage({ params }: PageProps) {
         influencer={data.influencer}
         products={data.products}
         handle={handle}
+        pagination={data.pagination}
       />
     </Suspense>
   );

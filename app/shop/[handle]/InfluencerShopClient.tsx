@@ -84,12 +84,19 @@ interface InfluencerShopClientProps {
   influencer: Influencer;
   products: Product[];
   handle: string;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+  };
 }
 
 export function InfluencerShopClient({
   influencer,
   products,
   handle,
+  pagination,
 }: InfluencerShopClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");

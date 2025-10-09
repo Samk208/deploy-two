@@ -43,6 +43,7 @@ export async function middleware(req: NextRequest) {
     "/api/products", // Public product listing
     "/api/shop", // Public influencer shop data for SSR
     "/api/main-shop", // Main shop feed (read-only aggregated catalog)
+    "/api/influencer", // Public influencer feed endpoints (e.g., /api/influencer/[handle]/feed)
     "/api/debug", // Local diagnostic endpoints
     "/api/stripe", // Stripe diagnostics and other public Stripe endpoints
     "/api/checkout", // Allow checkout endpoint to return JSON (route enforces auth/roles itself)

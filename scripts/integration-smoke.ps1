@@ -81,7 +81,7 @@ $tests = @(
     [pscustomobject]@{
         Name       = "Influencer handle feed"
         Method     = "GET"
-        Path       = "/api/influencer/test-handle/feed"
+        Path       = "/api/influencer/influencer-alex/feed"
         ExpectType = "Read"
     },
     [pscustomobject]@{
@@ -185,9 +185,9 @@ function Test-Expectation {
 
     switch ($Test.ExpectType) {
         "Read" {
-            # TODO: tighten expected read status from "non-423" to "200" after we fix current 500s.
-            $passed = $status -ne 423 -and $status -ne 0
-            $expectation = "Read should stay available (non-423)"
+            # Read endpoints should return 200 OK
+            $passed = $status -eq 200
+            $expectation = "Read should return 200 OK"
         }
         "CoreWrite" {
             if ($FreezeState.CoreFreeze) {

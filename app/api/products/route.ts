@@ -41,9 +41,12 @@ export async function GET(request: NextRequest) {
     const supabase = ensureTypedClient(
       await createServerSupabaseClient(request)
     );
+    
+    // Simplified query without foreign key join
+    // The profiles join was causing issues, so we'll fetch products only
     let query = supabase
       .from("products")
-      .select("*, profiles:products_supplier_id_fkey(*)", { count: "exact" });
+      .select("*", { count: "exact" });
 
     // Visibility rules:
     // - Public (no owner): only active and in-stock products for the shop

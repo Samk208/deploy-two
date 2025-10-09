@@ -28,7 +28,7 @@ const TEST_CASES = [
   },
   {
     method: 'GET', 
-    endpoint: '/api/shop/test-handle',
+    endpoint: '/api/shop/influencer-alex',
     description: 'Shop data (read)',
     expectWorksDuringFreeze: true
   },
