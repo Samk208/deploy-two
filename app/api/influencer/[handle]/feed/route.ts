@@ -31,15 +31,10 @@ type Sort = "new" | "price-asc" | "price-desc";
  */
 export async function GET(
   req: NextRequest,
-  ctx:
-    | { params: Promise<{ handle: string }> }
-    | { params: { handle: string } }
+  ctx: { params: Promise<{ handle: string }> }
 ) {
   try {
-    const params =
-      "then" in (ctx.params as any)
-        ? await (ctx.params as Promise<{ handle: string }>)
-        : (ctx.params as { handle: string });
+    const params = await ctx.params;
 
     const handle = (params?.handle ?? "").trim();
     if (!handle) {
