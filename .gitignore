@@ -57,3 +57,7 @@ analysis-cache/
 **/playwright-artifacts/
 *.last-run.json
 **/.last-run.json
+
+# postgres dumps (do not commit backups)
+*.dump
+Backup/*.dump
