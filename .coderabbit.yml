@@ -1,0 +1,17 @@
+﻿# Exclude noisy and non-code files from CodeRabbit reviews
+exclude:
+  - "docs/**"
+  - "**/*.md"
+  - "CHANGELOG.md"
+  - "README.md"
+  - ".github/ISSUE_TEMPLATE/**"
+  - ".github/PULL_REQUEST_TEMPLATE/**"
+  - ".vscode/**"
+  - "public/**"
+  - ".next/**"
+  - "node_modules/**"
+  - "coverage/**"
+  - "test-results/**"
+  - ".playwright-report/**"
+  - ".turbo/**"
+  - ".eslintcache"
