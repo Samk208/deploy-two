@@ -1,19 +1,31 @@
-﻿# Exclude noisy and non-code files from CodeRabbit reviews
+﻿# Exclude non-code and generated files from CodeRabbit reviews
 exclude:
+  # Docs and text
   - "docs/**"
+  - "Main Shop Imp/**"
   - "**/*.md"
-  - "CHANGELOG.md"
-  - "README.md"
-  - ".github/ISSUE_TEMPLATE/**"
-  - ".github/PULL_REQUEST_TEMPLATE/**"
+  - "**/*.mdx"
+  - "**/*.txt"
+  - "**/*.log"
+  - "**/*.csv"
+  - "**/*.http"
+  - "**/*.sql"
+
+  # GitHub/IDE
+  - ".github/**"
   - ".vscode/**"
+
+  # Static/public assets (adjust if you want images reviewed)
   - "public/**"
+
+  # Build & deps
   - ".next/**"
+  - "out/**"
   - "node_modules/**"
-  - "coverage/**"
-  - "test-results/**"
-  - ".playwright-report/**"
   - ".turbo/**"
   - ".eslintcache"
 
-  - "Main Shop Imp/**"
+  # Test artifacts
+  - "coverage/**"
+  - "test-results/**"
+  - ".playwright-report/**"
