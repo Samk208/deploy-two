@@ -15,3 +15,5 @@ exclude:
   - ".playwright-report/**"
   - ".turbo/**"
   - ".eslintcache"
+
+  - "Main Shop Imp/**"
