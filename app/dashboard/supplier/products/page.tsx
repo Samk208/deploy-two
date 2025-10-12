@@ -40,11 +40,13 @@ export default function SupplierProductsPage() {
   const [showExportDrawer, setShowExportDrawer] = useState(false);
   const [regionFilter, setRegionFilter] = useState<string>("ALL");
 
+  const ownerParam = user?.role === "admin" ? "admin" : "supplier";
+
   const fetchProducts = async (nextPage: number = 1) => {
     setIsLoading(true);
     try {
       const resp = await getProducts<Product>({
-        owner: "supplier",
+        owner: ownerParam,
         page: nextPage,
         pageSize: PAGE_SIZE,
         region: regionFilter !== "ALL" ? regionFilter : undefined,
@@ -92,11 +94,18 @@ export default function SupplierProductsPage() {
     toast({ title: "Success", description: "Products imported successfully." });
   };
 
+  // Initial load: allow both supplier and admin to view supplier products list (read-only for admin)
   useEffect(() => {
-    if (!isAuthLoading && user?.role === "supplier") {
+    if (isAuthLoading) return;
+    if (user) {
+      // suppliers and admins can view
       fetchProducts(1);
+    } else {
+      // no user -> clear loader to avoid blank screen
+      setIsLoading(false);
     }
-  }, [isAuthLoading, user?.role]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthLoading, user?.id, user?.role]);
 
   if (isAuthLoading || isLoading) {
     return (
@@ -159,14 +168,27 @@ export default function SupplierProductsPage() {
         </div>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={products}
-        isServerMode
-        page={page}
-        pageCount={pageCount}
-        onPageChange={(p) => fetchProducts(p)}
-      />
+      {/* Empty state when no products */}
+      {products.length === 0 ? (
+        <div className="border rounded-md p-8 text-center text-gray-600" data-testid="empty-products">
+          <p className="mb-4">No products yet.</p>
+          <Link href="/dashboard/supplier/products/new" className="inline-flex">
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create your first product
+            </Button>
+          </Link>
+        </div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={products}
+          isServerMode
+          page={page}
+          pageCount={pageCount}
+          onPageChange={(p) => fetchProducts(p)}
+        />
+      )}
 
       {/* Import Dialog */}
       <ImportProductsDialog

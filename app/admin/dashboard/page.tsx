@@ -221,14 +221,20 @@ export default async function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
-                View All Users
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/admin/dashboard">
+                  View All Users
+                </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Manage Roles
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/admin/dashboard">
+                  Manage Roles
+                </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                User Analytics
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/admin/dashboard">
+                  User Analytics
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -241,14 +247,20 @@ export default async function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
-                Manage Products
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/dashboard/supplier/products">
+                  Manage Products
+                </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Review Shops
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/shops">
+                  Review Shops
+                </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Content Moderation
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/admin/dashboard">
+                  Content Moderation
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -261,14 +273,20 @@ export default async function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
-                View Orders
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/dashboard/supplier/orders">
+                  View Orders
+                </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Payment Reports
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/dashboard/supplier/orders">
+                  Payment Reports
+                </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Commission Tracking
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/dashboard/supplier/commissions">
+                  Commission Tracking
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -281,14 +299,20 @@ export default async function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
-                Platform Settings
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/dashboard/supplier/settings">
+                  Platform Settings
+                </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Security Settings
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/dashboard/supplier/settings">
+                  Security Settings
+                </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                System Logs
+              <Button variant="outline" className="w-full justify-start" asChild>
+                <Link href="/admin/dashboard">
+                  System Logs
+                </Link>
               </Button>
             </CardContent>
           </Card>

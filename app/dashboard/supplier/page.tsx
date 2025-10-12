@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface SupplierStats {
   totalProducts: number;
@@ -138,9 +139,11 @@ export default function SupplierDashboard() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Supplier Dashboard</h1>
         <div className="flex gap-2">
-          <Button className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Add Product
+          <Button className="flex items-center gap-2" asChild>
+            <Link href="/dashboard/supplier/products/new">
+              <Plus className="h-4 w-4" />
+              Add Product
+            </Link>
           </Button>
         </div>
       </div>
@@ -369,21 +372,29 @@ export default function SupplierDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button className="h-20 flex flex-col gap-2" variant="outline">
-              <Plus className="h-6 w-6" />
-              <span>Add Product</span>
+            <Button className="h-20 flex flex-col gap-2" variant="outline" asChild>
+              <Link href="/dashboard/supplier/products/new">
+                <Plus className="h-6 w-6" />
+                <span>Add Product</span>
+              </Link>
             </Button>
-            <Button className="h-20 flex flex-col gap-2" variant="outline">
-              <BarChart3 className="h-6 w-6" />
-              <span>View Analytics</span>
+            <Button className="h-20 flex flex-col gap-2" variant="outline" asChild>
+              <Link href="/dashboard/supplier/analytics">
+                <BarChart3 className="h-6 w-6" />
+                <span>View Analytics</span>
+              </Link>
             </Button>
-            <Button className="h-20 flex flex-col gap-2" variant="outline">
-              <Package className="h-6 w-6" />
-              <span>Manage Inventory</span>
+            <Button className="h-20 flex flex-col gap-2" variant="outline" asChild>
+              <Link href="/dashboard/supplier/products">
+                <Package className="h-6 w-6" />
+                <span>Manage Inventory</span>
+              </Link>
             </Button>
-            <Button className="h-20 flex flex-col gap-2" variant="outline">
-              <Settings className="h-6 w-6" />
-              <span>Settings</span>
+            <Button className="h-20 flex flex-col gap-2" variant="outline" asChild>
+              <Link href="/dashboard/supplier/settings">
+                <Settings className="h-6 w-6" />
+                <span>Settings</span>
+              </Link>
             </Button>
           </div>
         </CardContent>

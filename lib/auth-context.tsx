@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { createClientSupabaseClient } from '@/lib/supabase/client'
 import { User, UserRole } from '@/lib/types'
+import { useRouter } from 'next/navigation'
 
 interface AuthContextType {
   user: User | null
@@ -17,6 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClientSupabaseClient()
+  const router = useRouter()
 
   const fetchUserProfile = async (userId: string): Promise<User | null> => {
     try {
@@ -75,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await supabase.auth.signOut()
       setUser(null)
+      router.refresh()
     } catch (error) {
       console.error('Error signing out:', error)
     }
@@ -89,9 +92,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (event === 'SIGNED_IN' && session?.user) {
         const userProfile = await fetchUserProfile(session.user.id)
         setUser(userProfile)
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null)
+        setLoading(false)
+        router.refresh()
+        return
       }
+
+      if (event === 'SIGNED_OUT') {
+        setUser(null)
+        setLoading(false)
+        router.refresh()
+        return
+      }
+
+      if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        await refreshUser()
+        router.refresh()
+        return
+      }
+
       setLoading(false)
     })
 
