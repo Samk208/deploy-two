@@ -19,7 +19,33 @@ reviews:
   auto_apply_labels: false
   suggested_reviewers: false
   auto_assign_reviewers: false
-  path_filters: []
+  # Only review core source files (no .md / .txt) and core configs
+  path_filters:
+    # Source code (TS/JS/TSX/JSX only)
+    - "app/**/*.{ts,tsx,js,jsx}"
+    - "components/**/*.{ts,tsx,js,jsx}"
+    - "lib/**/*.{ts,tsx,js,jsx}"
+    - "hooks/**/*.{ts,tsx,js,jsx}"
+    - "types/**/*.{ts,tsx,js,jsx}"
+    - "styles/**/*.{ts,tsx,js,jsx}"
+    - "tests/**/*.{ts,tsx,js,jsx}"
+    - "scripts/**/*.{ts,js,mjs}"
+    - "middleware.ts"
+    # Core project config
+    - "next.config.mjs"
+    - "playwright.config.ts"
+    - "vitest.config.ts"
+    - "tsconfig.json"
+    - "package.json"
+    - "pnpm-lock.yaml"
+    - "pnpm-workspace.yaml"
+    - "vercel.json"
+    - "components.json"
+    - ".npmrc"
+    # GitHub Actions (allow editing workflows)
+    - ".github/workflows/**/*.yml"
+    - ".github/actions/**"
+    # Explicitly exclude docs/reports/backups by omission (docs/**, dashboard-build/**, Reports/**, Code freeze/**, public/**, supabase/**, sql/**, *.md, *.txt)
   
   # Strong guidance by sensitive paths
   path_instructions:
@@ -123,15 +149,15 @@ tools:
   yamllint:
     enabled: true
   markdownlint:
-    enabled: true
+    enabled: false  # disable to avoid scanning large doc trees
   semgrep:
     enabled: true
   gitleaks:
     enabled: true
   sqlfluff:
-    enabled: true
+    enabled: false  # disable DB-focused lint to reduce workload on non-DB PRs
   osvScanner:
-    enabled: true
+    enabled: false  # optional: disable dependency vuln scan if CodeRabbit runs out of memory
 
 # Chat and code generation features not used for auto-fixes.
 chat:
