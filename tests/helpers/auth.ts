@@ -7,15 +7,15 @@ export const TEST_ADMIN_CREDENTIALS = {
   email: process.env.TEST_ADMIN_EMAIL || "test.admin+e2e@test.local",
   password: process.env.TEST_ADMIN_PASSWORD || "TestAdmin123!",
 };
+
 export const TEST_SUPPLIER_CREDENTIALS = {
   email: process.env.TEST_SUPPLIER_EMAIL || "test.brand+e2e@test.local",
-  password: process.env.TEST_SUPPLIER_PASSWORD || "NewBrandPassword123!",
+  password: process.env.TEST_SUPPLIER_PASSWORD || "Sup3rBrand!",
 };
 
 export const TEST_INFLUENCER_CREDENTIALS = {
-  email: process.env.TEST_INFLUENCER_EMAIL || "test.influencer+e2e@test.local",
-  password:
-    process.env.TEST_INFLUENCER_PASSWORD || "NewInfluencerPassword123!",
+  email: process.env.TEST_INFLUENCER_EMAIL || "audio.avenue@example.com",
+  password: process.env.TEST_INFLUENCER_PASSWORD || "24690H",
 };
 
 export async function loginAsAdmin(page: Page) {

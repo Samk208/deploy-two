@@ -1,6 +1,7 @@
 import { QueryClient, dehydrate } from "@tanstack/react-query";
 import QueryProvider from "@/app/providers/query-provider";
 import type { CommissionsFilters } from "@/components/dashboard/commissions/client";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export default async function Page() {
   const qc = new QueryClient();
@@ -30,8 +31,29 @@ export default async function Page() {
 
   const state = dehydrate(qc);
   const CommissionsClient = (await import("@/components/dashboard/commissions/client")).default;
+
+  // Server-side role check to display an admin view banner only
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  let isAdmin = false;
+  if (session?.user?.id) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", session.user.id)
+      .maybeSingle();
+    isAdmin = (profile as any)?.role === "admin";
+  }
+
   return (
     <QueryProvider state={state}>
+      {isAdmin && (
+        <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-900 text-sm">
+          Admin view: Supplier Commissions. Writes are disabled while freeze is on.
+        </div>
+      )}
       <CommissionsClient defaultFilters={defaultFilters} />
     </QueryProvider>
   );

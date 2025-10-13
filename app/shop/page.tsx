@@ -1,5 +1,6 @@
 import MainShopClient from "@/app/main-shop/MainShopClient";
 import type { FeedResponse } from "@/types/catalog";
+import { headers } from "next/headers";
 
 export const revalidate = 0;
 
@@ -17,13 +18,13 @@ async function fetchFeed(
   searchParams: Record<string, string | string[] | undefined>
 ): Promise<FeedResponse> {
   try {
-    const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    
+    // Use relative URL so it works regardless of current port/host
+
     // Build query string from search params
     const params = new URLSearchParams();
     params.set("page", String(searchParams.page || "1"));
     params.set("limit", String(searchParams.limit || "24"));
-    
+
     if (searchParams.q && typeof searchParams.q === "string") {
       params.set("q", searchParams.q);
     }
@@ -44,6 +45,10 @@ async function fetchFeed(
     }
     params.set("inStockOnly", String(searchParams.inStockOnly ?? "true"));
 
+    const h = await headers();
+    const host = h.get("x-forwarded-host") ?? h.get("host");
+    const proto = h.get("x-forwarded-proto") ?? "http";
+    const base = host ? `${proto}://${host}` : process.env.NEXT_PUBLIC_SITE_URL!;
     const url = `${base}/api/main-shop/feed?${params.toString()}`;
     const res = await fetch(url, { 
       cache: "no-store",
