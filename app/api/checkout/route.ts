@@ -1,11 +1,11 @@
 import { getCurrentUser } from "@/lib/auth-helpers";
+import { validateClientProduct } from "@/lib/checkout/devFallback";
 import * as stripeLib from "@/lib/stripe";
 import { formatAmountForStripe } from "@/lib/stripe";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { type ApiResponse } from "@/lib/types";
 import { checkoutSchema } from "@/lib/validators";
 import { NextResponse, type NextRequest } from "next/server";
-import { validateClientProduct } from "@/lib/checkout/devFallback";
 
 // Declare runtime for Node.js-specific imports (Stripe)
 export const runtime = "nodejs";
@@ -24,8 +24,20 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const isProd = process.env.NODE_ENV === "production";
-    const devFallbackEnv = String(process.env.DEV_FALLBACK || "").toLowerCase().trim();
-    const devFallbackEnabled = devFallbackEnv === "true" || devFallbackEnv === "1" || devFallbackEnv === "yes";
+    const checkoutSandboxEnv = String(process.env.CHECKOUT_SANDBOX || "")
+      .toLowerCase()
+      .trim();
+    const checkoutSandbox =
+      checkoutSandboxEnv === "true" ||
+      checkoutSandboxEnv === "1" ||
+      checkoutSandboxEnv === "yes";
+    const devFallbackEnv = String(process.env.DEV_FALLBACK || "")
+      .toLowerCase()
+      .trim();
+    const devFallbackEnabled =
+      devFallbackEnv === "true" ||
+      devFallbackEnv === "1" ||
+      devFallbackEnv === "yes";
     const vercelEnv = String(process.env.VERCEL_ENV || "").toLowerCase();
     if (isProd && devFallbackEnabled) {
       // Fail fast on misconfiguration
@@ -56,6 +68,19 @@ export async function POST(request: NextRequest) {
         });
       } catch (_) {}
     }
+    // Sandbox short-circuit: when enabled (non-production), return a fake session without touching Stripe
+    if (!isProd && checkoutSandbox) {
+      const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+      return NextResponse.json({
+        ok: true,
+        data: {
+          sessionId: "cs_sandbox_mock",
+          url: `${origin}/order/success?sandbox=1`,
+        },
+        message: "Checkout session created successfully (sandbox)",
+      } as ApiResponse);
+    }
+
     const validation = checkoutSchema.safeParse(body);
 
     if (!validation.success) {
@@ -111,7 +136,10 @@ export async function POST(request: NextRequest) {
               msg +
               " - DEV_FALLBACK is not enabled; refusing client-derived products"
           );
-          return NextResponse.json({ ok: false, message: msg }, { status: 400 });
+          return NextResponse.json(
+            { ok: false, message: msg },
+            { status: 400 }
+          );
         }
         console.warn(
           "[checkout] DEV_FALLBACK enabled: " +
@@ -119,9 +147,7 @@ export async function POST(request: NextRequest) {
             ". Using client-provided items strictly for dev/testing."
         );
       } else {
-        console.error(
-          "[checkout] " + msg + " - failing fast in production"
-        );
+        console.error("[checkout] " + msg + " - failing fast in production");
         return NextResponse.json({ ok: false, message: msg }, { status: 400 });
       }
     }
@@ -228,7 +254,10 @@ export async function POST(request: NextRequest) {
         priceNumber > 0;
       if (!priceValid) {
         return NextResponse.json(
-          { ok: false, message: `Invalid Stripe amount for ${product.title} (zero-priced items are not supported)` },
+          {
+            ok: false,
+            message: `Invalid Stripe amount for ${product.title} (zero-priced items are not supported)`,
+          },
           { status: 400 }
         );
       }
@@ -472,10 +501,11 @@ export async function POST(request: NextRequest) {
       } as ApiResponse);
     }
     // Initialize Stripe now (only in non-test environments)
-    const getStripeFn = (stripeLib as any).getStripe as undefined | (()=>any);
-    const stripe = typeof getStripeFn === "function"
-      ? getStripeFn()
-      : ((stripeLib as any).stripe || null);
+    const getStripeFn = (stripeLib as any).getStripe as undefined | (() => any);
+    const stripe =
+      typeof getStripeFn === "function"
+        ? getStripeFn()
+        : (stripeLib as any).stripe || null;
     if (!stripe) {
       console.error("[checkout] Stripe initialization failed");
       return NextResponse.json(
@@ -484,7 +514,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const session = await (stripe as any).checkout.sessions.create(sessionPayload);
+    const session = await (stripe as any).checkout.sessions.create(
+      sessionPayload
+    );
     console.log("[checkout] session created:", session.id);
 
     return NextResponse.json({
@@ -533,4 +565,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

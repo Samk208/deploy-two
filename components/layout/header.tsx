@@ -248,7 +248,25 @@ export function Header() {
   const [currentLang, setCurrentLang] = useState<
     "auto" | "en" | "ko" | "zh-CN"
   >("auto");
-  const { user, signOut } = useAuth();
+  const { user, signOut, refreshUser } = useAuth();
+
+  // Ensure header syncs right after server redirects or tab focus
+  useEffect(() => {
+    try {
+      refreshUser();
+    } catch (_) {}
+    const handler = () => {
+      try {
+        refreshUser();
+      } catch (_) {}
+    };
+    window.addEventListener("focus", handler);
+    window.addEventListener("pageshow", handler);
+    return () => {
+      window.removeEventListener("focus", handler);
+      window.removeEventListener("pageshow", handler);
+    };
+  }, [refreshUser]);
 
   const getDashboardUrl = (role: UserRole) => {
     switch (role) {

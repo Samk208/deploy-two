@@ -1,11 +1,14 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { loginAsSupplier } from "../helpers/auth";
 
 // Reuse known handle from existing tests or seed
 const HANDLE = process.env.TEST_INFLUENCER_HANDLE || "style-forward";
 
-const SANDBOX_TRUE = String(process.env.CHECKOUT_SANDBOX || "").toLowerCase() === "true";
-const SHOPS_FREEZE_TRUE = String(process.env.SHOPS_FREEZE || "").toLowerCase() === "true";
+const SANDBOX_TRUE = ["true", "1", "yes"].includes(
+  String(process.env.CHECKOUT_SANDBOX || "").toLowerCase()
+);
+const SHOPS_FREEZE_TRUE =
+  String(process.env.SHOPS_FREEZE || "").toLowerCase() === "true";
 
 /**
  * Verifies that:
@@ -19,7 +22,11 @@ test.describe("Influencer attribution + sandbox checkout", () => {
   test.skip(!SANDBOX_TRUE, "CHECKOUT_SANDBOX must be true");
   test.skip(!SHOPS_FREEZE_TRUE, "SHOPS_FREEZE must be true");
 
-  test("/shop/<handle> adds to unified cart and preserves shopHandle in checkout", async ({ page, request, baseURL }) => {
+  test("/shop/<handle> adds to unified cart and preserves shopHandle in checkout", async ({
+    page,
+    request,
+    baseURL,
+  }) => {
     // Verify freezes endpoint
     const freezes = await request.get(`${baseURL}/api/debug/freezes`);
     expect(freezes.ok()).toBeTruthy();
@@ -32,7 +39,10 @@ test.describe("Influencer attribution + sandbox checkout", () => {
       const url = req.url();
       const method = req.method();
       if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-        if (!/\/api\/checkout(\b|\/)/.test(url) && !/\/api\/checkout\/session(\b|\/)/.test(url)) {
+        if (
+          !/\/api\/checkout(\b|\/)/.test(url) &&
+          !/\/api\/checkout\/session(\b|\/)/.test(url)
+        ) {
           writes.push(`${method} ${url}`);
         }
       }
@@ -42,7 +52,10 @@ test.describe("Influencer attribution + sandbox checkout", () => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ url: `${baseURL}/checkout-test-success`, sessionId: "cs_test_mock" }),
+        body: JSON.stringify({
+          url: `${baseURL}/checkout-test-success`,
+          sessionId: "cs_test_mock",
+        }),
       });
     });
 
@@ -50,12 +63,22 @@ test.describe("Influencer attribution + sandbox checkout", () => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ ok: true, data: { sessionId: "cs_test_sandbox", url: `${baseURL}/checkout-test-success` } }),
+        body: JSON.stringify({
+          ok: true,
+          data: {
+            sessionId: "cs_test_sandbox",
+            url: `${baseURL}/checkout-test-success`,
+          },
+        }),
       });
     });
 
     await page.route("**/checkout-test-success", async (route) => {
-      await route.fulfill({ status: 200, contentType: "text/html", body: "<html><body><h1>redirect received</h1></body></html>" });
+      await route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<html><body><h1>redirect received</h1></body></html>",
+      });
     });
 
     await loginAsSupplier(page);
@@ -94,7 +117,9 @@ test.describe("Influencer attribution + sandbox checkout", () => {
     // Open cart from header
     await page.getByRole("button", { name: /^cart$/i }).click();
     // Proceed to checkout
-    const toCheckout = page.getByRole("button", { name: /proceed to checkout/i });
+    const toCheckout = page.getByRole("button", {
+      name: /proceed to checkout/i,
+    });
     await expect(toCheckout).toBeVisible();
     await toCheckout.click();
 
@@ -111,13 +136,16 @@ test.describe("Influencer attribution + sandbox checkout", () => {
     // Prepare waiter for the first checkout POST (session or checkout)
     const reqPromise = page.waitForRequest((r) => {
       const u = r.url();
-      return r.method() === "POST" && (
-        /\/api\/checkout\/session(\b|\/)/.test(u) ||
-        /\/api\/checkout(\b|\/)/.test(u)
+      return (
+        r.method() === "POST" &&
+        (/\/api\/checkout\/session(\b|\/)/.test(u) ||
+          /\/api\/checkout(\b|\/)/.test(u))
       );
     });
 
-    const payBtn = page.getByRole("button", { name: /complete order|pay|place order|continue|checkout/i });
+    const payBtn = page.getByRole("button", {
+      name: /complete order|pay|place order|continue|checkout/i,
+    });
     await expect(payBtn).toBeVisible();
     await payBtn.click();
 
@@ -128,7 +156,11 @@ test.describe("Influencer attribution + sandbox checkout", () => {
       payload = await req.postDataJSON();
     } catch {
       const raw = req.postData() || "{}";
-      try { payload = JSON.parse(raw); } catch { payload = {}; }
+      try {
+        payload = JSON.parse(raw);
+      } catch {
+        payload = {};
+      }
     }
 
     // Expect sandbox redirect
@@ -142,7 +174,9 @@ test.describe("Influencer attribution + sandbox checkout", () => {
     expect(hasHandle).toBeTruthy();
 
     // Ensure no disallowed writes
-    const disallowedWrite = writes.filter((w) => /\/api\/(orders|products|influencer|supplier|shops)\b/.test(w));
+    const disallowedWrite = writes.filter((w) =>
+      /\/api\/(orders|products|influencer|supplier|shops)\b/.test(w)
+    );
     expect(disallowedWrite.length).toBe(0);
   });
 });
