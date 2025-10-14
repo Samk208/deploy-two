@@ -37,10 +37,10 @@ export async function POST(req: NextRequest) {
     const oneMinuteAgo = new Date(Date.now() - 60_000).toISOString()
     const { data: recent } = await (supabaseAdmin as any)
       .from("verification_codes")
-      .select("created_at")
+      .select("updated_at")
       .eq("user_id", user.id)
       .eq("email", email)
-      .gte("created_at", oneMinuteAgo)
+      .gte("updated_at", oneMinuteAgo)
       .maybeSingle()
 
     if (recent) {

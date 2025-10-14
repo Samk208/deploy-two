@@ -27,6 +27,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import type { ChangeEvent } from "react";
 import { toast } from "sonner";
 
 interface AvailableProduct {
@@ -77,11 +78,9 @@ export default function MyShopBuilder() {
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [retrying, setRetrying] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ShopProduct | null>(
     null
   );
-  const [processing, setProcessing] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [regions, setRegions] = useState<string[]>([]);
   const [suppliers, setSuppliers] = useState<string[]>([]);
@@ -377,7 +376,7 @@ export default function MyShopBuilder() {
               <Input
                 placeholder="Search products..."
                 value={filters.search}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
                   setFilters({ ...filters, search: e.target.value })
                 }
                 className="pl-10"
@@ -460,7 +459,7 @@ export default function MyShopBuilder() {
                 <Input
                   type="number"
                   value={filters.minPrice}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setFilters({
                       ...filters,
                       minPrice: parseFloat(e.target.value) || 0,
@@ -471,7 +470,7 @@ export default function MyShopBuilder() {
                 <Input
                   type="number"
                   value={filters.maxPrice}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setFilters({
                       ...filters,
                       maxPrice: parseFloat(e.target.value) || 1000,
@@ -670,7 +669,7 @@ export default function MyShopBuilder() {
                 <label className="text-sm font-medium">Custom Title</label>
                 <Input
                   value={editingProduct.customTitle || ""}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setEditingProduct({
                       ...editingProduct,
                       customTitle: e.target.value,
@@ -685,7 +684,7 @@ export default function MyShopBuilder() {
                 </label>
                 <Textarea
                   value={editingProduct.customDescription || ""}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
                     setEditingProduct({
                       ...editingProduct,
                       customDescription: e.target.value,
@@ -700,7 +699,7 @@ export default function MyShopBuilder() {
                   type="number"
                   step="0.01"
                   value={editingProduct.salePrice}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setEditingProduct({
                       ...editingProduct,
                       salePrice: parseFloat(e.target.value) || 0,

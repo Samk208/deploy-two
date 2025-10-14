@@ -2,6 +2,8 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ensureTypedClient } from "@/lib/supabase/types";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(_request: NextRequest) {
   try {
     const supabase = ensureTypedClient(await createServerSupabaseClient());
@@ -44,8 +46,14 @@ export async function GET(_request: NextRequest) {
     // 3) Shop product links with categories for counts
     const { data: links, error: linksError } = await supabase
       .from("influencer_shop_products")
-      .select(`influencer_id, products ( category )`)
-      .eq("published", true);
+      .select(
+        `influencer_id, products!inner ( category, active, deleted_at, in_stock, stock_count )`
+      )
+      .eq("published", true)
+      .eq("products.active", true)
+      .is("products.deleted_at", null)
+      .eq("products.in_stock", true)
+      .gt("products.stock_count", 0);
 
     if (linksError) {
       console.error("Directory: links fetch error", linksError);

@@ -307,7 +307,7 @@ export default function ProductDetailClient({ params }: ProductDetailClientProps
                         <span className="text-sm text-gray-600">
                           Curated by{" "}
                           <Link href={`/shop/${params.handle}`} className="text-indigo-600 hover:underline">
-                            @{mockInfluencer.handle}
+                            @{params.handle}
                           </Link>
                         </span>
                         {mockInfluencer.verified && <Shield className="h-4 w-4 text-indigo-600" />}

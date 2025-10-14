@@ -13,7 +13,7 @@ export const runtime = "nodejs";
 export async function POST(request: NextRequest) {
   console.log("=== CHECKOUT API CALLED ===");
   try {
-    const supabase = await createServerSupabaseClient();
+    const supabase = await createServerSupabaseClient(request);
     const user = await getCurrentUser(supabase);
 
     // Log minimal request context

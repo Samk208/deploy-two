@@ -66,7 +66,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Admin can inspect a specific supplier via query param `supplierId`; suppliers are scoped to self
     const url = new URL(request.url);
     const requestedSupplierId = url.searchParams.get("supplierId");
-    const supplierId = isAdmin && requestedSupplierId ? requestedSupplierId : user.id;
+    const supplierId =
+      isAdmin && requestedSupplierId ? requestedSupplierId : user.id;
     const now = new Date();
     const todayStart = new Date(
       now.getFullYear(),
@@ -78,8 +79,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Products stats (RLS-friendly: filter by supplier_id)
     const { data: productsData } = await supabase
       .from("products")
-      .select("id, title, stock_count, commission, created_at, price")
-      .eq("supplier_id", supplierId);
+      .select(
+        "id, title, stock_count, commission, created_at, price, active, deleted_at, in_stock"
+      )
+      .eq("supplier_id", supplierId)
+      .is("deleted_at", null);
 
     const totalProducts = productsData?.length || 0;
     const newProductsThisMonth = (productsData || []).filter(
@@ -111,8 +115,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       `
       )
       .eq("supplier_id", supplierId)
-      .order("created_at", { ascending: false })
-      .limit(200);
+      .order("created_at", { ascending: false });
 
     let totalRevenue = 0;
     let totalSales = 0;
@@ -240,11 +243,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         const amount = Number(row.amount) || 0;
         const rawRate = Number(row.rate);
         const effectiveRate = Number.isFinite(rawRate)
-          ? (rawRate > 1 ? rawRate / 100 : rawRate)
+          ? rawRate > 1
+            ? rawRate / 100
+            : rawRate
           : NaN;
-        const estRevenue = Number.isFinite(effectiveRate) && effectiveRate > 0
-          ? amount / effectiveRate
-          : 0;
+        const estRevenue =
+          Number.isFinite(effectiveRate) && effectiveRate > 0
+            ? amount / effectiveRate
+            : 0;
 
         const current = byProduct.get(key);
         if (!current) {
@@ -253,9 +259,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             title,
             sales: 1,
             commissionSum: amount,
-            revenueSum: (Number.isFinite(effectiveRate) && effectiveRate > 0) ? estRevenue : 0,
-            rateSum: (Number.isFinite(effectiveRate) && effectiveRate > 0) ? effectiveRate : 0,
-            rateCount: (Number.isFinite(effectiveRate) && effectiveRate > 0) ? 1 : 0,
+            revenueSum:
+              Number.isFinite(effectiveRate) && effectiveRate > 0
+                ? estRevenue
+                : 0,
+            rateSum:
+              Number.isFinite(effectiveRate) && effectiveRate > 0
+                ? effectiveRate
+                : 0,
+            rateCount:
+              Number.isFinite(effectiveRate) && effectiveRate > 0 ? 1 : 0,
           });
         } else {
           current.sales += 1;

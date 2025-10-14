@@ -41,6 +41,15 @@ test.describe("Freeze/Sandbox Checkout", () => {
       });
     });
 
+    // Intercept mock session route used by CheckoutPage first
+    await page.route("**/api/checkout/session", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ url: `${baseURL}/checkout-test-success`, sessionId: "cs_test_mock" }),
+      });
+    });
+
     await page.route("**/checkout-test-success", async (route) => {
       await route.fulfill({
         status: 200,
@@ -96,6 +105,19 @@ test.describe("Freeze/Sandbox Checkout", () => {
     await toCheckout.click();
 
     await expect(page).toHaveURL(/\/checkout/);
+
+    // Fill required checkout form fields to pass validation
+    await page.getByLabel(/email/i).fill("customer@test.local");
+    await page.getByLabel(/first name/i).fill("Test");
+    await page.getByLabel(/last name/i).fill("Buyer");
+    await page.getByLabel(/^address/i).fill("123 Test St");
+    await page.getByLabel(/^city/i).fill("Seoul");
+    await page.getByLabel(/^state/i).fill("KR-11");
+    await page.getByLabel(/zip code/i).fill("04524");
+    const country = page.getByLabel(/country/i);
+    if (await country.isVisible().catch(() => false)) {
+      await country.fill("KR");
+    }
 
     const payBtn = page.getByRole("button", { name: /complete order|pay|place order|continue|checkout/i });
     await expect(payBtn).toBeVisible();

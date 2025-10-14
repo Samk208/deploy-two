@@ -8,7 +8,7 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
     <>
       <FreezeBanner />
       <DryRunBanner />
-      <div className={isFrozen ? "pointer-events-none select-none opacity-95" : ""}>
+      <div className={isFrozen ? "opacity-95" : ""}>
         {children}
       </div>
     </>

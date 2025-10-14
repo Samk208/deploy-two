@@ -1,18 +1,21 @@
-import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 type Sort = "new" | "price-asc" | "price-desc";
 
 // Helper to build the base filtered query to avoid duplication
-function buildBaseQuery(supabase: ReturnType<typeof getSupabaseAdmin>, opts: {
-  q: string;
-  category?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  inStockOnly: boolean;
-}) {
+function buildBaseQuery(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  opts: {
+    q: string;
+    category?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    inStockOnly: boolean;
+  }
+) {
   if (!supabase) throw new Error("Missing Supabase env");
 
   let query = supabase
@@ -22,13 +25,16 @@ function buildBaseQuery(supabase: ReturnType<typeof getSupabaseAdmin>, opts: {
       { count: "exact" }
     )
     .eq("active", true)
-    .gt("stock_count", 0);
+    .gt("stock_count", 0)
+    .is("deleted_at", null);
 
   if (opts.inStockOnly) query = query.eq("in_stock", true);
   if (opts.q) query = query.ilike("title", `%${opts.q}%`);
   if (opts.category) query = query.eq("category", opts.category);
-  if (typeof opts.minPrice === "number") query = query.gte("price", opts.minPrice);
-  if (typeof opts.maxPrice === "number") query = query.lte("price", opts.maxPrice);
+  if (typeof opts.minPrice === "number")
+    query = query.gte("price", opts.minPrice);
+  if (typeof opts.maxPrice === "number")
+    query = query.lte("price", opts.maxPrice);
 
   return query;
 }
@@ -37,15 +43,26 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const page = Math.max(1, Number(url.searchParams.get("page") ?? "1"));
-    const limit = Math.max(1, Math.min(48, Number(url.searchParams.get("limit") ?? "24")));
+    const limit = Math.max(
+      1,
+      Math.min(48, Number(url.searchParams.get("limit") ?? "24"))
+    );
     const q = (url.searchParams.get("q") ?? "").trim();
     const sort = (url.searchParams.get("sort") ?? "new") as Sort;
-    const category = (url.searchParams.get("category") ?? "").trim() || undefined;
+    const category =
+      (url.searchParams.get("category") ?? "").trim() || undefined;
     const minPriceParam = url.searchParams.get("minPrice");
     const maxPriceParam = url.searchParams.get("maxPrice");
-    const minPrice = minPriceParam !== null && minPriceParam !== "" ? Number(minPriceParam) : undefined;
-    const maxPrice = maxPriceParam !== null && maxPriceParam !== "" ? Number(maxPriceParam) : undefined;
-    const inStockOnly = (url.searchParams.get("inStockOnly") ?? "true") === "true";
+    const minPrice =
+      minPriceParam !== null && minPriceParam !== ""
+        ? Number(minPriceParam)
+        : undefined;
+    const maxPrice =
+      maxPriceParam !== null && maxPriceParam !== ""
+        ? Number(maxPriceParam)
+        : undefined;
+    const inStockOnly =
+      (url.searchParams.get("inStockOnly") ?? "true") === "true";
 
     const from = (page - 1) * limit;
     const to = from + limit - 1;
@@ -63,7 +80,8 @@ export async function GET(req: Request) {
 
     // Sorting
     if (sort === "price-asc") query = query.order("price", { ascending: true });
-    else if (sort === "price-desc") query = query.order("price", { ascending: false });
+    else if (sort === "price-desc")
+      query = query.order("price", { ascending: false });
     else query = query.order("created_at", { ascending: false });
 
     // Pagination with count
@@ -75,7 +93,7 @@ export async function GET(req: Request) {
       id: p.id,
       title: p.title,
       price: p.price,
-      images: p.primary_image ? [p.primary_image] : [],  // Consistent: images[0] is primary
+      images: p.primary_image ? [p.primary_image] : [], // Consistent: images[0] is primary
       category: p.category,
       brand: p.brand,
       short_description: p.short_description ?? null,
@@ -87,9 +105,15 @@ export async function GET(req: Request) {
     const total = count ?? 0;
     const hasMore = page * limit < total;
 
-    return NextResponse.json({ ok: true, data: { items, page, limit, total, hasMore } }, { status: 200 });
+    return NextResponse.json(
+      { ok: true, data: { items, page, limit, total, hasMore } },
+      { status: 200 }
+    );
   } catch (e) {
     console.error("[api/main-shop/feed] error:", e);
-    return NextResponse.json({ ok: false, error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

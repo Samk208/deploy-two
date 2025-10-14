@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      const { error: adminOnboardingError } = (supabaseAdmin as any)
+      const { error: adminOnboardingError } = await (supabaseAdmin as any)
         .from("onboarding_progress")
         .update({
           status: "completed",
@@ -248,7 +248,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 9) Complete onboarding (fatal on error)
-    const { error: onboardingError } = (supabaseAdmin as any)
+    const { error: onboardingError } = await (supabaseAdmin as any)
       .from("onboarding_progress")
       .update({
         status: "completed",

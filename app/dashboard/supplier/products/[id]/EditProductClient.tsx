@@ -171,17 +171,21 @@ export function EditProductClient({
     }
   };
 
-  
-
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    // Validate (centralized in lib/storage/upload)
     const valid = files.filter((f) => ALLOWED_MIME_TYPES.has(f.type) && f.size <= MAX_FILE_SIZE_BYTES);
     if (valid.length !== files.length) {
       const maxMb = Math.floor(MAX_FILE_SIZE_BYTES / 1024 / 1024);
       setErrorMessage(`Some files were skipped (invalid type or >${maxMb}MB)`);
+    }
+    if (valid.length === 0) {
+      setErrorMessage("No valid files to upload");
+      setSuccessMessage("");
+      setUploadProgress(0);
+      setIsUploading(false);
+      return;
     }
 
     setIsUploading(true);

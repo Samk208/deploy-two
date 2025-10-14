@@ -1,0 +1,162 @@
+[
+  {
+    "id": 1,
+    "name": "Canon EOS R6 Mark II Camera",
+    "sku": "CANON-EOS-R6-MKII",
+    "price": 2499.99,
+    "category": "Electronics",
+    "brand": "Canon",
+    "folder": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\CANON-EOS-R6-MKII",
+    "images": [
+      {
+        "filename": "CANON-EOS-R6-MKII-1.webp",
+        "type": "primary",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\CANON-EOS-R6-MKII\\CANON-EOS-R6-MKII-1.webp",
+        "upload_path": "new-products/CANON-EOS-R6-MKII-1.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/CANON-EOS-R6-MKII-1.webp"
+      },
+      {
+        "filename": "CANON-EOS-R6-MKII-2.webp",
+        "type": "gallery-1",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\CANON-EOS-R6-MKII\\CANON-EOS-R6-MKII-2.webp",
+        "upload_path": "new-products/CANON-EOS-R6-MKII-2.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/CANON-EOS-R6-MKII-2.webp"
+      },
+      {
+        "filename": "CANON-EOS-R6-MKII-3.webp",
+        "type": "gallery-2",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\CANON-EOS-R6-MKII\\CANON-EOS-R6-MKII-3.webp",
+        "upload_path": "new-products/CANON-EOS-R6-MKII-3.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/CANON-EOS-R6-MKII-3.webp"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Nike Air Zoom Pegasus 40",
+    "sku": "NIKE-PEGASUS-40",
+    "price": 139.99,
+    "category": "Footwear",
+    "brand": "Nike",
+    "folder": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\NIKE-PEGASUS-40",
+    "images": [
+      {
+        "filename": "NIKE-PEGASUS-40-1.webp",
+        "type": "primary",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\NIKE-PEGASUS-40\\NIKE-PEGASUS-40-1.webp",
+        "upload_path": "new-products/NIKE-PEGASUS-40-1.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/NIKE-PEGASUS-40-1.webp"
+      },
+      {
+        "filename": "NIKE-PEGASUS-40-2.webp",
+        "type": "gallery-1",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\NIKE-PEGASUS-40\\NIKE-PEGASUS-40-2.webp",
+        "upload_path": "new-products/NIKE-PEGASUS-40-2.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/NIKE-PEGASUS-40-2.webp"
+      },
+      {
+        "filename": "NIKE-PEGASUS-40-3.webp",
+        "type": "gallery-2",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\NIKE-PEGASUS-40\\NIKE-PEGASUS-40-3.webp",
+        "upload_path": "new-products/NIKE-PEGASUS-40-3.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/NIKE-PEGASUS-40-3.webp"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Fjallraven Kanken 17\" Laptop Backpack",
+    "sku": "FJALLRAVEN-KANKEN-17",
+    "price": 115.0,
+    "category": "Accessories",
+    "brand": "Fjallraven",
+    "folder": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\FJALLRAVEN-KANKEN-17",
+    "images": [
+      {
+        "filename": "FJALLRAVEN-KANKEN-17-1.webp",
+        "type": "primary",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\FJALLRAVEN-KANKEN-17\\FJALLRAVEN-KANKEN-17-1.webp",
+        "upload_path": "new-products/FJALLRAVEN-KANKEN-17-1.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/FJALLRAVEN-KANKEN-17-1.webp"
+      },
+      {
+        "filename": "FJALLRAVEN-KANKEN-17-2.webp",
+        "type": "gallery-1",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\FJALLRAVEN-KANKEN-17\\FJALLRAVEN-KANKEN-17-2.webp",
+        "upload_path": "new-products/FJALLRAVEN-KANKEN-17-2.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/FJALLRAVEN-KANKEN-17-2.webp"
+      },
+      {
+        "filename": "FJALLRAVEN-KANKEN-17-3.webp",
+        "type": "gallery-2",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\FJALLRAVEN-KANKEN-17\\FJALLRAVEN-KANKEN-17-3.webp",
+        "upload_path": "new-products/FJALLRAVEN-KANKEN-17-3.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/FJALLRAVEN-KANKEN-17-3.webp"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Logitech MX Master 3S Wireless Mouse",
+    "sku": "LOGITECH-MX-MASTER-3S",
+    "price": 99.99,
+    "category": "Electronics",
+    "brand": "Logitech",
+    "folder": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\LOGITECH-MX-MASTER-3S",
+    "images": [
+      {
+        "filename": "LOGITECH-MX-MASTER-3S-1.webp",
+        "type": "primary",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\LOGITECH-MX-MASTER-3S\\LOGITECH-MX-MASTER-3S-1.webp",
+        "upload_path": "new-products/LOGITECH-MX-MASTER-3S-1.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/LOGITECH-MX-MASTER-3S-1.webp"
+      },
+      {
+        "filename": "LOGITECH-MX-MASTER-3S-2.webp",
+        "type": "gallery-1",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\LOGITECH-MX-MASTER-3S\\LOGITECH-MX-MASTER-3S-2.webp",
+        "upload_path": "new-products/LOGITECH-MX-MASTER-3S-2.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/LOGITECH-MX-MASTER-3S-2.webp"
+      },
+      {
+        "filename": "LOGITECH-MX-MASTER-3S-3.webp",
+        "type": "gallery-2",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\LOGITECH-MX-MASTER-3S\\LOGITECH-MX-MASTER-3S-3.webp",
+        "upload_path": "new-products/LOGITECH-MX-MASTER-3S-3.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/LOGITECH-MX-MASTER-3S-3.webp"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Patagonia Nano Puff Jacket",
+    "sku": "PATAGONIA-NANO-PUFF",
+    "price": 249.0,
+    "category": "Apparel",
+    "brand": "Patagonia",
+    "folder": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\PATAGONIA-NANO-PUFF",
+    "images": [
+      {
+        "filename": "PATAGONIA-NANO-PUFF-1.webp",
+        "type": "primary",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\PATAGONIA-NANO-PUFF\\PATAGONIA-NANO-PUFF-1.webp",
+        "upload_path": "new-products/PATAGONIA-NANO-PUFF-1.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/PATAGONIA-NANO-PUFF-1.webp"
+      },
+      {
+        "filename": "PATAGONIA-NANO-PUFF-2.webp",
+        "type": "gallery-1",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\PATAGONIA-NANO-PUFF\\PATAGONIA-NANO-PUFF-2.webp",
+        "upload_path": "new-products/PATAGONIA-NANO-PUFF-2.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/PATAGONIA-NANO-PUFF-2.webp"
+      },
+      {
+        "filename": "PATAGONIA-NANO-PUFF-3.webp",
+        "type": "gallery-2",
+        "local_path": "C:\\Users\\Lenovo\\Desktop\\Workspce\\vo-onelink-google\\Main Shop Imp\\Organized_Products\\PATAGONIA-NANO-PUFF\\PATAGONIA-NANO-PUFF-3.webp",
+        "upload_path": "new-products/PATAGONIA-NANO-PUFF-3.webp",
+        "future_url": "[YOUR_SUPABASE_URL]/storage/v1/object/public/product-images/new-products/PATAGONIA-NANO-PUFF-3.webp"
+      }
+    ]
+  }
+]

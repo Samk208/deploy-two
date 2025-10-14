@@ -207,17 +207,21 @@ export async function middleware(req: NextRequest) {
 
   // Role-based access control
   const userRole = (user as any).role;
+  const sessionRole = String((session as any)?.user?.user_metadata?.role || '').toLowerCase();
+  const isAdmin = userRole === 'admin' || sessionRole === 'admin';
   console.debug("[middleware] session detected", {
     path: pathname,
     role: userRole,
+    sessionRole,
   });
 
   // Admin route protection
   if (pathname.startsWith("/admin/") && pathname !== "/admin/login") {
-    if (userRole !== "admin") {
-      return NextResponse.redirect(
-        new URL("/admin/login?error=Unauthorized access", req.url)
-      );
+    if (!isAdmin) {
+      const url = new URL("/sign-in", req.url)
+      url.searchParams.set("error", "Unauthorized access")
+      url.searchParams.set("redirectTo", "/admin/dashboard")
+      return NextResponse.redirect(url)
     }
   }
 
@@ -226,13 +230,14 @@ export async function middleware(req: NextRequest) {
     const dashboardRole = pathname.split("/")[2]; // e.g., 'supplier', 'influencer', 'admin'
 
     // Admins can access any dashboard. Other users can only access their own.
-    if (userRole !== "admin" && userRole !== dashboardRole) {
+    if (!isAdmin && userRole !== dashboardRole) {
       // Redirect non-admin users to their correct dashboard or home if they are a customer.
       const redirectPath =
         userRole === "customer" ? "/" : `/dashboard/${userRole}`;
       console.debug("[middleware] redirecting to role dashboard", {
         requested: pathname,
         role: userRole,
+        sessionRole,
         redirectPath,
       });
       return NextResponse.redirect(new URL(redirectPath, req.url));

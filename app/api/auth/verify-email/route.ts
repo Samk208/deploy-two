@@ -29,6 +29,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "인증되지 않은 사용자입니다" }, { status: 401 })
     }
 
+    // Write guard: core freeze protection
+    const coreFrozen = process.env.CORE_FREEZE === "true"
+    if (coreFrozen) {
+      return NextResponse.json({ message: "현재 시스템이 보호 모드입니다" }, { status: 423 })
+    }
+
     const { data: verification, error: fetchError } = await (supabaseAdmin as any)
       .from("verification_codes")
       .select("*")
@@ -59,6 +65,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (verification.code !== code) {
+      // Guard again before mutation in case env changed between reads
+      if (process.env.CORE_FREEZE === "true") {
+        return NextResponse.json({ message: "현재 시스템이 보호 모드입니다" }, { status: 423 })
+      }
       await (supabaseAdmin as any)
         .from("verification_codes")
         .update({ attempts: (verification.attempts ?? 0) + 1, updated_at: new Date().toISOString() })
@@ -73,6 +83,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Atomic DB update: verification_codes + profiles
+    if (process.env.CORE_FREEZE === "true") {
+      return NextResponse.json({ message: "현재 시스템이 보호 모드입니다" }, { status: 423 })
+    }
     const { error: rpcError } = await (supabaseAdmin as any).rpc('mark_email_verified', {
       p_user_id: user.id,
       p_email: email,

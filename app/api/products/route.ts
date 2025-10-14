@@ -1,9 +1,9 @@
 import { getCurrentUser, hasRole } from "@/lib/auth-helpers";
+import { executeProductQuery } from "@/lib/supabase/products";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ensureTypedClient } from "@/lib/supabase/types";
 import { UserRole } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
-import { executeProductQuery } from "@/lib/supabase/products";
 export const runtime = "nodejs";
 
 // Unified products listing API, supporting both public shop and supplier/admin lists.
@@ -14,7 +14,8 @@ export async function GET(request: NextRequest) {
     // Parse and validate page
     const rawPage = url.searchParams.get("page");
     const parsedPage = parseInt(rawPage ?? "", 10);
-    const safePage = Number.isFinite(parsedPage) && !Number.isNaN(parsedPage) ? parsedPage : 1;
+    const safePage =
+      Number.isFinite(parsedPage) && !Number.isNaN(parsedPage) ? parsedPage : 1;
     const page = Math.max(1, safePage);
 
     // Parse and validate pageSize / limit
@@ -22,9 +23,10 @@ export async function GET(request: NextRequest) {
       url.searchParams.get("pageSize") || url.searchParams.get("limit") || "12";
     const parsedPageSize = parseInt(pageSizeParam, 10);
     const defaultPageSize = 12;
-    const safePageSize = Number.isFinite(parsedPageSize) && !Number.isNaN(parsedPageSize)
-      ? parsedPageSize
-      : defaultPageSize;
+    const safePageSize =
+      Number.isFinite(parsedPageSize) && !Number.isNaN(parsedPageSize)
+        ? parsedPageSize
+        : defaultPageSize;
     const pageSize = Math.min(100, Math.max(1, safePageSize));
     const owner = url.searchParams.get("owner"); // 'supplier' | 'admin' | null
     const region =
@@ -41,12 +43,13 @@ export async function GET(request: NextRequest) {
     const supabase = ensureTypedClient(
       await createServerSupabaseClient(request)
     );
-    
+
     // Simplified query without foreign key join
     // The profiles join was causing issues, so we'll fetch products only
     let query = supabase
       .from("products")
-      .select("*", { count: "exact" });
+      .select("*", { count: "exact" })
+      .is("deleted_at", null);
 
     // Visibility rules:
     // - Public (no owner): only active and in-stock products for the shop
@@ -90,9 +93,9 @@ export async function GET(request: NextRequest) {
       // Prevent wildcard/OR injection: escape % and _ and strip commas which are OR separators in PostgREST
       const trimmed = q.slice(0, 200);
       const escaped = trimmed
-        .replaceAll('%', '\\%')
-        .replaceAll('_', '\\_')
-        .replaceAll(',', ' ')
+        .replaceAll("%", "\\%")
+        .replaceAll("_", "\\_")
+        .replaceAll(",", " ")
         .trim();
       const pattern = `%${escaped}%`;
       // Note: Supabase client will URL-encode the filter string; we only ensure safe content here
@@ -101,7 +104,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { data, error, count } = await executeProductQuery(query as any, from, to);
+    const { data, error, count } = await executeProductQuery(
+      query as any,
+      from,
+      to
+    );
     if (error) {
       console.error("Products API error:", error);
       return NextResponse.json(

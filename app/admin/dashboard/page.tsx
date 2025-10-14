@@ -11,6 +11,9 @@ import { UserRole } from "@/lib/types";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminDashboard() {
   const supabase = await createServerSupabaseClient();
 
@@ -31,16 +34,23 @@ export default async function AdminDashboard() {
     .eq("id", user.id)
     .maybeSingle<{ role: UserRole | null; name?: string | null }>();
 
-  const authRole = String((user as any)?.user_metadata?.role || "").toUpperCase();
+  const authRole = String(
+    (user as any)?.user_metadata?.role || ""
+  ).toUpperCase();
   const isAdmin = userData?.role === UserRole.ADMIN || authRole === "ADMIN";
   if (!isAdmin) {
-    redirect("/sign-in?redirectTo=%2Fadmin%2Fdashboard&error=Unauthorized%20access");
+    redirect(
+      "/sign-in?redirectTo=%2Fadmin%2Fdashboard&error=Unauthorized%20access"
+    );
   }
 
   // Get basic stats with per-query failure isolation
   const countResults = await Promise.allSettled([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
-    supabase.from("products").select("*", { count: "exact", head: true }),
+    supabase
+      .from("products")
+      .select("*", { count: "exact", head: true })
+      .is("deleted_at", null),
     supabase.from("orders").select("*", { count: "exact", head: true }),
     supabase.from("shops").select("*", { count: "exact", head: true }),
   ]);
@@ -221,20 +231,26 @@ export default async function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href="/admin/dashboard">
-                  View All Users
-                </Link>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/admin/dashboard">View All Users</Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href="/admin/dashboard">
-                  Manage Roles
-                </Link>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/admin/dashboard">Manage Roles</Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href="/admin/dashboard">
-                  User Analytics
-                </Link>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/admin/dashboard">User Analytics</Link>
               </Button>
             </CardContent>
           </Card>
@@ -247,20 +263,26 @@ export default async function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href="/dashboard/supplier/products">
-                  Manage Products
-                </Link>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/dashboard/supplier/products">Manage Products</Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href="/shops">
-                  Review Shops
-                </Link>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/shops">Review Shops</Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href="/admin/dashboard">
-                  Content Moderation
-                </Link>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/admin/dashboard">Content Moderation</Link>
               </Button>
             </CardContent>
           </Card>
@@ -273,17 +295,25 @@ export default async function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href="/dashboard/supplier/orders">
-                  View Orders
-                </Link>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/dashboard/supplier/orders">View Orders</Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href="/dashboard/supplier/orders">
-                  Payment Reports
-                </Link>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/dashboard/supplier/orders">Payment Reports</Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
                 <Link href="/dashboard/supplier/commissions">
                   Commission Tracking
                 </Link>
@@ -299,20 +329,30 @@ export default async function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start" asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
                 <Link href="/dashboard/supplier/settings">
                   Platform Settings
                 </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
                 <Link href="/dashboard/supplier/settings">
                   Security Settings
                 </Link>
               </Button>
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <Link href="/admin/dashboard">
-                  System Logs
-                </Link>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href="/admin/dashboard">System Logs</Link>
               </Button>
             </CardContent>
           </Card>

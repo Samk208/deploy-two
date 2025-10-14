@@ -1,4 +1,4 @@
-# Dashboard Links Audit
+2 Dashboard Links Audit
 
 Scope: Admin, Supplier, and Influencer dashboards. This report lists all navigation UI elements, their destinations, existence, and role correctness, and flags issues with recommendations.
 
@@ -8,20 +8,20 @@ Scope: Admin, Supplier, and Influencer dashboards. This report lists all navigat
 
 ### Current Links
 
-| Button/Link | Destination | Destination Exists? | Correct Role? | Notes |
-|---|---|---|---|---|
-| View All Users | `/admin/dashboard` | Yes (self) | Yes | Placeholder (no dedicated users page found) |
-| Manage Roles | `/admin/dashboard` | Yes (self) | Yes | Placeholder |
-| User Analytics | `/admin/dashboard` | Yes (self) | Yes | Placeholder |
-| Manage Products | `/dashboard/supplier/products` | Yes | Yes (admin allowed) | Uses supplier dashboard route; middleware allows admin to access any dashboard |
-| Review Shops | `/shops` | Yes | Public | Public directory of shops |
-| Content Moderation | `/admin/dashboard` | Yes (self) | Yes | Placeholder |
-| View Orders | `/dashboard/supplier/orders` | Yes | Yes (admin allowed) | Uses supplier dashboard route |
-| Payment Reports | `/dashboard/supplier/orders` | Yes | Yes (admin allowed) | Placeholder piggybacking on orders list |
-| Commission Tracking | `/dashboard/supplier/commissions` | Yes | Yes (admin allowed) | Uses supplier dashboard route |
-| Platform Settings | `/dashboard/supplier/settings` | Yes | Yes (admin allowed) | Uses supplier route |
-| Security Settings | `/dashboard/supplier/settings` | Yes | Yes (admin allowed) | Uses supplier route |
-| System Logs | `/admin/dashboard` | Yes (self) | Yes | Placeholder |
+| Button/Link         | Destination                       | Destination Exists? | Correct Role?       | Notes                                                                          |
+| ------------------- | --------------------------------- | ------------------- | ------------------- | ------------------------------------------------------------------------------ |
+| View All Users      | `/admin/dashboard`                | Yes (self)          | Yes                 | Placeholder (no dedicated users page found)                                    |
+| Manage Roles        | `/admin/dashboard`                | Yes (self)          | Yes                 | Placeholder                                                                    |
+| User Analytics      | `/admin/dashboard`                | Yes (self)          | Yes                 | Placeholder                                                                    |
+| Manage Products     | `/dashboard/supplier/products`    | Yes                 | Yes (admin allowed) | Uses supplier dashboard route; middleware allows admin to access any dashboard |
+| Review Shops        | `/shops`                          | Yes                 | Public              | Public directory of shops                                                      |
+| Content Moderation  | `/admin/dashboard`                | Yes (self)          | Yes                 | Placeholder                                                                    |
+| View Orders         | `/dashboard/supplier/orders`      | Yes                 | Yes (admin allowed) | Uses supplier dashboard route                                                  |
+| Payment Reports     | `/dashboard/supplier/orders`      | Yes                 | Yes (admin allowed) | Placeholder piggybacking on orders list                                        |
+| Commission Tracking | `/dashboard/supplier/commissions` | Yes                 | Yes (admin allowed) | Uses supplier dashboard route                                                  |
+| Platform Settings   | `/dashboard/supplier/settings`    | Yes                 | Yes (admin allowed) | Uses supplier route                                                            |
+| Security Settings   | `/dashboard/supplier/settings`    | Yes                 | Yes (admin allowed) | Uses supplier route                                                            |
+| System Logs         | `/admin/dashboard`                | Yes (self)          | Yes                 | Placeholder                                                                    |
 
 ### Issues Found
 
@@ -41,13 +41,13 @@ Scope: Admin, Supplier, and Influencer dashboards. This report lists all navigat
 
 ### Current Links
 
-| Button/Link | Destination | Destination Exists? | Correct Role? | Notes |
-|---|---|---|---|---|
-| Add Product (top button) | `/dashboard/supplier/products/new` | Yes | Supplier/Admin | Works; write actions subject to SHOPS_FREEZE |
-| QA: Add Product | `/dashboard/supplier/products/new` | Yes | Supplier/Admin | Works |
-| QA: View Analytics | `/dashboard/supplier/analytics` | Yes | Supplier/Admin | Works |
-| QA: Manage Inventory | `/dashboard/supplier/products` | Yes | Supplier/Admin | Works |
-| QA: Settings | `/dashboard/supplier/settings` | Yes | Supplier/Admin | Works |
+| Button/Link              | Destination                        | Destination Exists? | Correct Role?  | Notes                                        |
+| ------------------------ | ---------------------------------- | ------------------- | -------------- | -------------------------------------------- |
+| Add Product (top button) | `/dashboard/supplier/products/new` | Yes                 | Supplier/Admin | Works; write actions subject to SHOPS_FREEZE |
+| QA: Add Product          | `/dashboard/supplier/products/new` | Yes                 | Supplier/Admin | Works                                        |
+| QA: View Analytics       | `/dashboard/supplier/analytics`    | Yes                 | Supplier/Admin | Works                                        |
+| QA: Manage Inventory     | `/dashboard/supplier/products`     | Yes                 | Supplier/Admin | Works                                        |
+| QA: Settings             | `/dashboard/supplier/settings`     | Yes                 | Supplier/Admin | Works                                        |
 
 Non-links (informational only): KPI card icons, “Top Performing Products” rows, “Recent Orders” rows.
 
@@ -65,19 +65,19 @@ Non-links (informational only): KPI card icons, “Top Performing Products” ro
 
 ### Current Links
 
-| Button/Link | Destination | Destination Exists? | Correct Role? | Notes |
-|---|---|---|---|---|
-| QA: Manage My Shop | `/dashboard/influencer/shop` | Yes | Influencer/Admin | Works |
-| QA: Preview My Shop | `/shop/[handle]` | Yes (via `app/shops/`) | Public | Hidden unless `shopHandle` exists |
-| QA: View Analytics | `/dashboard/influencer/analytics` | Yes | Influencer/Admin | Works |
+| Button/Link         | Destination                       | Destination Exists?    | Correct Role?    | Notes                             |
+| ------------------- | --------------------------------- | ---------------------- | ---------------- | --------------------------------- |
+| QA: Manage My Shop  | `/dashboard/influencer/shop`      | Yes                    | Influencer/Admin | Works                             |
+| QA: Preview My Shop | `/shop/[handle]`                  | Yes (via `app/shops/`) | Public           | Hidden unless `shopHandle` exists |
+| QA: View Analytics  | `/dashboard/influencer/analytics` | Yes                    | Influencer/Admin | Works                             |
 
 Additional influencer routes available by direct navigation (not linked on the dashboard page):
 
-| Route | Exists? | Notes |
-|---|---|---|
-| `/dashboard/influencer/products` | Yes | Present, not linked from dashboard |
-| `/dashboard/influencer/earnings` | Yes | Present, not linked from dashboard |
-| `/dashboard/influencer/settings` | Yes | Present, not linked from dashboard |
+| Route                            | Exists? | Notes                              |
+| -------------------------------- | ------- | ---------------------------------- |
+| `/dashboard/influencer/products` | Yes     | Present, not linked from dashboard |
+| `/dashboard/influencer/earnings` | Yes     | Present, not linked from dashboard |
+| `/dashboard/influencer/settings` | Yes     | Present, not linked from dashboard |
 
 ### Issues Found
 

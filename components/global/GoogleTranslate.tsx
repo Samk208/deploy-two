@@ -2,6 +2,7 @@
 
 import Script from "next/script";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 declare global {
   interface Window {
@@ -16,6 +17,18 @@ declare global {
 
 export default function GoogleTranslate() {
   const [mounted, setMounted] = useState(false);
+  const pathname = typeof window !== "undefined" ? window.location?.pathname || "" : "";
+  const appPathname = usePathname() || pathname;
+
+  // Define routes where the widget must be disabled
+  const isExcludedRoute = (() => {
+    if (!appPathname) return false;
+    if (appPathname.startsWith("/api")) return true;
+    if (appPathname === "/sign-in" || appPathname === "/sign-out") return true;
+    if (appPathname.startsWith("/admin")) return true;
+    if (appPathname.startsWith("/checkout")) return true;
+    return false;
+  })();
 
   // Ensure component only runs on client side
   useEffect(() => {
@@ -24,6 +37,7 @@ export default function GoogleTranslate() {
 
   useEffect(() => {
     if (!mounted) return;
+    if (isExcludedRoute) return;
 
     // Single global initialization check
     if (window.__googleTranslateInitialized) return;
@@ -237,7 +251,7 @@ export default function GoogleTranslate() {
   }, [mounted]);
 
   // Don't render anything during SSR
-  if (!mounted) {
+  if (!mounted || isExcludedRoute) {
     return null;
   }
 

@@ -17,7 +17,11 @@ export async function signIn(formData: FormData) {
   });
 
   if (error || !data.user) {
-    return redirect("/sign-in?message=Could not authenticate user");
+    const base = "Could not authenticate user";
+    const msg = process.env.NODE_ENV === "development" && error?.message
+      ? `${base}: ${error.message}`
+      : base;
+    return redirect(`/sign-in?message=${encodeURIComponent(msg)}`);
   }
 
   const { data: profile } = await supabase
@@ -26,7 +30,9 @@ export async function signIn(formData: FormData) {
     .eq("id", data.user.id)
     .maybeSingle<{ role: UserRole }>();
 
-  if (profile?.role === UserRole.ADMIN) {
+  const authMetaRole = String((data.user as any)?.user_metadata?.role || '').toUpperCase();
+
+  if (profile?.role === UserRole.ADMIN || authMetaRole === 'ADMIN') {
     return redirect("/admin/dashboard");
   }
 
@@ -39,5 +45,5 @@ export async function signIn(formData: FormData) {
   }
   // Missing profile or role: send user to onboarding/profile setup instead of arbitrary redirect
   console.warn("[sign-in] Missing or undefined role for user; redirecting to onboarding");
-  return redirect("/onboarding");
+  return redirect("/auth/onboarding");
 }

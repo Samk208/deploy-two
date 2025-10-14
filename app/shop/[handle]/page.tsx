@@ -4,11 +4,6 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { InfluencerShopClient } from "./InfluencerShopClient";
 
-interface PageProps {
-  params: Promise<{ handle: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}
-
 // Fetch influencer shop data from the feed API endpoint
 async function fetchShopData(
   handle: string,
@@ -35,7 +30,7 @@ async function fetchShopData(
   const params = new URLSearchParams();
   params.set("page", String(searchParams.page || "1"));
   params.set("limit", String(searchParams.limit || "24"));
-  
+
   if (searchParams.q && typeof searchParams.q === "string") {
     params.set("q", searchParams.q);
   }
@@ -148,7 +143,10 @@ async function fetchShopData(
         ? item.price
         : undefined,
     image: item.images?.[0] || "/placeholder-product.png",
-    images: item.images && item.images.length > 0 ? item.images : ["/placeholder-product.png"],
+    images:
+      item.images && item.images.length > 0
+        ? item.images
+        : ["/placeholder-product.png"],
     badges: item.sale_price ? ["Sale"] : [],
     category: item.category || "General",
     region: "Global",
@@ -211,9 +209,15 @@ function InfluencerShopSkeleton() {
   );
 }
 
-export default async function InfluencerShopPage({ params, searchParams }: PageProps) {
+export default async function InfluencerShopPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ handle: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { handle } = await params;
-  const sp = await searchParams;
+  const sp = (await searchParams) ?? {};
 
   const data = await fetchShopData(handle, sp);
   if (!data) return notFound();
