@@ -61,3 +61,67 @@ analysis-cache/
 # postgres dumps (do not commit backups)
 *.dump
 Backup/*.dump
+# === Netlify deploy branch excludes ===
+docs/
+Reports/
+"Main Shop Imp"/
+"Code freeze"/
+"Dashboard Build"/
+dashboard-build/
+"Onboarding Fix"/
+"SQL Fix"/
+"Mcp error file"/
+*_IMPLEMENTATION.md
+*_SUMMARY.md
+*_STATUS.md
+*_REPORT*.md
+*_FIX*.md
+*_REFERENCE*.md
+*_CHECKLIST*.md
+*_STEPS*.md
+*_SCHEMA*.md
+*_WORKFLOW*.md
+*_QUICK_REFERENCE.md
+_scan-*.txt
+
+tests/
+lib/__tests__/
+playwright.config.ts
+playwright.readonly.config.ts
+test-results/
+test-results.json
+dashboard-build/test-artifacts/
+"Dashboard Build/Reports/test-artifacts"/
+"Dashboard Build/Reports/html-report"/
+
+scripts/
+fix-status.js
+fix-*.ps1
+fix-*.sh
+test-supabase-connection.js
+tsc-errors.txt
+tokens/
+
+patches/
+
+.github/
+.husky/
+.vscode/
+.windsurf/
+.cursor/
+.claude/
+.coderabbit.yml
+.coderabbit.yaml
+.eslintignore
+.eslintrc*.json
+.gitattributes
+.thunder-client/
+
+.next/
+node_modules/
+tsconfig.tsbuildinfo
+
+.env.local
+.env.example
+env.example
+# === End deploy excludes ===
