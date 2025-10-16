@@ -1,121 +1,180 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Progress } from "@/components/ui/progress"
-import { Download, FileText, X, Globe, CheckCircle, AlertCircle } from "lucide-react"
-import { Product } from "@/lib/types"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Product } from "@/lib/types";
+import {
+  AlertCircle,
+  CheckCircle,
+  Download,
+  FileText,
+  Globe,
+  X,
+} from "lucide-react";
+import { useState } from "react";
 
 interface ExportProductsDrawerProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  products?: Product[]
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  products?: Product[];
 }
 
-const categories = ["All", "Clothing", "Beauty", "Jewelry", "Home", "Electronics"]
-const regions = ["All", "Global", "KR", "JP", "CN"]
+const categories = [
+  "All",
+  "Clothing",
+  "Beauty",
+  "Jewelry",
+  "Home",
+  "Electronics",
+];
+const regions = ["All", "Global", "KR", "JP", "CN"];
 
-export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawerProps) {
-  const [selectedStatus, setSelectedStatus] = useState<string[]>(["active"])
-  const [selectedCategory, setSelectedCategory] = useState("All")
-  const [selectedRegions, setSelectedRegions] = useState<string[]>(["All"])
-  const [lowInventoryOnly, setLowInventoryOnly] = useState(false)
-  const [isExporting, setIsExporting] = useState(false)
-  const [exportProgress, setExportProgress] = useState(0)
-  const [exportComplete, setExportComplete] = useState(false)
+export function ExportProductsDrawer({
+  open,
+  onOpenChange,
+}: ExportProductsDrawerProps) {
+  const [selectedStatus, setSelectedStatus] = useState<string[]>(["active"]);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedRegions, setSelectedRegions] = useState<string[]>(["All"]);
+  const [lowInventoryOnly, setLowInventoryOnly] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportComplete, setExportComplete] = useState(false);
 
   const handleStatusChange = (status: string, checked: boolean) => {
     if (checked) {
-      setSelectedStatus((prev) => [...prev, status])
+      setSelectedStatus((prev) => [...prev, status]);
     } else {
-      setSelectedStatus((prev) => prev.filter((s) => s !== status))
+      setSelectedStatus((prev) => prev.filter((s) => s !== status));
     }
-  }
+  };
 
   const handleRegionChange = (region: string, checked: boolean) => {
     if (region === "All") {
-      setSelectedRegions(checked ? ["All"] : [])
+      setSelectedRegions(checked ? ["All"] : []);
     } else {
       setSelectedRegions((prev) => {
-        const filtered = prev.filter((r) => r !== "All")
-        return checked ? [...filtered, region] : filtered.filter((r) => r !== region)
-      })
+        const filtered = prev.filter((r) => r !== "All");
+        return checked
+          ? [...filtered, region]
+          : filtered.filter((r) => r !== region);
+      });
     }
-  }
+  };
 
   const handleExport = async () => {
-    setIsExporting(true)
-    setExportProgress(0)
-    setExportComplete(false)
+    try {
+      setIsExporting(true);
+      setExportProgress(0);
+      setExportComplete(false);
 
-    // Simulate export progress
-    const progressInterval = setInterval(() => {
-      setExportProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(progressInterval)
-          setIsExporting(false)
-          setExportComplete(true)
-          // Build query params to pass filters to the API
-          const params = new URLSearchParams()
-          if (selectedCategory && selectedCategory !== "All") params.set("category", selectedCategory)
-          if (selectedStatus.length === 1) params.set("status", selectedStatus[0])
-          if (selectedRegions.length && !selectedRegions.includes("All")) params.set("regions", selectedRegions.join(","))
+      // Build query params synchronously and trigger download immediately (within user gesture)
+      const params = new URLSearchParams();
+      if (selectedCategory && selectedCategory !== "All")
+        params.set("category", selectedCategory);
+      if (selectedStatus.length === 1) params.set("status", selectedStatus[0]);
+      if (selectedRegions.length && !selectedRegions.includes("All"))
+        params.set("regions", selectedRegions.join(","));
+      if (lowInventoryOnly) params.set("lowInventory", "true");
 
-          // Trigger real download from API with filters
-          const link = document.createElement("a")
-          link.href = `/api/products/export?${params.toString()}`
-          link.download = `products-export-${new Date().toISOString().split("T")[0]}.csv`
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          return 100
-        }
-        return prev + Math.random() * 15
-      })
-    }, 200)
-  }
+      const downloadUrl = `/api/products/export?${params.toString()}`;
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `products-export-${new Date().toISOString().split("T")[0]}.csv`;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Cosmetic progress animation after triggering download
+      const progressInterval = setInterval(() => {
+        setExportProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(progressInterval);
+            setIsExporting(false);
+            setExportComplete(true);
+            return 100;
+          }
+          return prev + 10;
+        });
+      }, 100);
+
+      // Auto-close drawer after short delay
+      setTimeout(() => {
+        onOpenChange(false);
+      }, 1500);
+    } catch (error) {
+      console.error("Export failed:", error);
+      setIsExporting(false);
+      setExportProgress(0);
+      setExportComplete(false);
+    }
+  };
 
   const handleCancel = () => {
-    setIsExporting(false)
-    setExportProgress(0)
-    setExportComplete(false)
-  }
+    setIsExporting(false);
+    setExportProgress(0);
+    setExportComplete(false);
+  };
 
   const handleDownloadTemplate = () => {
-    const link = document.createElement("a")
-    link.href = "/api/products/template"
-    link.download = "product-import-template.csv"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const link = document.createElement("a");
+    link.href = "/api/products/template";
+    link.download = "product-import-template.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const getEstimatedCount = () => {
     // Mock calculation based on filters
-    let count = 156 // Total products
-    if (selectedStatus.includes("active") && !selectedStatus.includes("inactive")) count = 142
-    if (selectedStatus.includes("inactive") && !selectedStatus.includes("active")) count = 14
-    if (selectedCategory !== "All") count = Math.floor(count * 0.6)
-    if (!selectedRegions.includes("All")) count = Math.floor(count * 0.8)
-    if (lowInventoryOnly) count = Math.floor(count * 0.2)
-    return count
-  }
+    let count = 156; // Total products
+    if (
+      selectedStatus.includes("active") &&
+      !selectedStatus.includes("inactive")
+    )
+      count = 142;
+    if (
+      selectedStatus.includes("inactive") &&
+      !selectedStatus.includes("active")
+    )
+      count = 14;
+    if (selectedCategory !== "All") count = Math.floor(count * 0.6);
+    if (!selectedRegions.includes("All")) count = Math.floor(count * 0.8);
+    if (lowInventoryOnly) count = Math.floor(count * 0.2);
+    return count;
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md">
+      <SheetContent className="w-full sm:max-w-lg overflow-y-auto max-h-svh">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Download className="h-5 w-5 text-amber-600" />
             Export Products
           </SheetTitle>
-          <SheetDescription>Configure your export settings and download a CSV file of your products.</SheetDescription>
+          <SheetDescription>
+            Configure your export settings and download a CSV file of your
+            products.
+          </SheetDescription>
         </SheetHeader>
 
         <div className="space-y-6 mt-6">
@@ -127,7 +186,9 @@ export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawe
                 <Checkbox
                   id="active"
                   checked={selectedStatus.includes("active")}
-                  onCheckedChange={(checked) => handleStatusChange("active", checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    handleStatusChange("active", checked as boolean)
+                  }
                 />
                 <Label htmlFor="active" className="text-sm cursor-pointer">
                   Active Products
@@ -140,7 +201,9 @@ export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawe
                 <Checkbox
                   id="inactive"
                   checked={selectedStatus.includes("inactive")}
-                  onCheckedChange={(checked) => handleStatusChange("inactive", checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    handleStatusChange("inactive", checked as boolean)
+                  }
                 />
                 <Label htmlFor="inactive" className="text-sm cursor-pointer">
                   Inactive Products
@@ -157,7 +220,10 @@ export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawe
           {/* Category Filter */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">Category</Label>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
@@ -182,9 +248,14 @@ export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawe
                   <Checkbox
                     id={`region-${region}`}
                     checked={selectedRegions.includes(region)}
-                    onCheckedChange={(checked) => handleRegionChange(region, checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      handleRegionChange(region, checked as boolean)
+                    }
                   />
-                  <Label htmlFor={`region-${region}`} className="text-sm cursor-pointer flex items-center gap-1">
+                  <Label
+                    htmlFor={`region-${region}`}
+                    className="text-sm cursor-pointer flex items-center gap-1"
+                  >
                     {region === "Global" && <Globe className="h-3 w-3" />}
                     {region}
                   </Label>
@@ -202,7 +273,9 @@ export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawe
               <Checkbox
                 id="low-inventory"
                 checked={lowInventoryOnly}
-                onCheckedChange={(checked) => setLowInventoryOnly(checked as boolean)}
+                onCheckedChange={(checked) =>
+                  setLowInventoryOnly(checked as boolean)
+                }
               />
               <Label htmlFor="low-inventory" className="text-sm cursor-pointer">
                 Low inventory only (≤10 items)
@@ -229,7 +302,9 @@ export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawe
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Exporting...</span>
-                <span className="text-sm text-gray-600">{Math.round(exportProgress)}%</span>
+                <span className="text-sm text-gray-600">
+                  {Math.round(exportProgress)}%
+                </span>
               </div>
               <Progress value={exportProgress} className="h-2" />
             </div>
@@ -240,9 +315,13 @@ export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawe
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium text-green-800">Export completed successfully!</span>
+                <span className="text-sm font-medium text-green-800">
+                  Export completed successfully!
+                </span>
               </div>
-              <p className="text-sm text-green-700 mt-1">Your CSV file has been downloaded to your device.</p>
+              <p className="text-sm text-green-700 mt-1">
+                Your CSV file has been downloaded to your device.
+              </p>
             </div>
           )}
 
@@ -259,7 +338,11 @@ export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawe
                   Export CSV ({getEstimatedCount()} products)
                 </Button>
 
-                <Button variant="outline" onClick={handleDownloadTemplate} className="w-full bg-transparent">
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadTemplate}
+                  className="w-full bg-transparent"
+                >
                   <FileText className="h-4 w-4 mr-2" />
                   Download Sample Template
                 </Button>
@@ -267,7 +350,11 @@ export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawe
             )}
 
             {isExporting && (
-              <Button variant="outline" onClick={handleCancel} className="w-full bg-transparent">
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                className="w-full bg-transparent"
+              >
                 <X className="h-4 w-4 mr-2" />
                 Cancel Export
               </Button>
@@ -277,8 +364,8 @@ export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawe
               <Button
                 variant="outline"
                 onClick={() => {
-                  setExportComplete(false)
-                  setExportProgress(0)
+                  setExportComplete(false);
+                  setExportProgress(0);
                 }}
                 className="w-full"
               >
@@ -305,5 +392,5 @@ export function ExportProductsDrawer({ open, onOpenChange }: ExportProductsDrawe
         </div>
       </SheetContent>
     </Sheet>
-  )
+  );
 }

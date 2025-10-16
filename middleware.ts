@@ -143,10 +143,10 @@ export async function middleware(req: NextRequest) {
 
     // Patterns matching shop write endpoints
     const SHOP_WRITE_PATTERNS = [
-      /^\/api\/products($|\/)/,          // Product CRUD operations
-      /^\/api\/shop($|\/)/,              // Shop configuration
-      /^\/api\/influencer-shop($|\/)/,   // Influencer shop curation
-      /^\/api\/influencer\/shop($|\/)/,  // Alternative influencer shop endpoint
+      /^\/api\/products($|\/)/, // Product CRUD operations
+      /^\/api\/shop($|\/)/, // Shop configuration
+      /^\/api\/influencer-shop($|\/)/, // Influencer shop curation
+      /^\/api\/influencer\/shop($|\/)/, // Alternative influencer shop endpoint
     ];
 
     const isShopWriteEndpoint = SHOP_WRITE_PATTERNS.some((pattern) =>
@@ -157,7 +157,8 @@ export async function middleware(req: NextRequest) {
       return new NextResponse(
         JSON.stringify({
           ok: false,
-          error: "SHOPS_FREEZE active: shop and product writes are temporarily disabled.",
+          error:
+            "SHOPS_FREEZE active: shop and product writes are temporarily disabled.",
         }),
         { status: 423, headers: { "content-type": "application/json" } }
       );
@@ -184,7 +185,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Get user role from the 'users' table with proper type inference
+  // Get user role from profiles, but determine admin via JWT metadata
   const query = supabase
     .from("profiles")
     .select("role")
@@ -198,8 +199,6 @@ export async function middleware(req: NextRequest) {
       path: pathname,
       error: error?.message,
     });
-    // This case might happen if a user is deleted but their session persists.
-    // Clear session by redirecting to sign-in.
     const redirectUrl = new URL("/sign-in", req.url);
     redirectUrl.searchParams.set("error", "User not found");
     return NextResponse.redirect(redirectUrl);
@@ -207,21 +206,25 @@ export async function middleware(req: NextRequest) {
 
   // Role-based access control
   const userRole = (user as any).role;
-  const sessionRole = String((session as any)?.user?.user_metadata?.role || '').toLowerCase();
-  const isAdmin = userRole === 'admin' || sessionRole === 'admin';
+  const sessionMetaRole = String(
+    (session as any)?.user?.app_metadata?.role ||
+      (session as any)?.user?.user_metadata?.role ||
+      ""
+  ).toLowerCase();
+  const isAdmin = userRole === "admin" || sessionMetaRole === "admin";
   console.debug("[middleware] session detected", {
     path: pathname,
     role: userRole,
-    sessionRole,
+    sessionRole: sessionMetaRole,
   });
 
   // Admin route protection
   if (pathname.startsWith("/admin/") && pathname !== "/admin/login") {
     if (!isAdmin) {
-      const url = new URL("/sign-in", req.url)
-      url.searchParams.set("error", "Unauthorized access")
-      url.searchParams.set("redirectTo", "/admin/dashboard")
-      return NextResponse.redirect(url)
+      const url = new URL("/sign-in", req.url);
+      url.searchParams.set("error", "Unauthorized access");
+      url.searchParams.set("redirectTo", "/admin/dashboard");
+      return NextResponse.redirect(url);
     }
   }
 
@@ -231,13 +234,12 @@ export async function middleware(req: NextRequest) {
 
     // Admins can access any dashboard. Other users can only access their own.
     if (!isAdmin && userRole !== dashboardRole) {
-      // Redirect non-admin users to their correct dashboard or home if they are a customer.
       const redirectPath =
         userRole === "customer" ? "/" : `/dashboard/${userRole}`;
       console.debug("[middleware] redirecting to role dashboard", {
         requested: pathname,
         role: userRole,
-        sessionRole,
+        sessionRole: sessionMetaRole,
         redirectPath,
       });
       return NextResponse.redirect(new URL(redirectPath, req.url));
@@ -247,7 +249,7 @@ export async function middleware(req: NextRequest) {
   // API route protection
   if (pathname.startsWith("/api/")) {
     // Admin-only API routes
-    if (pathname.startsWith("/api/admin/") && userRole !== "admin") {
+    if (pathname.startsWith("/api/admin/") && !isAdmin) {
       return new NextResponse(JSON.stringify({ message: "Forbidden" }), {
         status: 403,
         headers: { "Content-Type": "application/json" },
@@ -258,7 +260,7 @@ export async function middleware(req: NextRequest) {
     if (
       pathname.startsWith("/api/products/") &&
       req.method !== "GET" &&
-      !["supplier", "admin"].includes(userRole)
+      !["supplier", "admin"].includes(isAdmin ? "admin" : userRole)
     ) {
       return new NextResponse(JSON.stringify({ message: "Forbidden" }), {
         status: 403,
@@ -270,7 +272,7 @@ export async function middleware(req: NextRequest) {
     if (
       pathname.startsWith("/api/shops/") &&
       req.method !== "GET" &&
-      !["influencer", "admin"].includes(userRole)
+      !["influencer", "admin"].includes(isAdmin ? "admin" : userRole)
     ) {
       return new NextResponse(JSON.stringify({ message: "Forbidden" }), {
         status: 403,

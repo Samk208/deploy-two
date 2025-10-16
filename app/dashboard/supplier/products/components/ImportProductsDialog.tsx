@@ -279,6 +279,18 @@ export function ImportProductsDialog({
 
       setImportData(rows);
 
+      // Attempt server-side preview (GET) under freeze-safe path
+      try {
+        const base64 = btoa(unescape(encodeURIComponent(text)));
+        const resp = await fetch(`/api/products/import/preview?data=${encodeURIComponent(base64)}`);
+        if (resp.ok) {
+          const json = await resp.json();
+          // no-op: we already built preview locally; server confirmed headers/shape
+        }
+      } catch (_) {
+        // ignore preview fetch errors; local preview is already shown
+      }
+
       // Track uploaded file
       const newFile = {
         id: crypto.randomUUID(),
@@ -343,7 +355,16 @@ export function ImportProductsDialog({
           data: csvLines,
         }),
       });
-
+      if (response.status === 423) {
+        toast({
+          title: "Frozen (read-only)",
+          description:
+            "Imports are disabled while the freeze is active. Use Dry run to preview and validate.",
+          variant: "destructive",
+        });
+        setStep("preview");
+        return;
+      }
       if (!response.ok) throw new Error("Import failed");
 
       // Optionally parse result to surface server-found row errors

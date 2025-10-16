@@ -2,21 +2,11 @@ import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 import * as fs from "fs";
 import * as path from "path";
+import { TEST_USERS } from "../config/testUsers";
 
-export const TEST_ADMIN_CREDENTIALS = {
-  email: process.env.TEST_ADMIN_EMAIL || "test.admin+e2e@test.local",
-  password: process.env.TEST_ADMIN_PASSWORD || "TestAdmin123!",
-};
-
-export const TEST_SUPPLIER_CREDENTIALS = {
-  email: process.env.TEST_SUPPLIER_EMAIL || "test.brand+e2e@test.local",
-  password: process.env.TEST_SUPPLIER_PASSWORD || "Sup3rBrand!",
-};
-
-export const TEST_INFLUENCER_CREDENTIALS = {
-  email: process.env.TEST_INFLUENCER_EMAIL || "audio.avenue@example.com",
-  password: process.env.TEST_INFLUENCER_PASSWORD || "24690H",
-};
+export const TEST_ADMIN_CREDENTIALS = TEST_USERS.ADMIN;
+export const TEST_SUPPLIER_CREDENTIALS = TEST_USERS.SUPPLIER;
+export const TEST_INFLUENCER_CREDENTIALS = TEST_USERS.INFLUENCER;
 
 export async function loginAsAdmin(page: Page) {
   await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
@@ -38,8 +28,14 @@ export async function loginAsAdmin(page: Page) {
     await expect(page).toHaveURL(/\/admin\/dashboard$/i, { timeout: 45000 });
   } catch (e) {
     // Capture diagnostics before failing
-    const artifactsDir = path.join(process.cwd(), "test-results", "test-artifacts");
-    try { fs.mkdirSync(artifactsDir, { recursive: true }); } catch {}
+    const artifactsDir = path.join(
+      process.cwd(),
+      "test-results",
+      "test-artifacts"
+    );
+    try {
+      fs.mkdirSync(artifactsDir, { recursive: true });
+    } catch {}
     const filePath = path.join(artifactsDir, `admin-login-failure.png`);
     await page.screenshot({ path: filePath, fullPage: true }).catch(() => {});
     throw e;
@@ -69,8 +65,14 @@ export async function loginAsInfluencer(page: Page) {
       timeout: 45000,
     });
   } catch (e) {
-    const artifactsDir = path.join(process.cwd(), "test-results", "test-artifacts");
-    try { fs.mkdirSync(artifactsDir, { recursive: true }); } catch {}
+    const artifactsDir = path.join(
+      process.cwd(),
+      "test-results",
+      "test-artifacts"
+    );
+    try {
+      fs.mkdirSync(artifactsDir, { recursive: true });
+    } catch {}
     const filePath = path.join(artifactsDir, `influencer-login-failure.png`);
     await page.screenshot({ path: filePath, fullPage: true }).catch(() => {});
     throw e;
@@ -97,8 +99,14 @@ export async function loginAsSupplier(page: Page) {
       timeout: 45000,
     });
   } catch (e) {
-    const artifactsDir = path.join(process.cwd(), "test-results", "test-artifacts");
-    try { fs.mkdirSync(artifactsDir, { recursive: true }); } catch {}
+    const artifactsDir = path.join(
+      process.cwd(),
+      "test-results",
+      "test-artifacts"
+    );
+    try {
+      fs.mkdirSync(artifactsDir, { recursive: true });
+    } catch {}
     const filePath = path.join(artifactsDir, `supplier-login-failure.png`);
     await page.screenshot({ path: filePath, fullPage: true }).catch(() => {});
     throw e;

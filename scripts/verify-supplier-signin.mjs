@@ -10,15 +10,17 @@
 */
 
 import { createClient } from '@supabase/supabase-js'
+import dotenv from 'dotenv'
 import fs from 'fs'
 import path from 'path'
-import dotenv from 'dotenv'
 
-// Load env from .env.local first, then .env
+// Load env from .env.test.local first (preferred for tests), then .env.local, then .env
 try {
   const root = process.cwd()
+  const envTestLocal = path.join(root, '.env.test.local')
   const envLocal = path.join(root, '.env.local')
-  if (fs.existsSync(envLocal)) dotenv.config({ path: envLocal })
+  if (fs.existsSync(envTestLocal)) dotenv.config({ path: envTestLocal })
+  else if (fs.existsSync(envLocal)) dotenv.config({ path: envLocal })
   else dotenv.config()
 } catch {}
 
@@ -29,8 +31,8 @@ if (!url || !anon) {
   process.exit(1)
 }
 
-const email = process.env.SUP_EMAIL || 'test.brand+e2e@test.local'
-const password = process.env.SUP_PASSWORD || 'Brand1234!'
+const email = process.env.SUP_EMAIL || process.env.TEST_SUPPLIER_EMAIL || 'test.brand+e2e@test.local'
+const password = process.env.SUP_PASSWORD || process.env.TEST_SUPPLIER_PASSWORD || 'NewBrandPassword123!'
 
 const client = createClient(url, anon)
 

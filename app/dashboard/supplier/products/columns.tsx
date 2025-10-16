@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Product } from "@/lib/types";
+import Image from "next/image";
 import Link from "next/link";
 
 export const columns: ColumnDef<Product>[] = [
@@ -26,9 +27,11 @@ export const columns: ColumnDef<Product>[] = [
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
             {product.images && product.images.length > 0 ? (
-              <img
-                src={product.images[0]}
+              <Image
+                src={product.images[0] as string}
                 alt={product.title}
+                width={40}
+                height={40}
                 className="w-10 h-10 rounded-lg object-cover"
               />
             ) : (

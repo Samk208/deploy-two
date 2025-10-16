@@ -151,7 +151,11 @@ export default function SupplierProductsPage() {
           >
             Apply
           </Button>
-          <Button variant="outline" onClick={() => setShowImportDialog(true)}>
+          <Button
+            variant="outline"
+            onClick={() => setShowImportDialog(true)}
+            data-testid="open-import-dialog"
+          >
             <Upload className="mr-2 h-4 w-4" />
             Import
           </Button>
@@ -170,7 +174,10 @@ export default function SupplierProductsPage() {
 
       {/* Empty state when no products */}
       {products.length === 0 ? (
-        <div className="border rounded-md p-8 text-center text-gray-600" data-testid="empty-products">
+        <div
+          className="border rounded-md p-8 text-center text-gray-600"
+          data-testid="empty-products"
+        >
           <p className="mb-4">No products yet.</p>
           <Link href="/dashboard/supplier/products/new" className="inline-flex">
             <Button>

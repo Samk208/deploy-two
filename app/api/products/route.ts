@@ -1,8 +1,10 @@
 import { getCurrentUser, hasRole } from "@/lib/auth-helpers";
 import { executeProductQuery } from "@/lib/supabase/products";
+import type { Inserts } from "@/lib/supabase/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ensureTypedClient } from "@/lib/supabase/types";
 import { UserRole } from "@/lib/types";
+import { createProductSchema } from "@/lib/validators";
 import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
@@ -136,6 +138,120 @@ export async function GET(request: NextRequest) {
     console.error("API /api/products failure:", error);
     return NextResponse.json(
       { ok: false, message: "Failed to fetch products" },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/products - Create a new product (suppliers and admins)
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = ensureTypedClient(
+      await createServerSupabaseClient(request)
+    );
+
+    // AuthZ: require supplier or admin
+    const user = await getCurrentUser(supabase);
+    if (!user) {
+      return NextResponse.json(
+        { ok: false, message: "Authentication required" },
+        { status: 401 }
+      );
+    }
+    if (!hasRole(user, [UserRole.SUPPLIER, UserRole.ADMIN])) {
+      return NextResponse.json(
+        { ok: false, message: "Insufficient permissions" },
+        { status: 403 }
+      );
+    }
+
+    // Parse and validate body
+    const body = await request.json().catch(() => ({}));
+    const parsed = createProductSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: "Invalid product data",
+          fieldErrors: parsed.error.flatten().fieldErrors,
+        },
+        { status: 400 }
+      );
+    }
+    const data = parsed.data;
+
+    // Normalize region to DB expectations (DB stores region as array of strings)
+    // Note: The validator currently uses ['KR','JP','CN','GLOBAL'] caps; DB uses e.g. 'Global'.
+    const normalizedRegion = (data.region || []).map((r) =>
+      r === "GLOBAL" ? "Global" : r
+    );
+
+    // Optional SKU uniqueness per supplier
+    if (data.sku) {
+      const { data: existingSku } = await supabase
+        .from("products")
+        .select("id")
+        .eq("supplier_id", user.id)
+        .eq("sku", data.sku)
+        .maybeSingle();
+      if (existingSku) {
+        return NextResponse.json(
+          {
+            ok: false,
+            message: "Product with this SKU already exists",
+            fieldErrors: { sku: ["SKU must be unique per supplier"] },
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Build insert payload
+    type ProductInsert = Inserts<"products">;
+    const now = new Date().toISOString();
+    const insertData: ProductInsert = {
+      supplier_id: user.id,
+      title: data.title,
+      description: data.description,
+      images: data.images as any,
+      price: data.price,
+      original_price: data.originalPrice ?? null,
+      category: data.category,
+      region: normalizedRegion as any,
+      stock_count: data.stockCount,
+      in_stock: data.stockCount > 0,
+      commission: data.commission,
+      active: true,
+      sku: data.sku ?? null,
+      created_at: now,
+      updated_at: now,
+    } as any;
+
+    const { data: created, error } = await supabase
+      .from("products")
+      .insert(insertData)
+      .select("id")
+      .maybeSingle();
+
+    if (error || !created) {
+      return NextResponse.json(
+        { ok: false, message: "Failed to create product" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        ok: true,
+        data: { id: (created as any).id },
+        message: "Product created",
+      },
+      { status: 201 }
+    );
+  } catch (err) {
+    console.error("POST /api/products error:", err);
+    return NextResponse.json(
+      { ok: false, message: "Something went wrong" },
       { status: 500 }
     );
   }

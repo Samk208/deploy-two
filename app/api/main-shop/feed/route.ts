@@ -5,6 +5,23 @@ export const dynamic = "force-dynamic";
 
 type Sort = "new" | "price-asc" | "price-desc";
 
+// Simple backoff helper
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isTransientError(e: unknown): boolean {
+  const msg = String((e as any)?.message || e || "");
+  // Common transient signals from fetch/undici/Supabase REST
+  return (
+    msg.includes("fetch failed") ||
+    msg.includes("ECONNRESET") ||
+    msg.includes("ETIMEDOUT") ||
+    msg.includes("network timeout") ||
+    msg.includes("ENOTFOUND")
+  );
+}
+
 // Helper to build the base filtered query to avoid duplication
 function buildBaseQuery(
   supabase: ReturnType<typeof getSupabaseAdmin>,
@@ -69,27 +86,47 @@ export async function GET(req: Request) {
 
     const supabase = getSupabaseAdmin();
 
-    // Build base where clause
-    let query = buildBaseQuery(supabase, {
-      q,
-      category,
-      minPrice,
-      maxPrice,
-      inStockOnly,
-    });
+    // Execute with small retry to smooth transient network failures
+    const MAX_RETRIES = 3;
+    const BASE_DELAY_MS = 200;
 
-    // Sorting
-    if (sort === "price-asc") query = query.order("price", { ascending: true });
-    else if (sort === "price-desc")
-      query = query.order("price", { ascending: false });
-    else query = query.order("created_at", { ascending: false });
+    let data: any[] | null = null;
+    let count: number | null = null;
+    let lastError: unknown = null;
 
-    // Pagination with count
-    const { data, error, count } = await query.range(from, to);
-    if (error) throw error;
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        // Build fresh query each attempt (query builders are immutable-ish but re-create to be safe)
+        let qBuilder = buildBaseQuery(supabase, {
+          q,
+          category,
+          minPrice,
+          maxPrice,
+          inStockOnly,
+        });
+
+        if (sort === "price-asc") qBuilder = qBuilder.order("price", { ascending: true });
+        else if (sort === "price-desc") qBuilder = qBuilder.order("price", { ascending: false });
+        else qBuilder = qBuilder.order("created_at", { ascending: false });
+
+        const res = await (qBuilder as any).range(from, to);
+        if (res.error) throw res.error;
+        data = res.data ?? [];
+        count = (res.count ?? 0) as number;
+        lastError = null;
+        break;
+      } catch (e) {
+        lastError = e;
+        if (attempt >= MAX_RETRIES || !isTransientError(e)) {
+          throw e;
+        }
+        const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
+        await sleep(delay);
+      }
+    }
 
     // Map to ShopFeedItem format with images array (images[0] = primary)
-    const items = (data ?? []).map((p: any) => ({
+    const items = (data || []).map((p: any) => ({
       id: p.id,
       title: p.title,
       price: p.price,
@@ -102,7 +139,7 @@ export async function GET(req: Request) {
       created_at: p.created_at,
     }));
 
-    const total = count ?? 0;
+    const total = count || 0;
     const hasMore = page * limit < total;
 
     return NextResponse.json(

@@ -1,42 +1,70 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Users, ShoppingBag, TrendingUp, Shield, Zap, Globe, Star, CheckCircle } from "lucide-react"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  ArrowRight,
+  CheckCircle,
+  Globe,
+  Shield,
+  ShoppingBag,
+  Star,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
 
 const features = [
   {
     icon: Users,
     title: "For Influencers",
-    description: "Create your personalized shop, curate products, and earn commissions from every sale.",
-    benefits: ["Custom shop pages", "Product curation tools", "Real-time analytics", "Flexible pricing"],
+    description:
+      "Create your personalized shop, curate products, and earn commissions from every sale.",
+    benefits: [
+      "Custom shop pages",
+      "Product curation tools",
+      "Real-time analytics",
+      "Flexible pricing",
+    ],
     cta: "Start Your Shop",
     href: "/influencers",
   },
   {
     icon: ShoppingBag,
     title: "For Suppliers",
-    description: "Reach thousands of influencers and expand your market reach with our platform.",
-    benefits: ["Global influencer network", "Inventory management", "Commission tracking", "Regional targeting"],
+    description:
+      "Reach thousands of influencers and expand your market reach with our platform.",
+    benefits: [
+      "Global influencer network",
+      "Inventory management",
+      "Commission tracking",
+      "Regional targeting",
+    ],
     cta: "List Your Products",
     href: "/brands",
   },
   {
     icon: TrendingUp,
     title: "For Customers",
-    description: "Discover curated products from your favorite influencers and shop with confidence.",
-    benefits: ["Curated selections", "Trusted recommendations", "Secure payments", "Fast shipping"],
+    description:
+      "Discover curated products from your favorite influencers and shop with confidence.",
+    benefits: [
+      "Curated selections",
+      "Trusted recommendations",
+      "Secure payments",
+      "Fast shipping",
+    ],
     cta: "Start Shopping",
     href: "/shop",
   },
-]
+];
 
 const stats = [
   { value: "10K+", label: "Active Influencers" },
   { value: "500+", label: "Brand Partners" },
   { value: "$2M+", label: "Creator Earnings" },
   { value: "50+", label: "Countries" },
-]
+];
 
 const testimonials = [
   {
@@ -60,7 +88,7 @@ const testimonials = [
       "I love discovering new products through my favorite creators. The shopping experience is seamless and trustworthy.",
     avatar: "/customer-avatar.png",
   },
-]
+];
 
 export default function HomePage() {
   return (
@@ -80,18 +108,28 @@ export default function HomePage() {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto text-pretty">
-              The all-in-one platform where suppliers, influencers, and customers come together to create authentic
-              shopping experiences that drive real results.
+              The all-in-one platform where suppliers, influencers, and
+              customers come together to create authentic shopping experiences
+              that drive real results.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-3" asChild>
+              <Button
+                size="lg"
+                className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-3"
+                asChild
+              >
                 <Link href="/sign-up">
                   Get Started Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-3 bg-transparent" asChild>
+              <Button
+                variant="outline"
+                size="lg"
+                className="text-lg px-8 py-3 bg-transparent"
+                asChild
+              >
                 <Link href="/demo">Watch Demo</Link>
               </Button>
             </div>
@@ -99,7 +137,9 @@ export default function HomePage() {
             <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-2xl mx-auto">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-indigo-600">{stat.value}</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-indigo-600">
+                    {stat.value}
+                  </div>
                   <div className="text-sm text-gray-600">{stat.label}</div>
                 </div>
               ))}
@@ -116,13 +156,14 @@ export default function HomePage() {
               Built for Everyone in the Commerce Ecosystem
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Whether you're creating, selling, or shopping, One-Link provides the tools you need to succeed.
+              Whether you're creating, selling, or shopping, One-Link provides
+              the tools you need to succeed.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {features.map((feature, index) => {
-              const Icon = feature.icon
+              const Icon = feature.icon;
               return (
                 <Card
                   key={index}
@@ -133,20 +174,28 @@ export default function HomePage() {
                       <Icon className="h-6 w-6 text-indigo-600" />
                     </div>
 
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                      {feature.title}
+                    </h3>
 
                     <p className="text-gray-600 mb-6">{feature.description}</p>
 
                     <ul className="space-y-2 mb-8">
                       {feature.benefits.map((benefit, benefitIndex) => (
-                        <li key={benefitIndex} className="flex items-center text-sm text-gray-600">
+                        <li
+                          key={benefitIndex}
+                          className="flex items-center text-sm text-gray-600"
+                        >
                           <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                           {benefit}
                         </li>
                       ))}
                     </ul>
 
-                    <Button className="w-full bg-indigo-600 hover:bg-indigo-700" asChild>
+                    <Button
+                      className="w-full bg-indigo-600 hover:bg-indigo-700"
+                      asChild
+                    >
                       <Link href={feature.href}>
                         {feature.cta}
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -154,7 +203,7 @@ export default function HomePage() {
                     </Button>
                   </CardContent>
                 </Card>
-              )
+              );
             })}
           </div>
         </div>
@@ -167,7 +216,10 @@ export default function HomePage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               Trusted by Creators and Brands Worldwide
             </h2>
-            <p className="text-xl text-gray-600">Join thousands who are already growing their business with One-Link</p>
+            <p className="text-xl text-gray-600">
+              Join thousands who are already growing their business with
+              One-Link
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -176,21 +228,32 @@ export default function HomePage() {
                 <CardContent className="p-6">
                   <div className="flex items-center mb-4">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 text-amber-400 fill-current" />
+                      <Star
+                        key={i}
+                        className="h-4 w-4 text-amber-400 fill-current"
+                      />
                     ))}
                   </div>
 
-                  <p className="text-gray-700 mb-6 italic">"{testimonial.content}"</p>
+                  <p className="text-gray-700 mb-6 italic">
+                    "{testimonial.content}"
+                  </p>
 
                   <div className="flex items-center">
                     <img
                       src={testimonial.avatar || "/placeholder.svg"}
                       alt={testimonial.name}
                       className="w-10 h-10 rounded-full mr-3"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div>
-                      <div className="font-semibold text-gray-900">{testimonial.name}</div>
-                      <div className="text-sm text-gray-600">{testimonial.role}</div>
+                      <div className="font-semibold text-gray-900">
+                        {testimonial.name}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {testimonial.role}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -208,11 +271,16 @@ export default function HomePage() {
               Ready to Transform Your Commerce Experience?
             </h2>
             <p className="text-xl text-indigo-100 mb-8">
-              Join One-Link today and start building meaningful connections that drive real business results.
+              Join One-Link today and start building meaningful connections that
+              drive real business results.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-50 text-lg px-8 py-3" asChild>
+              <Button
+                size="lg"
+                className="bg-white text-indigo-600 hover:bg-gray-50 text-lg px-8 py-3"
+                asChild
+              >
                 <Link href="/sign-up">
                   Start Your Journey
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -246,5 +314,5 @@ export default function HomePage() {
         </div>
       </section>
     </div>
-  )
+  );
 }

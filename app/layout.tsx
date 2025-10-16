@@ -3,7 +3,6 @@ import { CookieBanner } from "@/components/layout/cookie-banner";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { AuthProvider } from "@/lib/auth-context";
-import GoogleTranslate from "@/components/global/GoogleTranslate";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import type React from "react";
@@ -61,11 +60,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="font-sans antialiased bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <head></head>
+      <body
+        className="font-sans antialiased bg-gray-50 text-gray-900 min-h-screen flex flex-col"
+        suppressHydrationWarning
+      >
         <AuthProvider>
           <ClientProviders>
-            <GoogleTranslate />
             <a
               href="#main-content"
               className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-indigo-600 text-white px-4 py-2 rounded-lg z-50"

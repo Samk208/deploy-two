@@ -1,0 +1,21 @@
+[build]
+  command = "pnpm build"
+  publish = ".next"
+  environment = { NEXT_TELEMETRY_DISABLED = "1" }
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Ensure Next.js dev server previews work locally (optional)
+[dev]
+  framework = "next"
+  command = "pnpm dev"
+  port = 3000
+
+# Basic headers to align with Next image caching if routed through Netlify
+[[headers]]
+  for = "/_next/image*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+

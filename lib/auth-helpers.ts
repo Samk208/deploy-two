@@ -1,48 +1,59 @@
-import { createServerSupabaseClient } from './supabase/server'
-import { supabaseAdmin, type Inserts, type Updates } from './supabase/admin'
-import { UserRole, type User, type AuthResponse } from './types'
-import { NextRequest } from 'next/server'
-import type { TypedSupabaseClient } from './supabase/types'
-import type { QueryData, QueryResult } from '@supabase/supabase-js'
+import { supabaseAdmin, type Inserts, type Updates } from "./supabase/admin";
+import type { TypedSupabaseClient } from "./supabase/types";
+import { UserRole, type AuthResponse, type User } from "./types";
 
 // Get current user from supabase client
-export async function getCurrentUser(supabase: TypedSupabaseClient): Promise<User | null> {
+export async function getCurrentUser(
+  supabase: TypedSupabaseClient
+): Promise<User | null> {
   try {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session?.user) return null
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.user) return null;
 
     // Use proper type inference with QueryData pattern
     const query = supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', session.user.id)
-      .maybeSingle()
-    
-    const { data: user, error } = await query
+      .from("profiles")
+      .select("*")
+      .eq("id", session.user.id)
+      .maybeSingle();
 
-    if (error || !user) return null
+    const { data: user, error } = await query;
+
+    if (error || !user) return null;
+
+    // Determine effective role: elevate to admin if JWT metadata marks admin
+    const jwtMetaRole = String(
+      (session as any)?.user?.app_metadata?.role ||
+        (session as any)?.user?.user_metadata?.role ||
+        ""
+    ).toLowerCase();
+    const dbRole = (user as any).role as UserRole;
+    const effectiveRole: UserRole =
+      jwtMetaRole === "admin" ? UserRole.ADMIN : dbRole;
 
     // Transform database user to User type
     return {
       id: user.id,
-      email: session.user.email ?? '',
-      name: (user as any).name ?? '',
-      role: (user as any).role as UserRole,
+      email: session.user.email ?? "",
+      name: (user as any).name ?? "",
+      role: effectiveRole,
       avatar: (user as any).avatar || undefined,
       verified: (user as any).verified || false,
       createdAt: user.created_at ?? new Date().toISOString(),
-      updatedAt: user.updated_at ?? new Date().toISOString()
-    }
+      updatedAt: user.updated_at ?? new Date().toISOString(),
+    };
   } catch (error) {
-    console.error('Error getting current user:', error)
-    return null
+    console.error("Error getting current user:", error);
+    return null;
   }
 }
 
 // Verify user role
 export function hasRole(user: User | null, allowedRoles: UserRole[]): boolean {
-  if (!user) return false
-  return allowedRoles.includes(user.role)
+  if (!user) return false;
+  return allowedRoles.includes(user.role);
 }
 
 // Create user profile in database
@@ -53,10 +64,10 @@ export async function createUserProfile(
   role: UserRole
 ): Promise<User | null> {
   try {
-    console.log('Creating user profile with:', { userId, email, name, role })
-    
+    console.log("Creating user profile with:", { userId, email, name, role });
+
     // Create the insert object with proper typing
-    const insertData: Inserts<'profiles'> = {
+    const insertData: Inserts<"profiles"> = {
       id: userId,
       // email is stored in auth.users; profiles keeps app fields
       name,
@@ -64,84 +75,84 @@ export async function createUserProfile(
       verified: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    } as any
-    
+    } as any;
+
     // Use supabaseAdmin to bypass RLS for user creation
     // Upsert to avoid conflicts with the on_auth_user_created trigger
     const { data: user, error } = await supabaseAdmin
-      .from('profiles')
-      .upsert(insertData as any, { onConflict: 'id' })
+      .from("profiles")
+      .upsert(insertData as any, { onConflict: "id" })
       .select()
-      .single()
+      .single();
 
     if (error) {
-      console.error('Error creating user profile:', error)
-      return null
+      console.error("Error creating user profile:", error);
+      return null;
     }
 
-    if (!user) return null
+    if (!user) return null;
 
-    console.log('User profile created successfully:', user)
-    
+    console.log("User profile created successfully:", user);
+
     // Transform to User type
     return {
       id: user.id,
-      email: email ?? '',
-      name: (user as any).name ?? '',
+      email: email ?? "",
+      name: (user as any).name ?? "",
       role: (user as any).role as UserRole,
       avatar: (user as any).avatar || undefined,
       verified: (user as any).verified || false,
       createdAt: user.created_at ?? new Date().toISOString(),
-      updatedAt: user.updated_at ?? new Date().toISOString()
-    }
+      updatedAt: user.updated_at ?? new Date().toISOString(),
+    };
   } catch (error) {
-    console.error('Unexpected error creating user profile:', error)
-    return null
+    console.error("Unexpected error creating user profile:", error);
+    return null;
   }
 }
 
 // Update user profile
 export async function updateUserProfile(
   userId: string,
-  updates: Partial<Pick<User, 'name' | 'avatar' | 'verified'>>
+  updates: Partial<Pick<User, "name" | "avatar" | "verified">>
 ): Promise<User | null> {
   try {
     // Create the update object with proper typing
-    const updateData: Updates<'profiles'> = {
+    const updateData: Updates<"profiles"> = {
       ...(updates.name && { name: updates.name }),
       ...(updates.avatar !== undefined && { avatar: updates.avatar || null }),
       ...(updates.verified !== undefined && { verified: updates.verified }),
       updated_at: new Date().toISOString(),
-    }
+    };
 
     const { data: user, error } = await supabaseAdmin
-      .from('profiles')
+      .from("profiles")
       .update(updateData as any)
-      .eq('id', userId)
+      .eq("id", userId)
       .select()
-      .single()
+      .single();
 
     if (error) {
-      console.error('Error updating user profile:', error)
-      return null
+      console.error("Error updating user profile:", error);
+      return null;
     }
 
-    if (!user) return null
+    if (!user) return null;
 
     // Transform to User type
     return {
       id: user.id,
-      email: '',
-      name: (user as any).name ?? '',
+      email: "",
+      name: (user as any).name ?? "",
       role: (user as any).role as UserRole,
       avatar: (user as any).avatar || undefined,
       verified: (user as any).verified || false,
       createdAt: user.created_at ?? new Date().toISOString(),
-      updatedAt: user.updated_at ?? new Date().toISOString()
-    }
+      updatedAt: user.updated_at ?? new Date().toISOString(),
+    };
   } catch (error) {
-    console.error('Error updating user profile:', error)
-    return null
+    console.error("Error updating user profile:", error);
+    return null;
   }
 }
 
@@ -154,7 +165,7 @@ export function createAuthErrorResponse(
     ok: false,
     message,
     errors,
-  }
+  };
 }
 
 // Generate success response
@@ -167,64 +178,69 @@ export function createAuthSuccessResponse(
     role: user.role,
     user,
     message,
-  }
+  };
 }
 
 // Check if user is verified (for actions requiring verification)
 export function requiresVerification(role: UserRole): boolean {
-  return ['supplier', 'influencer'].includes(role)
+  return ["supplier", "influencer"].includes(role);
 }
 
 // Get user by email
-export async function getUserByEmail(email: string): Promise<{ data: User | null; error?: any }> {
+export async function getUserByEmail(
+  email: string
+): Promise<{ data: User | null; error?: any }> {
   try {
     // Look up real existence in auth.users via Admin API
     // Note: Supabase JS Admin API doesn't expose getUserByEmail in all versions, so we list and filter.
     // This is acceptable for low volume sign-ups; for high volume, implement a server-side RPC.
-    const perPage = 200
-    let page = 1
-    let foundUser: any | null = null
+    const perPage = 200;
+    let page = 1;
+    let foundUser: any | null = null;
     // Normalize email case for comparison
-    const target = email.trim().toLowerCase()
+    const target = email.trim().toLowerCase();
 
     // Paginate until we find the user or exhaust
     while (true) {
-      const { data: pageData, error: listErr } = await supabaseAdmin.auth.admin.listUsers({ page, perPage })
-      if (listErr) return { data: null, error: listErr }
-      const users = pageData?.users || []
-      const match = users.find((u: any) => (u.email || '').trim().toLowerCase() === target)
+      const { data: pageData, error: listErr } =
+        await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+      if (listErr) return { data: null, error: listErr };
+      const users = pageData?.users || [];
+      const match = users.find(
+        (u: any) => (u.email || "").trim().toLowerCase() === target
+      );
       if (match) {
-        foundUser = match
-        break
+        foundUser = match;
+        break;
       }
-      if (!users.length) break
-      page += 1
+      if (!users.length) break;
+      page += 1;
       // Safety cap for pagination
-      if (page > 25) break
+      if (page > 25) break;
     }
 
-    if (!foundUser) return { data: null, error: null }
+    if (!foundUser) return { data: null, error: null };
 
     // Fetch profile to build a complete User object if present
     const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('*')
-      .eq('id', foundUser.id)
-      .maybeSingle()
+      .from("profiles")
+      .select("*")
+      .eq("id", foundUser.id)
+      .maybeSingle();
 
     const transformedUser: User = {
       id: foundUser.id,
       email: foundUser.email ?? email,
-      name: (profile as any)?.name ?? '',
-      role: ((profile as any)?.role ?? 'customer') as UserRole,
+      name: (profile as any)?.name ?? "",
+      role: ((profile as any)?.role ?? "customer") as UserRole,
       avatar: (profile as any)?.avatar || undefined,
       verified: (profile as any)?.verified || false,
       createdAt: (profile as any)?.created_at ?? new Date().toISOString(),
-      updatedAt: (profile as any)?.updated_at ?? new Date().toISOString()
-    }
+      updatedAt: (profile as any)?.updated_at ?? new Date().toISOString(),
+    };
 
-    return { data: transformedUser, error: null }
+    return { data: transformedUser, error: null };
   } catch (error) {
-    return { data: null, error }
+    return { data: null, error };
   }
 }

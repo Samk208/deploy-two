@@ -10,7 +10,8 @@ function getAdminClient() {
   // If test project vars are provided, override the default env consumed by lib/supabase/admin
   if (process.env.SUPABASE_TEST_URL && process.env.SUPABASE_TEST_SERVICE_ROLE) {
     process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.SUPABASE_TEST_URL;
-    process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_TEST_SERVICE_ROLE;
+    process.env.SUPABASE_SERVICE_ROLE_KEY =
+      process.env.SUPABASE_TEST_SERVICE_ROLE;
   }
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const mod = require("../../lib/supabase/admin") as { supabaseAdmin: any };
@@ -40,45 +41,62 @@ async function deleteAuthUserByEmail(email: string) {
 
 // Ensure a user exists with the desired credentials/metadata.
 // If the user already exists (e.g., prior delete failed due to FK/constraints), update it in-place.
-async function ensureAuthUser(email: string, password: string, metadata: Record<string, any>) {
+async function ensureAuthUser(
+  email: string,
+  password: string,
+  metadata: Record<string, any>
+) {
   const supabaseAdmin = getAdminClient();
   const lc = email.toLowerCase();
-  const { data: list, error: listErr } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  const { data: list, error: listErr } =
+    await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
   if (listErr) {
     console.warn("List users failed while ensuring user:", listErr);
   }
   const existing = list?.users?.find((u: any) => u.email?.toLowerCase() === lc);
   if (existing) {
-    // Update password, confirm email, and metadata to desired role/state
-    const { data: upd, error: updErr } = await supabaseAdmin.auth.admin.updateUserById(existing.id, {
-      password,
+    // Update confirmation and metadata; only reset password if explicitly allowed
+    const allowPasswordReset = process.env.ALLOW_PASSWORD_RESET === "true";
+    const updatePayload: Record<string, any> = {
       email_confirm: true,
       user_metadata: metadata,
-    });
+    };
+    if (allowPasswordReset) updatePayload.password = password;
+    const { data: upd, error: updErr } =
+      await supabaseAdmin.auth.admin.updateUserById(existing.id, updatePayload);
     if (updErr) {
-      const msg = typeof updErr?.message === "string" ? updErr.message : String(updErr);
-      throw new Error(`ensureAuthUser update failed for email=${email}, userId=${existing.id}: ${msg}`);
+      const msg =
+        typeof updErr?.message === "string" ? updErr.message : String(updErr);
+      throw new Error(
+        `ensureAuthUser update failed for email=${email}, userId=${existing.id}: ${msg}`
+      );
     }
     return { user: upd?.user ?? existing };
   }
   // Create if not found
-  const { data: created, error: crtErr } = await supabaseAdmin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: metadata,
-  });
+  const { data: created, error: crtErr } =
+    await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: metadata,
+    });
   if (crtErr) {
-    const msg = typeof crtErr?.message === "string" ? crtErr.message : String(crtErr);
+    const msg =
+      typeof crtErr?.message === "string" ? crtErr.message : String(crtErr);
     throw new Error(`ensureAuthUser create failed for email=${email}: ${msg}`);
   }
   return { user: created?.user };
 }
 
 export default async function globalSetup(_config: FullConfig) {
-  // Guard: only seed when explicitly requested for E2E
-  if (process.env.E2E_SEED !== 'true') {
-    console.log('[global-setup] E2E_SEED not set — skipping seed.');
+  // Guard: read-only by default. Only mutate when SEED_MODE=write or legacy E2E_SEED=true
+  const writeMode =
+    process.env.SEED_MODE === "write" || process.env.E2E_SEED === "true";
+  if (!writeMode) {
+    console.log(
+      "[global-setup] Read-only mode — skipping any user/product seeding"
+    );
     return;
   }
   const supabaseAdmin = getAdminClient();
@@ -129,10 +147,14 @@ export default async function globalSetup(_config: FullConfig) {
     role: "admin",
     full_name: "Test Admin",
   });
-  const influencerUser = await ensureAuthUser(influencerEmail, INFLUENCER_PASSWORD, {
-    role: "influencer",
-    full_name: "Test Influencer",
-  });
+  const influencerUser = await ensureAuthUser(
+    influencerEmail,
+    INFLUENCER_PASSWORD,
+    {
+      role: "influencer",
+      full_name: "Test Influencer",
+    }
+  );
   const brandUser = await ensureAuthUser(brandEmail, BRAND_PASSWORD, {
     // Use 'supplier' to match app roles (dashboard/supplier)
     role: "supplier",
@@ -185,7 +207,8 @@ export default async function globalSetup(_config: FullConfig) {
     console.warn("Profiles upsert exception:", e);
   }
 
-  if (brandUser?.user?.id) {
+  const allowProductSeeding = process.env.TEST_SEED_PRODUCTS === "true";
+  if (brandUser?.user?.id && allowProductSeeding) {
     const products = [
       {
         title: "E2E Test Product A",
@@ -250,11 +273,12 @@ export default async function globalSetup(_config: FullConfig) {
           logo: null,
           banner: null,
           active: true,
-        } as any
+        } as any;
         const { error: shopUpsertErr } = await supabaseAdmin
           .from("shops")
-          .upsert(shopRow, { onConflict: "handle" })
-        if (shopUpsertErr) throw new Error(`Shop upsert failed: ${shopUpsertErr.message}`)
+          .upsert(shopRow, { onConflict: "handle" });
+        if (shopUpsertErr)
+          throw new Error(`Shop upsert failed: ${shopUpsertErr.message}`);
 
         // Link 1-3 products to the influencer shop as published
         if (seeded && seeded.length > 0) {
@@ -262,18 +286,20 @@ export default async function globalSetup(_config: FullConfig) {
             influencer_id: influencerUser.user.id,
             product_id: p.id,
             custom_title: undefined,
-            sale_price: i === 0 ? Number((Number(p.price) * 0.8).toFixed(2)) : null,
+            sale_price:
+              i === 0 ? Number((Number(p.price) * 0.8).toFixed(2)) : null,
             published: true,
-          }))
+          }));
           // Upsert links with composite conflict on influencer_id,product_id
           const { error: linksErr } = await supabaseAdmin
             .from("influencer_shop_products")
-            .upsert(links as any, { onConflict: "influencer_id,product_id" })
-          if (linksErr) throw new Error(`Link upsert failed: ${linksErr.message}`)
+            .upsert(links as any, { onConflict: "influencer_id,product_id" });
+          if (linksErr)
+            throw new Error(`Link upsert failed: ${linksErr.message}`);
         }
       }
     } catch (e) {
-      console.warn("Seeding influencer shop exception:", e)
+      console.warn("Seeding influencer shop exception:", e);
     }
 
     // Seed one minimal order and commission so supplier dashboard has data

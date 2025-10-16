@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 import {
   AlertCircle,
@@ -52,6 +53,7 @@ interface ProductFormData {
 
 export default function NewProductPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState<string>("");
@@ -138,6 +140,15 @@ export default function NewProductPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (res.status === 423) {
+        toast({
+          title: "Frozen (read-only)",
+          description:
+            "Product creation is disabled while the freeze is active. You can continue drafting locally.",
+          variant: "destructive",
+        });
+        return;
+      }
       if (!res.ok) throw new Error("Failed to create product");
       setSuccessMessage("Product created successfully");
     } catch (e) {

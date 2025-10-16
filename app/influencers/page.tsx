@@ -1,14 +1,23 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Users, ShoppingBag, TrendingUp, Star, CheckCircle, Zap } from "lucide-react"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  ArrowRight,
+  CheckCircle,
+  ShoppingBag,
+  Star,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
 
 const features = [
   {
     icon: ShoppingBag,
     title: "Custom Shop Pages",
-    description: "Create your personalized shop with your unique style and branding.",
+    description:
+      "Create your personalized shop with your unique style and branding.",
   },
   {
     icon: TrendingUp,
@@ -25,7 +34,7 @@ const features = [
     title: "Real-time Analytics",
     description: "Track your performance and understand what drives sales.",
   },
-]
+];
 
 const benefits = [
   "Set your own commission rates",
@@ -34,22 +43,24 @@ const benefits = [
   "24/7 automated sales",
   "Mobile-optimized experience",
   "Built-in marketing tools",
-]
+];
 
 const testimonials = [
   {
     name: "Sarah Chen",
     role: "Fashion Influencer",
-    content: "One-Link transformed how I monetize my content. Setting up my shop was effortless, and my earnings have tripled!",
+    content:
+      "One-Link transformed how I monetize my content. Setting up my shop was effortless, and my earnings have tripled!",
     avatar: "/fashion-influencer-avatar.png",
   },
   {
     name: "Marcus Rodriguez",
     role: "Lifestyle Creator",
-    content: "The platform is incredibly user-friendly. I love how I can curate products that match my brand perfectly.",
+    content:
+      "The platform is incredibly user-friendly. I love how I can curate products that match my brand perfectly.",
     avatar: "/brand-manager-avatar.png",
   },
-]
+];
 
 export default function InfluencersPage() {
   return (
@@ -71,18 +82,28 @@ export default function InfluencersPage() {
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto text-pretty">
-              Create your personalized shop, curate products your audience will love, and earn commissions from every sale. 
-              No inventory, no shipping, just pure profit.
+              Create your personalized shop, curate products your audience will
+              love, and earn commissions from every sale. No inventory, no
+              shipping, just pure profit.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-3" asChild>
+              <Button
+                size="lg"
+                className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-3"
+                asChild
+              >
                 <Link href="/sign-up">
                   Start Your Shop Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-3 bg-transparent" asChild>
+              <Button
+                variant="outline"
+                size="lg"
+                className="text-lg px-8 py-3 bg-transparent"
+                asChild
+              >
                 <Link href="/demo">Watch Demo</Link>
               </Button>
             </div>
@@ -98,18 +119,24 @@ export default function InfluencersPage() {
               Everything You Need to Succeed
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Our platform provides all the tools and features you need to create a thriving online business.
+              Our platform provides all the tools and features you need to
+              create a thriving online business.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow">
+              <Card
+                key={index}
+                className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow"
+              >
                 <CardContent className="p-6">
                   <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <feature.icon className="w-8 h-8 text-indigo-600" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {feature.title}
+                  </h3>
                   <p className="text-gray-600">{feature.description}</p>
                 </CardContent>
               </Card>
@@ -126,7 +153,8 @@ export default function InfluencersPage() {
               Why Choose One-Link?
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Join thousands of successful influencers who have transformed their content into a profitable business.
+              Join thousands of successful influencers who have transformed
+              their content into a profitable business.
             </p>
           </div>
 
@@ -159,19 +187,33 @@ export default function InfluencersPage() {
               What Our Influencers Say
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Join thousands of successful influencers who have transformed their content into a profitable business.
+              Join thousands of successful influencers who have transformed
+              their content into a profitable business.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow">
+              <Card
+                key={index}
+                className="text-center border-0 shadow-lg hover:shadow-xl transition-shadow"
+              >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-center mb-4">
-                    <img src={testimonial.avatar} alt={testimonial.name} className="w-16 h-16 rounded-full object-cover" />
+                    <img
+                      src={testimonial.avatar}
+                      alt={testimonial.name}
+                      className="w-16 h-16 rounded-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   </div>
-                  <p className="text-gray-700 italic mb-4">"{testimonial.content}"</p>
-                  <p className="text-gray-900 font-semibold">{testimonial.name}</p>
+                  <p className="text-gray-700 italic mb-4">
+                    "{testimonial.content}"
+                  </p>
+                  <p className="text-gray-900 font-semibold">
+                    {testimonial.name}
+                  </p>
                   <p className="text-gray-600 text-sm">{testimonial.role}</p>
                 </CardContent>
               </Card>
@@ -187,10 +229,14 @@ export default function InfluencersPage() {
             Ready to Start Earning?
           </h2>
           <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
-            Join our platform today and start building your passive income stream. 
-            It only takes a few minutes to get started.
+            Join our platform today and start building your passive income
+            stream. It only takes a few minutes to get started.
           </p>
-          <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-100 text-lg px-8 py-3" asChild>
+          <Button
+            size="lg"
+            className="bg-white text-indigo-600 hover:bg-gray-100 text-lg px-8 py-3"
+            asChild
+          >
             <Link href="/sign-up">
               Get Started Now
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -199,5 +245,5 @@ export default function InfluencersPage() {
         </div>
       </section>
     </div>
-  )
+  );
 }

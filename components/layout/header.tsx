@@ -1,7 +1,5 @@
 "use client";
 
-import GoogleTranslate from "@/components/global/GoogleTranslate";
-import { GoogleTranslateErrorBoundary } from "@/components/global/GoogleTranslateErrorBoundary";
 import { CartSidebar } from "@/components/shop/cart-sidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/lib/auth-context";
 import { useCartStore } from "@/lib/store/cart";
 import { UserRole } from "@/lib/types";
@@ -244,10 +241,7 @@ const navigation = [
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [autoTranslate, setAutoTranslate] = useState(false);
-  const [currentLang, setCurrentLang] = useState<
-    "auto" | "en" | "ko" | "zh-CN"
-  >("auto");
+  // Translation controls removed
   const { user, signOut, refreshUser } = useAuth();
 
   // Ensure header syncs right after server redirects or tab focus
@@ -288,60 +282,7 @@ export function Header() {
     setMobileMenuOpen(false);
   };
 
-  // Sync header label with Google Translate cookie
-  useEffect(() => {
-    try {
-      const get = (window as any).getTranslateLanguage as
-        | (() => "auto" | "en" | "ko" | "zh-CN")
-        | undefined;
-      if (typeof get === "function") {
-        setCurrentLang(get());
-      }
-    } catch (e) {
-      if (process.env.NODE_ENV !== "production") {
-        console.warn("Error accessing getTranslateLanguage:", e);
-      }
-    }
-
-    const id = setInterval(() => {
-      try {
-        const g = (window as any).getTranslateLanguage as
-          | (() => "auto" | "en" | "ko" | "zh-CN")
-          | undefined;
-        if (typeof g === "function") {
-          setCurrentLang(g());
-        }
-      } catch (e) {
-        if (process.env.NODE_ENV !== "production") {
-          console.warn("Error in language sync interval:", e);
-        }
-      }
-    }, 1500);
-    return () => clearInterval(id);
-  }, []);
-
-  const changeLanguage = (lang: "en" | "ko" | "zh-CN") => {
-    const set = (window as any).setTranslateLanguage as
-      | ((l: "en" | "ko" | "zh-CN") => void)
-      | undefined;
-    if (typeof set === "function") {
-      set(lang);
-      setCurrentLang(lang);
-    }
-  };
-
-  const langLabel = (code: "auto" | "en" | "ko" | "zh-CN") => {
-    switch (code) {
-      case "en":
-        return "EN";
-      case "ko":
-        return "KO";
-      case "zh-CN":
-        return "简体";
-      default:
-        return "EN";
-    }
-  };
+  // Translation controls removed
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
@@ -401,56 +342,10 @@ export function Header() {
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
-            {/* Google Translate Widget */}
-            <GoogleTranslateErrorBoundary>
-              <GoogleTranslate />
-            </GoogleTranslateErrorBoundary>
+            {/* Google Translate removed */}
             {/* Cart Icon */}
             <CartIcon />
-            {/* Language Toggle (EN / KO / 中文) */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="hidden sm:flex items-center space-x-1"
-                  aria-label="Language settings"
-                >
-                  <GlobeIcon />
-                  <span className="text-sm" data-testid="lang-label">
-                    {langLabel(currentLang)}
-                  </span>
-                  <ChevronDownIcon />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64">
-                <div className="p-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">
-                      Auto-translate via Google
-                    </span>
-                    <Switch
-                      checked={autoTranslate}
-                      onCheckedChange={setAutoTranslate}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Automatically translate content to your preferred language
-                  </p>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => changeLanguage("en")}>
-                  English (EN)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => changeLanguage("ko")}>
-                  한국어 (KO)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => changeLanguage("zh-CN")}>
-                  中文（简体）
-                </DropdownMenuItem>
-                {/* Traditional Chinese removed per requirements */}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Language menu removed */}
 
             {user ? (
               /* Authenticated User Menu */

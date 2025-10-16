@@ -25,6 +25,11 @@ const nextConfig = {
         hostname: 'picsum.photos',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        pathname: '/**',
+      },
       // Always allow HTTPS access to Supabase storage
       SUPABASE_HOST && {
         protocol: 'https',
