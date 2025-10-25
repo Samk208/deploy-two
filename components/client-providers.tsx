@@ -16,6 +16,23 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      // Register a basic service worker for installability/offline cache
+      navigator.serviceWorker
+        .getRegistration()
+        .then((reg) => {
+          if (!reg) {
+            return navigator.serviceWorker.register("/sw.js");
+          }
+          return reg;
+        })
+        .catch(() => {
+          // no-op
+        });
+    }
+  }, []);
+
   return (
     <>
       {/* Global toast UI for feedback (used by cart actions) */}

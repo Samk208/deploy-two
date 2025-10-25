@@ -29,6 +29,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface AvailableProduct {
   id: string;
@@ -490,9 +491,11 @@ export default function MyShopBuilder() {
                 >
                   <CardContent className="p-4">
                     <div className="flex gap-3">
-                      <img
+                      <Image
                         src={product.image}
                         alt={product.title}
+                        width={64}
+                        height={64}
                         className="w-16 h-16 object-cover rounded"
                       />
                       <div className="flex-1 min-w-0">
@@ -571,9 +574,11 @@ export default function MyShopBuilder() {
                                 >
                                   <GripVertical className="w-4 h-4 text-gray-400" />
                                 </div>
-                                <img
+                                <Image
                                   src={product.image}
                                   alt={product.title}
+                                  width={64}
+                                  height={64}
                                   className="w-16 h-16 object-cover rounded"
                                 />
                                 <div className="flex-1 min-w-0">

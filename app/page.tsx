@@ -1,3 +1,4 @@
+import { TranslatedText } from "@/components/global/TranslatedText";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +13,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 const features = [
@@ -99,18 +101,25 @@ export default function HomePage() {
           <div className="text-center max-w-4xl mx-auto">
             <Badge className="mb-6 bg-indigo-100 text-indigo-700 hover:bg-indigo-200">
               <Zap className="w-3 h-3 mr-1" />
-              Powering the future of social commerce
+              <TranslatedText>
+                Powering the future of social commerce
+              </TranslatedText>
             </Badge>
 
             <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6 text-balance">
-              Connect. Create.
-              <span className="text-indigo-600"> Commerce.</span>
+              <TranslatedText>Connect. Create.</TranslatedText>
+              <span className="text-indigo-600">
+                {" "}
+                <TranslatedText>Commerce.</TranslatedText>
+              </span>
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto text-pretty">
-              The all-in-one platform where suppliers, influencers, and
-              customers come together to create authentic shopping experiences
-              that drive real results.
+              <TranslatedText>
+                The all-in-one platform where suppliers, influencers, and
+                customers come together to create authentic shopping experiences
+                that drive real results.
+              </TranslatedText>
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -120,7 +129,7 @@ export default function HomePage() {
                 asChild
               >
                 <Link href="/sign-up">
-                  Get Started Free
+                  <TranslatedText>Get Started Free</TranslatedText>
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
@@ -130,7 +139,9 @@ export default function HomePage() {
                 className="text-lg px-8 py-3 bg-transparent"
                 asChild
               >
-                <Link href="/demo">Watch Demo</Link>
+                <Link href="/demo">
+                  <TranslatedText>Watch Demo</TranslatedText>
+                </Link>
               </Button>
             </div>
 
@@ -140,7 +151,9 @@ export default function HomePage() {
                   <div className="text-2xl sm:text-3xl font-bold text-indigo-600">
                     {stat.value}
                   </div>
-                  <div className="text-sm text-gray-600">{stat.label}</div>
+                  <div className="text-sm text-gray-600">
+                    <TranslatedText>{stat.label}</TranslatedText>
+                  </div>
                 </div>
               ))}
             </div>
@@ -153,11 +166,15 @@ export default function HomePage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Built for Everyone in the Commerce Ecosystem
+              <TranslatedText>
+                Built for Everyone in the Commerce Ecosystem
+              </TranslatedText>
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Whether you're creating, selling, or shopping, One-Link provides
-              the tools you need to succeed.
+              <TranslatedText>
+                Whether you're creating, selling, or shopping, One-Link provides
+                the tools you need to succeed.
+              </TranslatedText>
             </p>
           </div>
 
@@ -175,10 +192,12 @@ export default function HomePage() {
                     </div>
 
                     <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                      {feature.title}
+                      <TranslatedText>{feature.title}</TranslatedText>
                     </h3>
 
-                    <p className="text-gray-600 mb-6">{feature.description}</p>
+                    <p className="text-gray-600 mb-6">
+                      <TranslatedText>{feature.description}</TranslatedText>
+                    </p>
 
                     <ul className="space-y-2 mb-8">
                       {feature.benefits.map((benefit, benefitIndex) => (
@@ -187,7 +206,7 @@ export default function HomePage() {
                           className="flex items-center text-sm text-gray-600"
                         >
                           <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                          {benefit}
+                          <TranslatedText>{benefit}</TranslatedText>
                         </li>
                       ))}
                     </ul>
@@ -197,7 +216,7 @@ export default function HomePage() {
                       asChild
                     >
                       <Link href={feature.href}>
-                        {feature.cta}
+                        <TranslatedText>{feature.cta}</TranslatedText>
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
@@ -214,11 +233,15 @@ export default function HomePage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              Trusted by Creators and Brands Worldwide
+              <TranslatedText>
+                Trusted by Creators and Brands Worldwide
+              </TranslatedText>
             </h2>
             <p className="text-xl text-gray-600">
-              Join thousands who are already growing their business with
-              One-Link
+              <TranslatedText>
+                Join thousands who are already growing their business with
+                One-Link
+              </TranslatedText>
             </p>
           </div>
 
@@ -236,16 +259,17 @@ export default function HomePage() {
                   </div>
 
                   <p className="text-gray-700 mb-6 italic">
-                    "{testimonial.content}"
+                    "<TranslatedText>{testimonial.content}</TranslatedText>"
                   </p>
 
                   <div className="flex items-center">
-                    <img
+                    <Image
                       src={testimonial.avatar || "/placeholder.svg"}
                       alt={testimonial.name}
-                      className="w-10 h-10 rounded-full mr-3"
+                      width={40}
+                      height={40}
+                      className="rounded-full mr-3 w-10 h-10 object-cover"
                       loading="lazy"
-                      decoding="async"
                     />
                     <div>
                       <div className="font-semibold text-gray-900">
@@ -268,11 +292,15 @@ export default function HomePage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-              Ready to Transform Your Commerce Experience?
+              <TranslatedText>
+                Ready to Transform Your Commerce Experience?
+              </TranslatedText>
             </h2>
             <p className="text-xl text-indigo-100 mb-8">
-              Join One-Link today and start building meaningful connections that
-              drive real business results.
+              <TranslatedText>
+                Join One-Link today and start building meaningful connections
+                that drive real business results.
+              </TranslatedText>
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -282,32 +310,40 @@ export default function HomePage() {
                 asChild
               >
                 <Link href="/sign-up">
-                  Start Your Journey
+                  <TranslatedText>Start Your Journey</TranslatedText>
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button
                 variant="outline"
                 size="lg"
-                className="border-white text-white hover:bg-white hover:text-indigo-600 text-lg px-8 py-3 bg-transparent"
+                className="border-white text-white hover:bg-white hover:text-indigo-600 text-lg px-8 py-3"
                 asChild
               >
-                <Link href="/contact">Talk to Sales</Link>
+                <Link href="/contact">
+                  <TranslatedText>Talk to Sales</TranslatedText>
+                </Link>
               </Button>
             </div>
 
             <div className="mt-8 flex items-center justify-center space-x-6 text-indigo-200">
               <div className="flex items-center">
                 <Shield className="h-5 w-5 mr-2" />
-                <span className="text-sm">Enterprise Security</span>
+                <span className="text-sm">
+                  <TranslatedText>Enterprise Security</TranslatedText>
+                </span>
               </div>
               <div className="flex items-center">
                 <Globe className="h-5 w-5 mr-2" />
-                <span className="text-sm">Global Reach</span>
+                <span className="text-sm">
+                  <TranslatedText>Global Reach</TranslatedText>
+                </span>
               </div>
               <div className="flex items-center">
                 <Zap className="h-5 w-5 mr-2" />
-                <span className="text-sm">Lightning Fast</span>
+                <span className="text-sm">
+                  <TranslatedText>Lightning Fast</TranslatedText>
+                </span>
               </div>
             </div>
           </div>

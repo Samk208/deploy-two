@@ -1,5 +1,6 @@
 "use client";
 
+import { TranslatedText } from "@/components/global/TranslatedText";
 import { ProductImageGallery } from "@/components/shop/product-image-gallery";
 import { QuickViewModal } from "@/components/shop/quick-view-modal";
 import { Badge } from "@/components/ui/badge";
@@ -281,13 +282,15 @@ export function InfluencerShopClient({
               <div className="flex-1 text-white">
                 <h1 className="text-2xl font-bold mb-1">{influencer.name}</h1>
                 <p className="text-sm opacity-90 mb-2">@{influencer.handle}</p>
-                <p className="text-sm opacity-90 max-w-2xl">{influencer.bio}</p>
+                <p className="text-sm opacity-90 max-w-2xl">
+                  <TranslatedText>{influencer.bio}</TranslatedText>
+                </p>
 
                 <div className="flex items-center gap-4 mt-3">
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4" />
                     <span className="text-sm font-medium">
-                      {influencer.followers} followers
+                      <TranslatedText>{`${influencer.followers} followers`}</TranslatedText>
                     </span>
                   </div>
 
@@ -320,7 +323,7 @@ export function InfluencerShopClient({
                   className="bg-white/10 border-white/20 text-white hover:bg-white/20"
                 >
                   <Heart className="h-4 w-4 mr-2" />
-                  Follow
+                  <TranslatedText>Follow</TranslatedText>
                 </Button>
                 <Button
                   variant="outline"
@@ -328,7 +331,7 @@ export function InfluencerShopClient({
                   className="bg-white/10 border-white/20 text-white hover:bg-white/20"
                 >
                   <Share2 className="h-4 w-4 mr-2" />
-                  Share
+                  <TranslatedText>Share</TranslatedText>
                 </Button>
               </div>
             </div>
@@ -363,7 +366,7 @@ export function InfluencerShopClient({
                 <SelectContent>
                   {categories.map((category) => (
                     <SelectItem key={category} value={category}>
-                      {category}
+                      <TranslatedText>{category}</TranslatedText>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -376,7 +379,7 @@ export function InfluencerShopClient({
                 <SelectContent>
                   {regions.map((region) => (
                     <SelectItem key={region} value={region}>
-                      {region}
+                      <TranslatedText>{region}</TranslatedText>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -387,11 +390,21 @@ export function InfluencerShopClient({
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="featured">Featured</SelectItem>
-                  <SelectItem value="price-low">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">Price: High to Low</SelectItem>
-                  <SelectItem value="rating">Highest Rated</SelectItem>
-                  <SelectItem value="reviews">Most Reviews</SelectItem>
+                  <SelectItem value="featured">
+                    <TranslatedText>Featured</TranslatedText>
+                  </SelectItem>
+                  <SelectItem value="price-low">
+                    <TranslatedText>Price: Low to High</TranslatedText>
+                  </SelectItem>
+                  <SelectItem value="price-high">
+                    <TranslatedText>Price: High to Low</TranslatedText>
+                  </SelectItem>
+                  <SelectItem value="rating">
+                    <TranslatedText>Highest Rated</TranslatedText>
+                  </SelectItem>
+                  <SelectItem value="reviews">
+                    <TranslatedText>Most Reviews</TranslatedText>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -407,18 +420,21 @@ export function InfluencerShopClient({
               <Search className="h-12 w-12 mx-auto" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No products found
+              <TranslatedText>No products found</TranslatedText>
             </h3>
             <p className="text-gray-600">
-              Try adjusting your search or filters
+              <TranslatedText>
+                Try adjusting your search or filters
+              </TranslatedText>
             </p>
           </div>
         ) : (
           <>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">
-                {filteredProducts.length} product
-                {filteredProducts.length !== 1 ? "s" : ""} found
+                <TranslatedText>{`${filteredProducts.length} product${
+                  filteredProducts.length !== 1 ? "s" : ""
+                } found`}</TranslatedText>
               </h2>
             </div>
 
@@ -470,7 +486,7 @@ export function InfluencerShopClient({
                         variant="destructive"
                         className="absolute top-2 right-2 text-xs"
                       >
-                        Only {product.stockCount} left
+                        <TranslatedText>{`Only ${product.stockCount} left`}</TranslatedText>
                       </Badge>
                     )}
                   </div>
@@ -519,11 +535,11 @@ export function InfluencerShopClient({
                         onClick={() => handleAddToCart(product)}
                       >
                         <ShoppingCart className="h-4 w-4 mr-2" />
-                        Add to Cart
+                        <TranslatedText>Add to Cart</TranslatedText>
                       </Button>
                       <Link href={`/shop/${handle}/product/${product.id}`}>
                         <Button variant="outline" className="w-full">
-                          View
+                          <TranslatedText>View</TranslatedText>
                         </Button>
                       </Link>
                     </div>

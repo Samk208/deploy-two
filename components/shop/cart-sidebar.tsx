@@ -1,29 +1,28 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Separator } from "@/components/ui/separator"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useCartStore } from "@/lib/store/cart"
+import { TranslatedText } from "@/components/global/TranslatedText";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { useCartStore } from "@/lib/store/cart";
+import { cn } from "@/lib/utils";
 import {
-  ShoppingCart,
-  Plus,
-  Minus,
-  X,
-  ArrowLeft,
-  Shield,
-  Truck,
-  RotateCcw,
   AlertCircle,
   CheckCircle,
-  Trash2
-} from "lucide-react"
-import { cn } from "@/lib/utils"
+  Minus,
+  Plus,
+  RotateCcw,
+  Shield,
+  ShoppingCart,
+  Trash2,
+  Truck,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 export function CartSidebar() {
   const {
@@ -35,21 +34,21 @@ export function CartSidebar() {
     getShipping,
     updateQuantity,
     removeItem,
-    clearCart
-  } = useCartStore()
+    clearCart,
+  } = useCartStore();
 
-  const [orderNote, setOrderNote] = useState("")
+  const [orderNote, setOrderNote] = useState("");
 
   const handleProceedToCheckout = async () => {
     // Redirect to checkout page
-    window.location.href = '/checkout'
-  }
+    window.location.href = "/checkout";
+  };
 
-  const outOfStockItems = items.filter(item => item.maxQuantity === 0)
-  const inStockItems = items.filter(item => item.maxQuantity > 0)
+  const outOfStockItems = items.filter((item) => item.maxQuantity === 0);
+  const inStockItems = items.filter((item) => item.maxQuantity > 0);
 
   if (items.length === 0) {
-    return <EmptyCart />
+    return <EmptyCart />;
   }
 
   return (
@@ -58,7 +57,9 @@ export function CartSidebar() {
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">
           <ShoppingCart className="h-5 w-5" />
-          <h2 className="font-semibold">Shopping Cart</h2>
+          <h2 className="font-semibold">
+            <TranslatedText>Shopping Cart</TranslatedText>
+          </h2>
           <Badge variant="secondary">{getTotalItems()}</Badge>
         </div>
         {items.length > 0 && (
@@ -80,9 +81,9 @@ export function CartSidebar() {
         {inStockItems.length > 0 && (
           <div className="space-y-4">
             {inStockItems.map((item) => (
-              <CartItem 
-                key={item.id} 
-                item={item} 
+              <CartItem
+                key={item.id}
+                item={item}
                 onUpdateQuantity={updateQuantity}
                 onRemove={removeItem}
               />
@@ -95,12 +96,14 @@ export function CartSidebar() {
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-amber-800">
               <AlertCircle className="h-4 w-4" />
-              <span className="font-medium text-sm">Out of Stock Items</span>
+              <span className="font-medium text-sm">
+                <TranslatedText>Out of Stock Items</TranslatedText>
+              </span>
             </div>
             {outOfStockItems.map((item) => (
-              <CartItem 
-                key={item.id} 
-                item={item} 
+              <CartItem
+                key={item.id}
+                item={item}
                 onUpdateQuantity={updateQuantity}
                 onRemove={removeItem}
                 disabled
@@ -138,7 +141,9 @@ export function CartSidebar() {
           </div>
           <div className="flex justify-between text-sm">
             <span>Shipping</span>
-            <span>{getShipping() === 0 ? "FREE" : `$${getShipping().toFixed(2)}`}</span>
+            <span>
+              {getShipping() === 0 ? "FREE" : `$${getShipping().toFixed(2)}`}
+            </span>
           </div>
           {getShipping() === 0 && (
             <p className="text-xs text-green-600">
@@ -170,9 +175,11 @@ export function CartSidebar() {
           >
             Proceed to Checkout
           </Button>
-          
+
           <Button variant="outline" size="lg" className="w-full" asChild>
-            <Link href="/shop">Continue Shopping</Link>
+            <Link href="/shop">
+              <TranslatedText>Continue Shopping</TranslatedText>
+            </Link>
           </Button>
         </div>
 
@@ -193,18 +200,23 @@ export function CartSidebar() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 interface CartItemProps {
-  item: any
-  onUpdateQuantity: (id: string, quantity: number) => void
-  onRemove: (id: string) => void
-  disabled?: boolean
+  item: any;
+  onUpdateQuantity: (id: string, quantity: number) => void;
+  onRemove: (id: string) => void;
+  disabled?: boolean;
 }
 
-function CartItem({ item, onUpdateQuantity, onRemove, disabled = false }: CartItemProps) {
-  const [imageError, setImageError] = useState(false)
+function CartItem({
+  item,
+  onUpdateQuantity,
+  onRemove,
+  disabled = false,
+}: CartItemProps) {
+  const [imageError, setImageError] = useState(false);
 
   return (
     <div className={cn("flex gap-3", disabled && "opacity-60")}>
@@ -221,7 +233,7 @@ function CartItem({ item, onUpdateQuantity, onRemove, disabled = false }: CartIt
         {disabled && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <Badge variant="destructive" className="text-xs">
-              Out of Stock
+              <TranslatedText>Out of Stock</TranslatedText>
             </Badge>
           </div>
         )}
@@ -232,7 +244,7 @@ function CartItem({ item, onUpdateQuantity, onRemove, disabled = false }: CartIt
         <h4 className="font-medium text-sm text-gray-900 line-clamp-2">
           {item.title}
         </h4>
-        
+
         <div className="flex items-center gap-2 text-xs text-gray-600">
           <span>by {item.supplierName}</span>
           {item.supplierVerified && (
@@ -274,7 +286,7 @@ function CartItem({ item, onUpdateQuantity, onRemove, disabled = false }: CartIt
                 <Plus className="h-3 w-3" />
               </Button>
             </div>
-            
+
             <div className="text-xs font-semibold">
               ${(item.price * item.quantity).toFixed(2)}
             </div>
@@ -292,7 +304,7 @@ function CartItem({ item, onUpdateQuantity, onRemove, disabled = false }: CartIt
         <X className="h-3 w-3" />
       </Button>
     </div>
-  )
+  );
 }
 
 function EmptyCart() {
@@ -301,13 +313,19 @@ function EmptyCart() {
       <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
         <ShoppingCart className="h-10 w-10 text-gray-400" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">Your cart is empty</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <TranslatedText>Your cart is empty</TranslatedText>
+      </h3>
       <p className="text-gray-600 mb-6 max-w-sm">
-        Discover amazing products curated by your favorite creators
+        <TranslatedText>
+          Discover amazing products curated by your favorite creators
+        </TranslatedText>
       </p>
       <Button asChild className="bg-indigo-600 hover:bg-indigo-700">
-        <Link href="/shop">Start Shopping</Link>
+        <Link href="/shop">
+          <TranslatedText>Start Shopping</TranslatedText>
+        </Link>
       </Button>
     </div>
-  )
+  );
 }

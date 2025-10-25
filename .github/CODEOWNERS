@@ -1,0 +1,11 @@
+# Adjust owners as needed. Defaulting to repo owner.
+# Changes to dashboards and onboarding require review.
+# Paths are case-sensitive.
+
+# Dashboards (influencer, supplier/brand, admin)
+app/dashboard/**        @Samk208
+
+# Onboarding APIs and UI
+app/api/onboarding/**   @Samk208
+app/(onboarding)/**     @Samk208
+app/auth/onboarding/**  @Samk208

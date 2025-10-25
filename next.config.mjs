@@ -6,6 +6,10 @@ const SUPABASE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL
 const IS_DEV = process.env.NODE_ENV === 'development'
 
 const nextConfig = {
+  compiler: {
+    removeConsole:
+      process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
   eslint: {
     ignoreDuringBuilds: false,
   },
@@ -78,9 +82,38 @@ const nextConfig = {
         // Cache optimized image responses aggressively for best performance
         source: '/_next/image(.*)',
         headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        // Cache Next.js static assets aggressively and immutably
+        source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        // Cache public images for a reasonable time (1 week)
+        source: '/images/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=604800' },
+        ],
+      },
+      {
+        // Ensure the service worker is always fetched fresh
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, max-age=0' },
+        ],
+      },
+      {
+        // Optional: CSP in Report-Only mode to observe violations without blocking
+        source: '/:path*',
+        headers: [
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            key: 'Content-Security-Policy-Report-Only',
+            value:
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self' https: data:; frame-src 'self' https:; base-uri 'self'; form-action 'self';",
           },
         ],
       },

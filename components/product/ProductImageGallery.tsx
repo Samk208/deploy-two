@@ -22,7 +22,7 @@ export default function ProductImageGallery({
       ? images
       : primaryImage
         ? [primaryImage]
-        : ["/images/fallback.jpg"];
+        : ["/placeholder.jpg"];
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,6 +48,10 @@ export default function ProductImageGallery({
           alt={`${title} - Image ${currentIndex + 1}`}
           fill
           className="rounded-2xl object-cover transition-opacity duration-300"
+          // Eager-load the first image to avoid initial blink
+          loading={currentIndex === 0 ? "eager" : "lazy"}
+          // Avoid optimization flicker on Supabase-hosted assets
+          unoptimized
           sizes="(max-width: 1024px) 100vw, 50vw"
           priority={currentIndex === 0}
           onLoad={() => setIsLoading(false)}
@@ -111,6 +115,7 @@ export default function ProductImageGallery({
                 alt={`${title} thumbnail ${index + 1}`}
                 fill
                 className="object-cover"
+                unoptimized
                 sizes="80px"
               />
             </button>

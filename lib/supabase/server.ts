@@ -13,6 +13,25 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Narrow types after validation for downstream calls
 const SUPABASE_URL: string = supabaseUrl;
 const SUPABASE_ANON_KEY: string = supabaseAnonKey;
+const __supabaseHost = (() => {
+  try {
+    return new URL(SUPABASE_URL).hostname;
+  } catch {
+    return "";
+  }
+})();
+const __allowProdInDev =
+  process.env.SUPABASE_ALLOW_PROD_IN_DEV === "true" ||
+  process.env.NEXT_PUBLIC_SUPABASE_ALLOW_PROD_IN_DEV === "true";
+if (
+  process.env.NODE_ENV === "development" &&
+  /\.supabase\.co$/i.test(__supabaseHost) &&
+  !__allowProdInDev
+) {
+  console.warn(
+    "[supabase] Using live Supabase host in development on server. Set SUPABASE_ALLOW_PROD_IN_DEV=true to silence this warning."
+  );
+}
 
 // For Pages Router - create server client with request context
 export async function createServerSupabaseClient(

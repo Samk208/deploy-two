@@ -10,52 +10,56 @@ CREATE POLICY "Admins can view all users" ON users FOR SELECT USING (
   auth.uid() = id 
   OR 
   -- Allow admin access by checking auth metadata directly instead of querying users table
-  (auth.jwt() ->> 'user_metadata' ->> 'role' = 'admin')
+  ((auth.jwt()::jsonb -> 'user_metadata' ->> 'role') = 'admin')
   OR
   -- Alternative: Allow admin access via claims (if you set up custom claims)
-  (auth.jwt() ->> 'app_metadata' ->> 'role' = 'admin')
+  ((auth.jwt()::jsonb -> 'app_metadata' ->> 'role') = 'admin')
 );
 
 -- Also update products policy to avoid recursion
 DROP POLICY IF EXISTS "Suppliers can manage own products" ON products;
+
 CREATE POLICY "Suppliers can manage own products" ON products FOR ALL USING (
   supplier_id = auth.uid() 
   OR 
-  (auth.jwt() ->> 'user_metadata' ->> 'role' = 'admin')
+  ((auth.jwt()::jsonb -> 'user_metadata' ->> 'role') = 'admin')
   OR
-  (auth.jwt() ->> 'app_metadata' ->> 'role' = 'admin')
+  ((auth.jwt()::jsonb -> 'app_metadata' ->> 'role') = 'admin')
 );
 
 -- Update shops policy
 DROP POLICY IF EXISTS "Influencers can manage own shops" ON shops;
+
 CREATE POLICY "Influencers can manage own shops" ON shops FOR ALL USING (
   influencer_id = auth.uid() 
   OR 
-  (auth.jwt() ->> 'user_metadata' ->> 'role' = 'admin')
+  ((auth.jwt()::jsonb -> 'user_metadata' ->> 'role') = 'admin')
   OR
-  (auth.jwt() ->> 'app_metadata' ->> 'role' = 'admin')
+  ((auth.jwt()::jsonb -> 'app_metadata' ->> 'role') = 'admin')
 );
 
--- Update orders policy  
+-- Update orders policy
 DROP POLICY IF EXISTS "Admins can view all orders" ON orders;
+
 CREATE POLICY "Admins can view all orders" ON orders FOR SELECT USING (
   customer_id = auth.uid() 
   OR 
-  (auth.jwt() ->> 'user_metadata' ->> 'role' = 'admin')
+  ((auth.jwt()::jsonb -> 'user_metadata' ->> 'role') = 'admin')
   OR
-  (auth.jwt() ->> 'app_metadata' ->> 'role' = 'admin')
+  ((auth.jwt()::jsonb -> 'app_metadata' ->> 'role') = 'admin')
 );
 
 -- Update commissions policy
 DROP POLICY IF EXISTS "Users can view own commissions" ON commissions;
+
 CREATE POLICY "Users can view own commissions" ON commissions FOR SELECT USING (
   influencer_id = auth.uid() 
   OR 
   supplier_id = auth.uid() 
   OR
-  (auth.jwt() ->> 'user_metadata' ->> 'role' = 'admin')
+  ((auth.jwt()::jsonb -> 'user_metadata' ->> 'role') = 'admin')
   OR
-  (auth.jwt() ->> 'app_metadata' ->> 'role' = 'admin')
+  ((auth.jwt()::jsonb -> 'app_metadata' ->> 'role') = 'admin')
 );
 
 -- Create a simpler, more permissive policy for development/testing
@@ -68,7 +72,7 @@ CREATE POLICY "Public profiles viewable" ON users FOR SELECT USING (
   verified = true
   OR
   -- Admin access
-  (auth.jwt() ->> 'user_metadata' ->> 'role' = 'admin')
+  ((auth.jwt()::jsonb -> 'user_metadata' ->> 'role') = 'admin')
   OR
-  (auth.jwt() ->> 'app_metadata' ->> 'role' = 'admin')
+  ((auth.jwt()::jsonb -> 'app_metadata' ->> 'role') = 'admin')
 );

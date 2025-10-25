@@ -1,68 +1,68 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { useCartStore } from "@/lib/store/cart"
-import { 
-  Heart, 
-  ShoppingCart, 
-  Star, 
-  Plus, 
-  Minus, 
-  Eye, 
-  Share2,
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useCartStore } from "@/lib/store/cart";
+import { cn } from "@/lib/utils";
+import {
+  AlertTriangle,
   CheckCircle,
-  AlertTriangle
-} from "lucide-react"
-import { cn } from "@/lib/utils"
+  Eye,
+  Heart,
+  Minus,
+  Plus,
+  Share2,
+  ShoppingCart,
+  Star,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 interface Product {
-  id: string
-  title: string
-  description: string
-  price: number
-  originalPrice?: number
-  images: string[]
-  category: string
-  tags: string[]
-  stock_count: number
-  in_stock: boolean
-  active: boolean
-  rating?: number
-  review_count?: number
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  originalPrice?: number;
+  images: string[];
+  category: string;
+  tags: string[];
+  stock_count: number;
+  in_stock: boolean;
+  active: boolean;
+  rating?: number;
+  review_count?: number;
   supplier: {
-    id: string
-    name: string
-    verified: boolean
-    avatar_url?: string
-  }
+    id: string;
+    name: string;
+    verified: boolean;
+    avatar_url?: string;
+  };
 }
 
 interface ProductCardProps {
-  product: Product
-  showSupplier?: boolean
-  size?: "sm" | "md" | "lg"
-  className?: string
-  onQuickView?: (product: Product) => void
+  product: Product;
+  showSupplier?: boolean;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+  onQuickView?: (product: Product) => void;
 }
 
-export function ProductCard({ 
-  product, 
-  showSupplier = true, 
-  size = "md", 
+export function ProductCard({
+  product,
+  showSupplier = true,
+  size = "md",
   className,
-  onQuickView
+  onQuickView,
 }: ProductCardProps) {
-  const { addItem, isInCart, getCartItem, updateQuantity } = useCartStore()
-  const [isWishlisted, setIsWishlisted] = useState(false)
-  const [imageError, setImageError] = useState(false)
+  const { addItem, isInCart, getCartItem, updateQuantity } = useCartStore();
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
-  const cartItem = getCartItem(product.id)
-  const inCart = isInCart(product.id)
+  const cartItem = getCartItem(product.id);
+  const inCart = isInCart(product.id);
 
   const handleAddToCart = () => {
     addItem({
@@ -76,36 +76,38 @@ export function ProductCard({
       supplierId: product.supplier.id,
       supplierName: product.supplier.name,
       supplierVerified: product.supplier.verified,
-    })
-  }
+    });
+  };
 
   const handleQuantityChange = (change: number) => {
     if (cartItem) {
-      const newQuantity = cartItem.quantity + change
-      updateQuantity(product.id, newQuantity)
+      const newQuantity = cartItem.quantity + change;
+      updateQuantity(product.id, newQuantity);
     }
-  }
+  };
 
-  const discountPercentage = product.originalPrice 
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-    : 0
+  const discountPercentage = product.originalPrice
+    ? Math.round(
+        ((product.originalPrice - product.price) / product.originalPrice) * 100
+      )
+    : 0;
 
-  const isLowStock = product.stock_count <= 5 && product.stock_count > 0
+  const isLowStock = product.stock_count <= 5 && product.stock_count > 0;
 
   const cardSizes = {
     sm: "w-full max-w-sm",
     md: "w-full max-w-sm sm:max-w-md",
-    lg: "w-full max-w-md lg:max-w-lg"
-  }
+    lg: "w-full max-w-md lg:max-w-lg",
+  };
 
   const imageSizes = {
     sm: "h-48",
     md: "h-56 sm:h-64",
-    lg: "h-64 lg:h-80"
-  }
+    lg: "h-64 lg:h-80",
+  };
 
   return (
-    <Card 
+    <Card
       data-testid="product-card"
       className={cn(
         "group overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 bg-white",
@@ -114,26 +116,28 @@ export function ProductCard({
       )}
     >
       {/* Image Section - Fixed positioning */}
-      <div className={cn(
-        "relative overflow-hidden bg-gray-100",
-        imageSizes[size]
-      )}>
+      <div
+        className={cn("relative overflow-hidden bg-gray-100", imageSizes[size])}
+      >
         <Link href={`/products/${product.id}`} className="block w-full h-full">
           <div className="relative w-full h-full">
-            <Image
-              src={!imageError && product.images[0] ? product.images[0] : "/placeholder.svg"}
+            <img
+              src={
+                !imageError && product.images[0]
+                  ? product.images[0]
+                  : "/placeholder.jpg"
+              }
               alt={product.title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="eager"
               onError={() => setImageError(true)}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           </div>
         </Link>
 
         {/* Overlays and Badges */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-        
+
         {/* Top badges */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1">
           {discountPercentage > 0 && (
@@ -156,10 +160,12 @@ export function ProductCard({
             className="h-8 w-8 rounded-full bg-white/90 hover:bg-white"
             onClick={() => setIsWishlisted(!isWishlisted)}
           >
-            <Heart className={cn(
-              "h-4 w-4",
-              isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"
-            )} />
+            <Heart
+              className={cn(
+                "h-4 w-4",
+                isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"
+              )}
+            />
           </Button>
           <Button
             size="sm"
@@ -189,7 +195,10 @@ export function ProductCard({
 
         {isLowStock && product.in_stock && (
           <div className="absolute bottom-3 left-3">
-            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+            <Badge
+              variant="outline"
+              className="bg-amber-50 text-amber-700 border-amber-200"
+            >
               <AlertTriangle className="h-3 w-3 mr-1" />
               Only {product.stock_count} left
             </Badge>
@@ -226,7 +235,7 @@ export function ProductCard({
               {product.title}
             </h3>
           </Link>
-          
+
           {(product.rating || product.review_count) && (
             <div className="flex items-center gap-1">
               <div className="flex items-center">
@@ -263,7 +272,7 @@ export function ProductCard({
               Out of Stock
             </Button>
           ) : !inCart ? (
-            <Button 
+            <Button
               onClick={handleAddToCart}
               className="w-full bg-indigo-600 hover:bg-indigo-700"
             >
@@ -303,5 +312,5 @@ export function ProductCard({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

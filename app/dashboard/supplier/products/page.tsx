@@ -1,5 +1,6 @@
 "use client";
 
+import { TranslatedText } from "@/components/global/TranslatedText";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -130,18 +131,24 @@ export default function SupplierProductsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">My Products</h1>
+        <h1 className="text-2xl font-bold">
+          <TranslatedText>My Products</TranslatedText>
+        </h1>
         <div className="flex gap-2 items-center">
           <Select value={regionFilter} onValueChange={setRegionFilter}>
             <SelectTrigger className="w-36" data-testid="region-filter">
               <SelectValue placeholder="All Regions" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All Regions</SelectItem>
+              <SelectItem value="ALL">
+                <TranslatedText>All Regions</TranslatedText>
+              </SelectItem>
               <SelectItem value="KR">KR</SelectItem>
               <SelectItem value="JP">JP</SelectItem>
               <SelectItem value="CN">CN</SelectItem>
-              <SelectItem value="Global">Global</SelectItem>
+              <SelectItem value="Global">
+                <TranslatedText>Global</TranslatedText>
+              </SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -149,7 +156,7 @@ export default function SupplierProductsPage() {
             onClick={() => fetchProducts(1)}
             data-testid="apply-filters"
           >
-            Apply
+            <TranslatedText>Apply</TranslatedText>
           </Button>
           <Button
             variant="outline"
@@ -157,16 +164,16 @@ export default function SupplierProductsPage() {
             data-testid="open-import-dialog"
           >
             <Upload className="mr-2 h-4 w-4" />
-            Import
+            <TranslatedText>Import</TranslatedText>
           </Button>
           <Button variant="outline" onClick={() => setShowExportDrawer(true)}>
             <Download className="mr-2 h-4 w-4" />
-            Export
+            <TranslatedText>Export</TranslatedText>
           </Button>
           <Link href="/dashboard/supplier/products/new">
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Add Product
+              <TranslatedText>Add Product</TranslatedText>
             </Button>
           </Link>
         </div>
@@ -178,11 +185,13 @@ export default function SupplierProductsPage() {
           className="border rounded-md p-8 text-center text-gray-600"
           data-testid="empty-products"
         >
-          <p className="mb-4">No products yet.</p>
+          <p className="mb-4">
+            <TranslatedText>No products yet.</TranslatedText>
+          </p>
           <Link href="/dashboard/supplier/products/new" className="inline-flex">
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Create your first product
+              <TranslatedText>Create your first product</TranslatedText>
             </Button>
           </Link>
         </div>

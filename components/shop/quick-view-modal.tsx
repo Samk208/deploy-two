@@ -1,46 +1,71 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { ProductImageGallery } from "@/components/shop/product-image-gallery"
+import { TranslatedText } from "@/components/global/TranslatedText";
+import { ProductImageGallery } from "@/components/shop/product-image-gallery";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import {
+  Heart,
+  RotateCcw,
+  Shield,
+  ShoppingCart,
+  Star,
+  Truck,
+} from "lucide-react";
 
 interface QuickViewModalProps {
-  product: any
-  isOpen: boolean
-  onClose: () => void
-  onAddToCart: (product: any) => void
+  product: any;
+  isOpen: boolean;
+  onClose: () => void;
+  onAddToCart: (product: any) => void;
 }
 
-export function QuickViewModal({ product, isOpen, onClose, onAddToCart }: QuickViewModalProps) {
-  const [quantity, setQuantity] = useState(1)
-  const [isWishlisted, setIsWishlisted] = useState(false)
+export function QuickViewModal({
+  product,
+  isOpen,
+  onClose,
+  onAddToCart,
+}: QuickViewModalProps) {
+  const [quantity, setQuantity] = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
-  if (!product) return null
+  if (!product) return null;
 
-  const images = Array.isArray(product.images) ? product.images : [product.images].filter(Boolean)
-  const hasDiscount = product.original_price && product.original_price > product.price
-  const discountPercentage = hasDiscount 
-    ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
-    : 0
+  const images = Array.isArray(product.images)
+    ? product.images
+    : [product.images].filter(Boolean);
+  const hasDiscount =
+    product.original_price && product.original_price > product.price;
+  const discountPercentage = hasDiscount
+    ? Math.round(
+        ((product.original_price - product.price) / product.original_price) *
+          100
+      )
+    : 0;
 
   const handleAddToCart = () => {
-    onAddToCart({ ...product, quantity })
-    onClose()
-  }
+    onAddToCart({ ...product, quantity });
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">{product.title}</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            {product.title}
+          </DialogTitle>
         </DialogHeader>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Product Images */}
           <ProductImageGallery
@@ -77,7 +102,9 @@ export function QuickViewModal({ product, isOpen, onClose, onAddToCart }: QuickV
                     key={star}
                     className={cn(
                       "h-4 w-4",
-                      star <= (product.rating || 4.5) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                      star <= (product.rating || 4.5)
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
                     )}
                   />
                 ))}
@@ -94,18 +121,26 @@ export function QuickViewModal({ product, isOpen, onClose, onAddToCart }: QuickV
 
             {/* Stock Status */}
             <div className="flex items-center gap-2">
-              <div className={cn(
-                "w-2 h-2 rounded-full",
-                product.in_stock ? "bg-green-500" : "bg-red-500"
-              )} />
+              <div
+                className={cn(
+                  "w-2 h-2 rounded-full",
+                  product.in_stock ? "bg-green-500" : "bg-red-500"
+                )}
+              />
               <span className="text-sm font-medium">
-                {product.in_stock ? `In Stock (${product.stock_count || 0} available)` : "Out of Stock"}
+                {product.in_stock ? (
+                  <TranslatedText>{`In Stock (${product.stock_count || 0} available)`}</TranslatedText>
+                ) : (
+                  <TranslatedText>Out of Stock</TranslatedText>
+                )}
               </span>
             </div>
 
             {/* Quantity Selector */}
             <div className="flex items-center gap-4">
-              <label className="text-sm font-medium">Quantity:</label>
+              <label className="text-sm font-medium">
+                <TranslatedText>Quantity:</TranslatedText>
+              </label>
               <div className="flex items-center border border-gray-300 rounded-md">
                 <Button
                   variant="ghost"
@@ -121,7 +156,11 @@ export function QuickViewModal({ product, isOpen, onClose, onAddToCart }: QuickV
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setQuantity(Math.min(product.stock_count || 10, quantity + 1))}
+                  onClick={() =>
+                    setQuantity(
+                      Math.min(product.stock_count || 10, quantity + 1)
+                    )
+                  }
                   className="h-8 w-8 p-0"
                 >
                   +
@@ -137,17 +176,19 @@ export function QuickViewModal({ product, isOpen, onClose, onAddToCart }: QuickV
                 className="flex-1"
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
-                Add to Cart
+                <TranslatedText>Add to Cart</TranslatedText>
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setIsWishlisted(!isWishlisted)}
                 className="px-3"
               >
-                <Heart className={cn(
-                  "h-4 w-4",
-                  isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"
-                )} />
+                <Heart
+                  className={cn(
+                    "h-4 w-4",
+                    isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"
+                  )}
+                />
               </Button>
             </div>
 
@@ -169,23 +210,39 @@ export function QuickViewModal({ product, isOpen, onClose, onAddToCart }: QuickV
 
             {/* Product Details */}
             <div className="space-y-2 pt-4 border-t">
-              <h4 className="font-medium text-gray-900">Product Details</h4>
+              <h4 className="font-medium text-gray-900">
+                <TranslatedText>Product Details</TranslatedText>
+              </h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="text-gray-600">Category:</span>
+                  <span className="text-gray-600">
+                    <TranslatedText>Category:</TranslatedText>
+                  </span>
                   <span className="ml-2 font-medium">{product.category}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">SKU:</span>
-                  <span className="ml-2 font-medium">{product.sku || "N/A"}</span>
+                  <span className="text-gray-600">
+                    <TranslatedText>SKU:</TranslatedText>
+                  </span>
+                  <span className="ml-2 font-medium">
+                    {product.sku || "N/A"}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Region:</span>
-                  <span className="ml-2 font-medium">{product.region || "Global"}</span>
+                  <span className="text-gray-600">
+                    <TranslatedText>Region:</TranslatedText>
+                  </span>
+                  <span className="ml-2 font-medium">
+                    {product.region || "Global"}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Commission:</span>
-                  <span className="ml-2 font-medium">{product.commission}%</span>
+                  <span className="text-gray-600">
+                    <TranslatedText>Commission:</TranslatedText>
+                  </span>
+                  <span className="ml-2 font-medium">
+                    {product.commission}%
+                  </span>
                 </div>
               </div>
             </div>
@@ -193,5 +250,5 @@ export function QuickViewModal({ product, isOpen, onClose, onAddToCart }: QuickV
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

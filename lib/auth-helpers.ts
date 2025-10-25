@@ -35,14 +35,14 @@ export async function getCurrentUser(
 
     // Transform database user to User type
     return {
-      id: user.id,
+      id: (user as any).id,
       email: session.user.email ?? "",
       name: (user as any).name ?? "",
       role: effectiveRole,
       avatar: (user as any).avatar || undefined,
       verified: (user as any).verified || false,
-      createdAt: user.created_at ?? new Date().toISOString(),
-      updatedAt: user.updated_at ?? new Date().toISOString(),
+      createdAt: (user as any).created_at ?? new Date().toISOString(),
+      updatedAt: (user as any).updated_at ?? new Date().toISOString(),
     };
   } catch (error) {
     console.error("Error getting current user:", error);
@@ -96,14 +96,14 @@ export async function createUserProfile(
 
     // Transform to User type
     return {
-      id: user.id,
+      id: (user as any).id,
       email: email ?? "",
       name: (user as any).name ?? "",
       role: (user as any).role as UserRole,
       avatar: (user as any).avatar || undefined,
       verified: (user as any).verified || false,
-      createdAt: user.created_at ?? new Date().toISOString(),
-      updatedAt: user.updated_at ?? new Date().toISOString(),
+      createdAt: (user as any).created_at ?? new Date().toISOString(),
+      updatedAt: (user as any).updated_at ?? new Date().toISOString(),
     };
   } catch (error) {
     console.error("Unexpected error creating user profile:", error);
@@ -141,14 +141,14 @@ export async function updateUserProfile(
 
     // Transform to User type
     return {
-      id: user.id,
+      id: (user as any).id,
       email: "",
       name: (user as any).name ?? "",
       role: (user as any).role as UserRole,
       avatar: (user as any).avatar || undefined,
       verified: (user as any).verified || false,
-      createdAt: user.created_at ?? new Date().toISOString(),
-      updatedAt: user.updated_at ?? new Date().toISOString(),
+      createdAt: (user as any).created_at ?? new Date().toISOString(),
+      updatedAt: (user as any).updated_at ?? new Date().toISOString(),
     };
   } catch (error) {
     console.error("Error updating user profile:", error);

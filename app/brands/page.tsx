@@ -11,6 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const features = [
   {
@@ -202,12 +203,13 @@ export default function BrandsPage() {
               >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-center mb-4">
-                    <img
+                    <Image
                       src={testimonial.avatar}
                       alt={testimonial.name}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 rounded-full object-cover"
                       loading="lazy"
-                      decoding="async"
                     />
                   </div>
                   <p className="text-gray-700 italic mb-4">

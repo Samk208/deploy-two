@@ -90,6 +90,7 @@ playwright.config.ts
 playwright.readonly.config.ts
 test-results/
 test-results.json
+
 dashboard-build/test-artifacts/
 "Dashboard Build/Reports/test-artifacts"/
 "Dashboard Build/Reports/html-report"/
@@ -104,7 +105,10 @@ tokens/
 
 patches/
 
-.github/
+# Allow workflows and CodeRabbit config
+!.github/**
+!.coderabbit.yaml
+
 .husky/
 .vscode/
 .windsurf/

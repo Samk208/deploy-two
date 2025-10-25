@@ -1,0 +1,1 @@
+﻿ALTER TABLE products ADD COLUMN IF NOT EXISTS primary_image TEXT GENERATED ALWAYS AS (images[1]) STORED;

@@ -2,9 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { normalizeAll } from "@/lib/images/normalizeUnsplash";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface ProductImageCarouselProps {
   images: string[] | null | undefined;
@@ -25,19 +26,29 @@ export function ProductImageCarousel({
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Prepare images array with fallback
-  const imageList =
-    Array.isArray(images) && images.length > 0
-      ? images.filter((img) => typeof img === "string" && img.trim() !== "")
-      : ["/images/fallback.jpg"];
+  const imageList = useMemo(() => {
+    const arr = Array.isArray(images) ? images : [];
+    const filtered = arr.filter((img) => typeof img === "string" && img.trim() !== "");
+    const normalized = normalizeAll(filtered);
+    return normalized.length > 0 ? normalized : ["/placeholder.jpg"];
+  }, [images]);
 
   const hasMultipleImages = imageList.length > 1;
-  const currentImage = imageList[currentIndex] || "/images/fallback.jpg";
+  const currentImage = imageList[currentIndex] || "/placeholder.jpg";
+
+  // Dev-only: log computed image list for diagnostics
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      // eslint-disable-next-line no-console
+      console.log("[ProductImageCarousel] imageList:", imageList);
+    }
+  }, [imageList]);
 
   // Reset current index if images change
   useEffect(() => {
     setCurrentIndex(0);
     setImageErrors(new Set());
-  }, [images]);
+  }, [imageList]);
 
   // Auto-scroll functionality (pauses on hover)
   useEffect(() => {
@@ -86,7 +97,7 @@ export function ProductImageCarousel({
         <Image
           src={
             imageErrors.has(currentIndex)
-              ? "/images/fallback.jpg"
+              ? "/placeholder.jpg"
               : currentImage
           }
           alt={`${title} - Image ${currentIndex + 1}`}
@@ -95,6 +106,9 @@ export function ProductImageCarousel({
             "object-cover transition-all duration-300",
             isTransitioning && "scale-105"
           )}
+          // Let Next.js choose loading/fetchPriority to avoid SSR/CSR mismatches
+          placeholder="blur"
+          blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNlZWUiIC8+PC9zdmc+"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           priority={priority}
           onError={() => handleImageError(currentIndex)}
@@ -189,11 +203,12 @@ export function ProductImageCarousel({
               disabled={isTransitioning}
             >
               <Image
-                src={imageErrors.has(index) ? "/images/fallback.jpg" : image}
+                src={imageErrors.has(index) ? "/placeholder.jpg" : image}
                 alt={`${title} thumbnail ${index + 1}`}
                 width={48}
                 height={48}
                 className="object-cover w-full h-full"
+                unoptimized
                 onError={() => handleImageError(index)}
               />
             </button>

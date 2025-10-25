@@ -14,8 +14,15 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth-context";
 import { useCartStore } from "@/lib/store/cart";
 import { UserRole } from "@/lib/types";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
+// ==========================================
+// TRANSLATION INTEGRATION - ADDITIVE ONLY
+// ==========================================
+import { LanguageSwitcher } from "@/components/global/LanguageSwitcher";
+import { TranslatedText } from "@/components/global/TranslatedText";
 
 // Custom SVG icons to replace lucide-react
 const SearchIcon = () => (
@@ -125,7 +132,7 @@ const DashboardIcon = () => (
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
     />
   </svg>
 );
@@ -141,13 +148,7 @@ const SettingsIcon = () => (
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756.426-1.756 2.924 0 3.35a1.724 1.724 0 001.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756.426-1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756.426-1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756.426-1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756.426-1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756.426-1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756.426-1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756.426-1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756.426-1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0"
     />
   </svg>
 );
@@ -291,7 +292,7 @@ export function Header() {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-indigo-600 text-white px-4 py-2 rounded-lg z-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
       >
-        Skip to main content
+        <TranslatedText>Skip to main content</TranslatedText>
       </a>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -321,7 +322,7 @@ export function Header() {
                 href={item.href}
                 className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-md px-2 py-1"
               >
-                {item.name}
+                <TranslatedText>{item.name}</TranslatedText>
               </Link>
             ))}
           </nav>
@@ -342,10 +343,14 @@ export function Header() {
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
-            {/* Google Translate removed */}
+            {/* ============================================
+                TRANSLATION INTEGRATION - ADDITIVE ONLY
+                Language switcher for Google Translate
+                ============================================ */}
+            <LanguageSwitcher />
+
             {/* Cart Icon */}
             <CartIcon />
-            {/* Language menu removed */}
 
             {user ? (
               /* Authenticated User Menu */
@@ -359,13 +364,15 @@ export function Header() {
                       aria-label="User menu"
                       data-testid="user-menu"
                     >
-                      <img
+                      <Image
                         src={
                           user.avatar ||
                           `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || user.email || "User")}`
                         }
                         alt={user.name || user.email || "User"}
-                        className="h-6 w-6 rounded-full"
+                        width={24}
+                        height={24}
+                        className="h-6 w-6 rounded-full object-cover"
                       />
                       <span className="text-sm font-medium">
                         {user.name ??
@@ -422,14 +429,18 @@ export function Header() {
               /* Auth Buttons for non-authenticated users */
               <div className="hidden sm:flex items-center space-x-3">
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/sign-in">Sign In</Link>
+                  <Link href="/sign-in">
+                    <TranslatedText>Sign In</TranslatedText>
+                  </Link>
                 </Button>
                 <Button
                   size="sm"
                   className="bg-indigo-600 hover:bg-indigo-700"
                   asChild
                 >
-                  <Link href="/sign-up">Get Started</Link>
+                  <Link href="/sign-up">
+                    <TranslatedText>Get Started</TranslatedText>
+                  </Link>
                 </Button>
               </div>
             )}
@@ -477,20 +488,22 @@ export function Header() {
                   className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {item.name}
+                  <TranslatedText>{item.name}</TranslatedText>
                 </Link>
               ))}
               <div className="border-t pt-4 mt-4">
                 {user ? (
                   <div className="flex flex-col space-y-3 px-3">
                     <div className="flex items-center space-x-3 pb-3">
-                      <img
+                      <Image
                         src={
                           user.avatar ||
                           `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name || user.email || "User")}`
                         }
                         alt={user.name || user.email || "User"}
-                        className="h-8 w-8 rounded-full"
+                        width={32}
+                        height={32}
+                        className="h-8 w-8 rounded-full object-cover"
                       />
                       <div>
                         <p className="text-sm font-medium">
@@ -507,7 +520,7 @@ export function Header() {
                         href={getDashboardUrl(user.role)}
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        Dashboard
+                        <TranslatedText>Dashboard</TranslatedText>
                       </Link>
                     </Button>
                     <Button variant="ghost" size="sm" asChild>
@@ -515,7 +528,7 @@ export function Header() {
                         href="/settings"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        Settings
+                        <TranslatedText>Settings</TranslatedText>
                       </Link>
                     </Button>
                     <Button
@@ -525,20 +538,24 @@ export function Header() {
                       className="text-red-600"
                       data-testid="menu-signout-mobile"
                     >
-                      Sign Out
+                      <TranslatedText>Sign Out</TranslatedText>
                     </Button>
                   </div>
                 ) : (
                   <div className="flex flex-col space-y-3 px-3">
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href="/sign-in">Sign In</Link>
+                      <Link href="/sign-in">
+                        <TranslatedText>Sign In</TranslatedText>
+                      </Link>
                     </Button>
                     <Button
                       size="sm"
                       className="bg-indigo-600 hover:bg-indigo-700"
                       asChild
                     >
-                      <Link href="/sign-up">Get Started</Link>
+                      <Link href="/sign-up">
+                        <TranslatedText>Get Started</TranslatedText>
+                      </Link>
                     </Button>
                   </div>
                 )}

@@ -1,4 +1,5 @@
 "use client";
+import { TranslatedText } from "@/components/global/TranslatedText";
 import { ProductImageCarousel } from "@/components/shop/ProductImageCarousel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -56,7 +57,7 @@ export default function MainShopCard({
       id: p.id.toString(),
       title: p.title,
       price: p.price ?? 0,
-      image: p.primary_image || "/images/fallback.jpg",
+      image: p.primary_image || "/placeholder.jpg",
       maxQuantity: p.stock_count ?? 1,
       category: p.category || "Uncategorized",
       supplierId: "unknown",
@@ -79,7 +80,7 @@ export default function MainShopCard({
         id: p.id.toString(),
         title: p.title,
         price: p.price ?? 0,
-        image: p.primary_image || "/images/fallback.jpg",
+        image: p.primary_image || "/placeholder.jpg",
         category: p.category || "Uncategorized",
         inStock: p.in_stock ?? false,
       });
@@ -96,9 +97,16 @@ export default function MainShopCard({
       {/* Image Container with Carousel */}
       <Link href={`/product/${p.id}`} className="block">
         <ProductImageCarousel
-          images={p.images}
+          images={
+            p.images?.length
+              ? p.images
+              : p.primary_image
+              ? [p.primary_image]
+              : undefined
+          }
           title={p.title}
-          priority={index < 6}
+          // Eager-load hero rows to avoid blink on first impression
+          priority={index < 8}
           className="rounded-xl"
         />
       </Link>
@@ -107,7 +115,7 @@ export default function MainShopCard({
       <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
         {!p.in_stock && (
           <Badge variant="destructive" className="text-xs font-medium">
-            Out of Stock
+            <TranslatedText>Out of Stock</TranslatedText>
           </Badge>
         )}
         {p.in_stock && (p.stock_count ?? 0) < 5 && (
@@ -188,12 +196,12 @@ export default function MainShopCard({
           {isProductInCart ? (
             <>
               <ShoppingBag className="h-4 w-4 mr-1" />
-              In Cart
+              <TranslatedText>In Cart</TranslatedText>
             </>
           ) : (
             <>
               <ShoppingCart className="h-4 w-4 mr-1" />
-              Add
+              <TranslatedText>Add</TranslatedText>
             </>
           )}
         </Button>
@@ -212,7 +220,7 @@ export default function MainShopCard({
           {p.in_stock && (
             <span className="text-xs text-green-600 flex items-center gap-1">
               <div className="w-2 h-2 bg-green-500 rounded-full" />
-              In Stock
+              <TranslatedText>In Stock</TranslatedText>
             </span>
           )}
         </div>
@@ -245,12 +253,12 @@ export default function MainShopCard({
             {isProductInCart ? (
               <>
                 <ShoppingBag className="h-4 w-4 mr-1" />
-                In Cart
+                <TranslatedText>In Cart</TranslatedText>
               </>
             ) : (
               <>
                 <ShoppingCart className="h-4 w-4 mr-1" />
-                Add to Cart
+                <TranslatedText>Add to Cart</TranslatedText>
               </>
             )}
           </Button>

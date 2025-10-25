@@ -1,5 +1,6 @@
 "use client";
 
+import { TranslatedText } from "@/components/global/TranslatedText";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -52,7 +53,9 @@ export function WishlistSidebar() {
           Save items you love to view them later
         </p>
         <Button asChild>
-          <Link href="/shop">Continue Shopping</Link>
+          <Link href="/shop">
+            <TranslatedText>Continue Shopping</TranslatedText>
+          </Link>
         </Button>
       </div>
     );
@@ -94,7 +97,7 @@ export function WishlistSidebar() {
             <div className="flex gap-2">
               <Button size="sm" onClick={handleBulkMoveToCart}>
                 <ShoppingCart className="h-4 w-4 mr-1" />
-                Add to Cart ({selectedItems.length})
+                <TranslatedText>{`Add to Cart (${selectedItems.length})`}</TranslatedText>
               </Button>
               <Button variant="outline" size="sm" onClick={handleBulkRemove}>
                 Remove ({selectedItems.length})
@@ -134,7 +137,7 @@ export function WishlistSidebar() {
                 <span className="font-semibold">${item.price}</span>
                 {!item.inStock && (
                   <Badge variant="destructive" className="text-xs">
-                    Out of Stock
+                    <TranslatedText>Out of Stock</TranslatedText>
                   </Badge>
                 )}
               </div>
@@ -146,7 +149,7 @@ export function WishlistSidebar() {
                   className="text-xs h-6"
                 >
                   <ShoppingCart className="h-3 w-3 mr-1" />
-                  Add to Cart
+                  <TranslatedText>Add to Cart</TranslatedText>
                 </Button>
                 <Button
                   variant="ghost"
@@ -166,7 +169,7 @@ export function WishlistSidebar() {
       <div className="border-t p-4">
         <Button className="w-full" asChild>
           <Link href="/shop">
-            Continue Shopping
+            <TranslatedText>Continue Shopping</TranslatedText>
             <ArrowRight className="h-4 w-4 ml-2" />
           </Link>
         </Button>

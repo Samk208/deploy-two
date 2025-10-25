@@ -110,13 +110,7 @@ export async function POST(request: NextRequest) {
     > {
       const { data: verificationRequest } = await supabaseAdmin
         .from("verification_requests")
-        .select(
-          `
-          id,
-          status,
-          verification_documents!inner (id, doc_type, status)
-        `
-        )
+        .select("id, status")
         .eq("user_id", userId)
         .in("status", ["draft", "submitted"])
         .maybeSingle();
@@ -128,8 +122,14 @@ export async function POST(request: NextRequest) {
         };
       }
 
-      const uploadedRaw = (verificationRequest.verification_documents || []).map(
-        (d: any) => String(d.doc_type)
+      // Fetch documents for the request separately
+      const { data: verificationDocuments } = await supabaseAdmin
+        .from("verification_documents")
+        .select("doc_type")
+        .eq("request_id", (verificationRequest as any).id);
+
+      const uploadedRaw = (verificationDocuments || []).map((d: any) =>
+        String(d.doc_type)
       );
 
       // Alias map to tolerate legacy names

@@ -4,15 +4,28 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export async function middleware(req: NextRequest) {
+  // Allow static and PWA assets to bypass middleware entirely
+  const { pathname } = req.nextUrl;
+  const STATIC_ALLOW = [
+    "/_next",
+    "/images",
+    "/favicon.ico",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/manifest.webmanifest",
+    "/manifest.json",
+    "/sw.js",
+    "/apple-touch-icon.png",
+    "/.well-known",
+  ];
+  const isStatic =
+    STATIC_ALLOW.some((p) => pathname.startsWith(p)) ||
+    /\.(?:js|mjs|css|map|ico|png|jpg|jpeg|gif|svg|webp|avif|txt|json|webmanifest)$/i.test(
+      pathname
+    );
+  if (isStatic) return NextResponse.next();
   // First, refresh the session
   const res = await updateSession(req);
-
-  // Now, create a client to check auth state for the rest of the logic
-  const supabase = await createServerSupabaseClient(req);
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
 
   // Public routes that don't require authentication
   const publicRoutes = [
@@ -48,9 +61,10 @@ export async function middleware(req: NextRequest) {
     "/api/stripe", // Stripe diagnostics and other public Stripe endpoints
     "/api/checkout", // Allow checkout endpoint to return JSON (route enforces auth/roles itself)
     "/api/webhooks/stripe", // Stripe webhooks must be publicly accessible (secured by signature)
+    "/api/translate", // Translation proxy is gated by flags and safe for public reads
   ];
 
-  const { pathname } = req.nextUrl;
+  // pathname already declared above
   const method = req.method.toUpperCase();
   const isWrite = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
   const coreFrozen =
@@ -60,6 +74,18 @@ export async function middleware(req: NextRequest) {
 
   if (process.env.NODE_ENV !== "production") {
     console.log("[MW]", { coreFrozen, shopsFrozen, method, path: pathname });
+  }
+
+  // Allow public routes early without requiring a Supabase client
+  if (
+    publicRoutes.some(
+      (path) => pathname === path || (path !== "/" && pathname.startsWith(path))
+    ) ||
+    publicApiRoutes.some(
+      (path) => pathname === path || (path !== "/" && pathname.startsWith(path))
+    )
+  ) {
+    return res;
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -165,17 +191,11 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Allow public routes by checking if the path starts with any of them
-  if (
-    publicRoutes.some(
-      (path) => pathname === path || (path !== "/" && pathname.startsWith(path))
-    ) ||
-    publicApiRoutes.some(
-      (path) => pathname === path || (path !== "/" && pathname.startsWith(path))
-    )
-  ) {
-    return res;
-  }
+  // Now that public/readonly checks are done, create a client to check auth state
+  const supabase = await createServerSupabaseClient(req);
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
   // Redirect to sign-in if no session
   if (!session) {

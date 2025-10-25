@@ -747,7 +747,7 @@ export function ImportProductsDialog({
 
         <Separator />
 
-        <DialogFooter className="flex-shrink-0">
+        <DialogFooter className="flex-shrink-0 sticky bottom-0 bg-white border-t z-50">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               {file && (

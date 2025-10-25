@@ -5,23 +5,87 @@
 -- Note: In a real scenario, users would be created through Supabase Auth
 -- For testing, we'll create them directly
 
-INSERT INTO users (id, email, name, role, verified, avatar) VALUES
-  -- Test admin user
-  ('550e8400-e29b-41d4-a716-446655440000', 'admin@onelink.com', 'Admin User', 'admin', true, 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'),
-  
-  -- Test suppliers
-  ('550e8400-e29b-41d4-a716-446655440001', 'supplier1@example.com', 'TechGear Supplier', 'supplier', true, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'),
-  ('550e8400-e29b-41d4-a716-446655440002', 'supplier2@example.com', 'Fashion Forward Co', 'supplier', true, 'https://images.unsplash.com/photo-1494790108755-2616b612c7db?w=150'),
-  ('550e8400-e29b-41d4-a716-446655440003', 'supplier3@example.com', 'Home & Garden Plus', 'supplier', true, 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'),
-  
-  -- Test influencers
-  ('550e8400-e29b-41d4-a716-446655440004', 'influencer1@example.com', 'Tech Reviewer Sarah', 'influencer', true, 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150'),
-  ('550e8400-e29b-41d4-a716-446655440005', 'influencer2@example.com', 'Fashion Blogger Mike', 'influencer', true, 'https://images.unsplash.com/photo-1507537362848-9c7e70b7b5c1?w=150'),
-  
-  -- Test customers
-  ('550e8400-e29b-41d4-a716-446655440006', 'customer1@example.com', 'John Customer', 'customer', false, 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'),
-  ('550e8400-e29b-41d4-a716-446655440007', 'customer2@example.com', 'Jane Buyer', 'customer', false, 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150')
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO
+    users (
+        id,
+        email,
+        name,
+        role,
+        verified,
+        avatar
+    )
+VALUES
+    -- Test admin user
+    (
+        '550e8400-e29b-41d4-a716-446655440000',
+        'admin@onelink.com',
+        'Admin User',
+        'admin',
+        true,
+        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'
+    ),
+
+-- Test suppliers
+(
+    '550e8400-e29b-41d4-a716-446655440001',
+    'supplier1@example.com',
+    'TechGear Supplier',
+    'supplier',
+    true,
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'
+),
+(
+    '550e8400-e29b-41d4-a716-446655440002',
+    'supplier2@example.com',
+    'Fashion Forward Co',
+    'supplier',
+    true,
+    'https://images.unsplash.com/photo-1494790108755-2616b612c7db?w=150'
+),
+(
+    '550e8400-e29b-41d4-a716-446655440003',
+    'supplier3@example.com',
+    'Home & Garden Plus',
+    'supplier',
+    true,
+    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
+),
+
+-- Test influencers
+(
+    '550e8400-e29b-41d4-a716-446655440004',
+    'influencer1@example.com',
+    'Tech Reviewer Sarah',
+    'influencer',
+    true,
+    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150'
+),
+(
+    '550e8400-e29b-41d4-a716-446655440005',
+    'influencer2@example.com',
+    'Fashion Blogger Mike',
+    'influencer',
+    true,
+    'https://images.unsplash.com/photo-1507537362848-9c7e70b7b5c1?w=150'
+),
+
+-- Test customers
+(
+    '550e8400-e29b-41d4-a716-446655440006',
+    'customer1@example.com',
+    'John Customer',
+    'customer',
+    false,
+    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+),
+(
+    '550e8400-e29b-41d4-a716-446655440007',
+    'customer2@example.com',
+    'Jane Buyer',
+    'customer',
+    false,
+    'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150'
+) ON CONFLICT (id) DO NOTHING;
 
 -- Create test products
 INSERT INTO products (
@@ -78,8 +142,8 @@ INSERT INTO products (
     'TECH-WEBCAM-001'
   ),
 
-  -- Fashion Products
-  (
+-- Fashion Products
+(
     '660e8400-e29b-41d4-a716-446655440004',
     'Premium Cotton T-Shirt',
     'Ultra-soft premium cotton t-shirt with modern fit. Available in multiple colors and sizes. Perfect for casual wear or layering.',
@@ -128,8 +192,8 @@ INSERT INTO products (
     'FASH-SNEAKERS-001'
   ),
 
-  -- Home & Garden Products
-  (
+-- Home & Garden Products
+(
     '660e8400-e29b-41d4-a716-446655440007',
     'Smart Plant Monitor',
     'Monitor your plants health with this smart device that tracks moisture, light, temperature, and nutrients. Receive alerts on your phone.',
@@ -178,8 +242,8 @@ INSERT INTO products (
     'HOME-LAMP-001'
   ),
 
-  -- Beauty Products
-  (
+-- Beauty Products
+(
     '660e8400-e29b-41d4-a716-446655440010',
     'Organic Face Moisturizer',
     'Luxurious organic face moisturizer with natural ingredients. Suitable for all skin types, provides deep hydration and anti-aging benefits.',
@@ -196,8 +260,8 @@ INSERT INTO products (
     'BEAUTY-MOIST-001'
   ),
 
-  -- Sports Products
-  (
+-- Sports Products
+(
     '660e8400-e29b-41d4-a716-446655440011',
     'Yoga Mat Premium',
     'High-quality yoga mat with excellent grip and cushioning. Made from eco-friendly materials with alignment lines for perfect poses.',
@@ -239,22 +303,22 @@ INSERT INTO shops (
     '770e8400-e29b-41d4-a716-446655440001',
     '550e8400-e29b-41d4-a716-446655440004',
     'tech-sarah',
-    'Sarah\'s Tech Corner',
+    'Sarah''s Tech Corner',
     'The best tech reviews and recommendations from your favorite tech influencer. Discover the latest gadgets and gear.',
     'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200',
     'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800',
-    ARRAY['660e8400-e29b-41d4-a716-446655440001', '660e8400-e29b-41d4-a716-446655440002', '660e8400-e29b-41d4-a716-446655440003'],
+    ARRAY['660e8400-e29b-41d4-a716-446655440001'::uuid, '660e8400-e29b-41d4-a716-446655440002'::uuid, '660e8400-e29b-41d4-a716-446655440003'::uuid],
     true
   ),
   (
     '770e8400-e29b-41d4-a716-446655440002',
     '550e8400-e29b-41d4-a716-446655440005',
     'fashion-mike',
-    'Mike\'s Style Hub',
+    'Mike''s Style Hub',
     'Fashion forward recommendations for the modern individual. Curated collections of the latest trends and timeless pieces.',
     'https://images.unsplash.com/photo-1507537362848-9c7e70b7b5c1?w=200',
     'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800',
-    ARRAY['660e8400-e29b-41d4-a716-446655440004', '660e8400-e29b-41d4-a716-446655440005', '660e8400-e29b-41d4-a716-446655440006'],
+    ARRAY['660e8400-e29b-41d4-a716-446655440004'::uuid, '660e8400-e29b-41d4-a716-446655440005'::uuid, '660e8400-e29b-41d4-a716-446655440006'::uuid],
     true
   )
 ON CONFLICT (id) DO NOTHING;

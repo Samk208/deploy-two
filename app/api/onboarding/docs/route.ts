@@ -98,13 +98,13 @@ export async function POST(request: NextRequest) {
     if (!sandbox) {
       const { data: existingRequest } = await supabaseAdmin
         .from("verification_requests")
-        .select("*")
+        .select("id")
         .eq("user_id", user.id)
         .in("status", ["draft", "submitted"])
         .maybeSingle();
 
       if (existingRequest) {
-        verificationRequestId = existingRequest.id;
+        verificationRequestId = (existingRequest as any).id;
       } else {
         // Create new verification request
         const requestInsert: Inserts<"verification_requests"> = {
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
 
         const { data: newRequest, error: createError } = await supabaseAdmin
           .from("verification_requests")
-          .insert(requestInsert)
+          .insert(requestInsert as any)
           .select()
           .maybeSingle();
 
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
             { status: 500 }
           );
         }
-        verificationRequestId = newRequest.id;
+        verificationRequestId = (newRequest as any).id;
       }
     }
 
@@ -184,7 +184,6 @@ export async function POST(request: NextRequest) {
         storage_path: storagePath,
         mime_type: file.type,
         size_bytes: file.size,
-        original_filename: file.name,
         status: "pending",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -260,15 +259,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch verification request and documents
+    // Fetch latest verification request
     const { data: verificationRequest } = await supabaseAdmin
       .from("verification_requests")
-      .select(
-        `
-        *,
-        verification_documents (*)
-      `
-      )
+      .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -284,31 +278,31 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get public URLs for documents
-    const documentsWithUrls =
-      verificationRequest.verification_documents?.map((doc: any) => {
-        const {
-          data: { publicUrl },
-        } = supabaseAdmin.storage
-          .from("documents")
-          .getPublicUrl(doc.storage_path);
+    // Fetch documents for this request separately
+    const { data: docs } = await supabaseAdmin
+      .from("verification_documents")
+      .select("*")
+      .eq("request_id", (verificationRequest as any).id);
 
-        return {
-          ...doc,
-          url: publicUrl,
-        };
-      }) || [];
+    const documentsWithUrls = (docs || []).map((doc: any) => {
+      const {
+        data: { publicUrl },
+      } = supabaseAdmin.storage
+        .from("documents")
+        .getPublicUrl(doc.storage_path);
+      return { ...doc, url: publicUrl };
+    });
 
     return NextResponse.json({
       ok: true,
       data: {
         request: {
-          id: verificationRequest.id,
-          status: verificationRequest.status,
-          created_at: verificationRequest.created_at,
-          submitted_at: verificationRequest.submitted_at,
-          reviewed_at: verificationRequest.reviewed_at,
-          rejection_reason: verificationRequest.rejection_reason,
+          id: (verificationRequest as any).id,
+          status: (verificationRequest as any).status,
+          created_at: (verificationRequest as any).created_at,
+          submitted_at: (verificationRequest as any).submitted_at,
+          reviewed_at: (verificationRequest as any).reviewed_at,
+          rejection_reason: (verificationRequest as any).rejection_reason,
         },
         documents: documentsWithUrls,
       },

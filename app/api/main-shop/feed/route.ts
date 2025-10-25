@@ -1,3 +1,9 @@
+/**
+ * Fix: Ensure the shop grid receives a non-empty images array.
+ * - Select 'images' (array) in addition to 'primary_image'.
+ * - Map: images = p.images if non-empty, else [p.primary_image] if present, else ["/placeholder.jpg"].
+ * This resolves the “image grid stays blank until click” issue by giving the client a stable image list at SSR.
+ */
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
 
@@ -38,7 +44,7 @@ function buildBaseQuery(
   let query = supabase
     .from("products")
     .select(
-      "id,title,price,primary_image,active,in_stock,stock_count,category,brand,short_description,created_at",
+      "id,title,price,primary_image,images,active,in_stock,stock_count,category,brand,short_description,created_at",
       { count: "exact" }
     )
     .eq("active", true)
@@ -86,6 +92,15 @@ export async function GET(req: Request) {
 
     const supabase = getSupabaseAdmin();
 
+    // If running against local Supabase with new-style keys (sb_ prefix), the
+    // Supabase JS client will include an Authorization header that PostgREST
+    // rejects with PGRST301 (expects JWT). In that specific local case, query
+    // PostgREST directly with the apikey header only (no Authorization).
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+    const supabaseService = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+    const isLocalSupabase = /127\.0\.0\.1|localhost/.test(supabaseUrl);
+    const isSbKey = /^sb_/.test(supabaseService);
+
     // Execute with small retry to smooth transient network failures
     const MAX_RETRIES = 3;
     const BASE_DELAY_MS = 200;
@@ -96,23 +111,73 @@ export async function GET(req: Request) {
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        // Build fresh query each attempt (query builders are immutable-ish but re-create to be safe)
-        let qBuilder = buildBaseQuery(supabase, {
-          q,
-          category,
-          minPrice,
-          maxPrice,
-          inStockOnly,
-        });
+        // Fallback for local sb_* keys: use direct PostgREST fetch with apikey only
+        if (isLocalSupabase && isSbKey) {
+          const base = new URL(
+            supabaseUrl.replace(/\/$/, "") + "/rest/v1/products"
+          );
+          const params = base.searchParams;
+          params.set(
+            "select",
+            "id,title,price,primary_image,active,in_stock,stock_count,category,brand,short_description,created_at"
+          );
+          params.set("active", "eq.true");
+          params.set("stock_count", "gt.0");
+          params.set("deleted_at", "is.null");
+          if (inStockOnly) params.set("in_stock", "eq.true");
+          if (q) params.set("title", `ilike.%25${encodeURIComponent(q)}%25`);
+          if (category)
+            params.set("category", `eq.${encodeURIComponent(category)}`);
+          if (sort === "price-asc") params.set("order", "price.asc");
+          else if (sort === "price-desc") params.set("order", "price.desc");
+          else params.set("order", "created_at.desc");
+          params.set("offset", String(from));
+          params.set("limit", String(limit));
 
-        if (sort === "price-asc") qBuilder = qBuilder.order("price", { ascending: true });
-        else if (sort === "price-desc") qBuilder = qBuilder.order("price", { ascending: false });
-        else qBuilder = qBuilder.order("created_at", { ascending: false });
+          const resp = await fetch(base.toString(), {
+            headers: {
+              apikey: supabaseService || "",
+              Prefer: "count=exact",
+            },
+            cache: "no-store",
+          });
+          if (!resp.ok) {
+            const errText = await resp.text().catch(() => "");
+            throw new Error(
+              `PostgREST ${resp.status}: ${errText || resp.statusText}`
+            );
+          }
+          const json = await resp.json();
+          data = Array.isArray(json) ? json : [];
+          const contentRange =
+            resp.headers.get("content-range") ||
+            resp.headers.get("Content-Range");
+          if (contentRange && /\/(\d+)$/i.test(contentRange)) {
+            count = Number(contentRange.match(/\/(\d+)$/)![1]);
+          } else {
+            count = data.length;
+          }
+        } else {
+          // Build fresh query each attempt (query builders are immutable-ish but re-create to be safe)
+          let qBuilder = buildBaseQuery(supabase, {
+            q,
+            category,
+            minPrice,
+            maxPrice,
+            inStockOnly,
+          });
 
-        const res = await (qBuilder as any).range(from, to);
-        if (res.error) throw res.error;
-        data = res.data ?? [];
-        count = (res.count ?? 0) as number;
+          if (sort === "price-asc")
+            qBuilder = qBuilder.order("price", { ascending: true });
+          else if (sort === "price-desc")
+            qBuilder = qBuilder.order("price", { ascending: false });
+          else qBuilder = qBuilder.order("created_at", { ascending: false });
+
+          const res = await (qBuilder as any).range(from, to);
+          if (res.error) throw res.error;
+          data = res.data ?? [];
+          count = (res.count ?? 0) as number;
+        }
         lastError = null;
         break;
       } catch (e) {
@@ -125,19 +190,29 @@ export async function GET(req: Request) {
       }
     }
 
-    // Map to ShopFeedItem format with images array (images[0] = primary)
-    const items = (data || []).map((p: any) => ({
-      id: p.id,
-      title: p.title,
-      price: p.price,
-      images: p.primary_image ? [p.primary_image] : [], // Consistent: images[0] is primary
-      category: p.category,
-      brand: p.brand,
-      short_description: p.short_description ?? null,
-      in_stock: p.in_stock,
-      stock_count: p.stock_count,
-      created_at: p.created_at,
-    }));
+    // Map to ShopFeedItem format, ensuring a non-empty images array
+    const items = (data || []).map((p: any) => {
+      const cleanedArray = Array.isArray(p.images)
+        ? p.images.filter((s: any) => typeof s === "string" && s.trim() !== "")
+        : [];
+      const images = cleanedArray.length
+        ? cleanedArray
+        : typeof p.primary_image === "string" && p.primary_image.trim() !== ""
+        ? [p.primary_image]
+        : ["/placeholder.jpg"];
+      return {
+        id: p.id,
+        title: p.title,
+        price: p.price,
+        images,
+        category: p.category,
+        brand: p.brand,
+        short_description: p.short_description ?? null,
+        in_stock: p.in_stock,
+        stock_count: p.stock_count,
+        created_at: p.created_at,
+      };
+    });
 
     const total = count || 0;
     const hasMore = page * limit < total;

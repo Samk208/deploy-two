@@ -114,7 +114,7 @@ async function handleCheckoutSessionCompleted(session: any) {
     // Create order in database
     const { data: order, error: orderError } = await supabaseAdmin
       .from('orders')
-      .insert(orderInsert)
+      .insert(orderInsert as any)
       .select()
       .maybeSingle()
 
@@ -128,7 +128,7 @@ async function handleCheckoutSessionCompleted(session: any) {
       return
     }
 
-    console.log('Order created successfully:', order.id)
+    console.log('Order created successfully:', (order as any).id)
 
     // Extract influencer metadata if present
     const metadataInfluencerId: string | undefined = (session as any).metadata?.influencer_id || undefined
@@ -144,8 +144,8 @@ async function handleCheckoutSessionCompleted(session: any) {
     // Process each item for stock updates and commission logging
     for (const item of items) {
       // Use atomic RPC function to update stock count safely
-      const { data: stockUpdateResult, error: rpcError } = await supabaseAdmin
-        .rpc('update_product_stock' as any, {
+      const { data: stockUpdateResult, error: rpcError } = await (supabaseAdmin as any)
+        .rpc('update_product_stock', {
           product_id_param: item.productId,
           quantity_to_subtract: item.quantity ?? 0
         }) as { data: Array<{
@@ -181,8 +181,8 @@ async function handleCheckoutSessionCompleted(session: any) {
 
       // Create supplier commission record with proper typing
       const supplierCommission: Inserts<'commissions'> = {
-        order_id: order.id,
-        influencer_id: influencerId ?? order.customer_id,
+        order_id: (order as any).id,
+        influencer_id: influencerId ?? (order as any).customer_id,
         supplier_id: item.supplierId,
         product_id: item.productId,
         amount: supplierCommissionAmount,
@@ -208,7 +208,7 @@ async function handleCheckoutSessionCompleted(session: any) {
         
         if (influencerCommissionAmount > 0) {
           const influencerCommission: Inserts<'commissions'> = {
-            order_id: order.id,
+            order_id: (order as any).id,
             influencer_id: influencerId,
             supplier_id: item.supplierId,
             product_id: item.productId,
@@ -237,7 +237,7 @@ async function handleCheckoutSessionCompleted(session: any) {
         ${influencerId ? `- Influencer Commission: $${(effectiveSalePrice - item.price) * item.quantity}` : '- No influencer involved'}`)
     }
 
-    console.log('Checkout session processing completed for order:', order.id)
+    console.log('Checkout session processing completed for order:', (order as any).id)
   } catch (error) {
     console.error('Error processing checkout session:', error)
   }

@@ -18,9 +18,10 @@ export async function signIn(formData: FormData) {
 
   if (error || !data.user) {
     const base = "Could not authenticate user";
-    const msg = process.env.NODE_ENV === "development" && error?.message
-      ? `${base}: ${error.message}`
-      : base;
+    const msg =
+      process.env.NODE_ENV === "development" && error?.message
+        ? `${base}: ${error.message}`
+        : base;
     return redirect(`/sign-in?message=${encodeURIComponent(msg)}`);
   }
 
@@ -30,20 +31,42 @@ export async function signIn(formData: FormData) {
     .eq("id", data.user.id)
     .maybeSingle<{ role: UserRole }>();
 
-  const authMetaRole = String((data.user as any)?.user_metadata?.role || '').toUpperCase();
+  // Accept role from multiple sources; precedence matters.
+  // 1) app_metadata.role or user_metadata.role === 'admin' must override profile role
+  // 2) influencer/supplier prefer profile role; fall back to metadata
+  const appRole = String(
+    (data.user as any)?.app_metadata?.role || ""
+  ).toUpperCase();
+  const userMetaRole = String(
+    (data.user as any)?.user_metadata?.role || ""
+  ).toUpperCase();
+  const profileRole = String(profile?.role || "").toUpperCase();
 
-  if (profile?.role === UserRole.ADMIN || authMetaRole === 'ADMIN') {
+  // Admin override: treat as admin even if profile says 'customer'
+  if (appRole === "ADMIN" || userMetaRole === "ADMIN") {
     return redirect("/admin/dashboard");
   }
 
-  if (profile?.role === UserRole.INFLUENCER) {
+  // Influencer routing
+  if (
+    profileRole === "INFLUENCER" ||
+    appRole === "INFLUENCER" ||
+    userMetaRole === "INFLUENCER"
+  ) {
     return redirect("/dashboard/influencer");
   }
 
-  if (profile?.role === UserRole.SUPPLIER) {
+  // Supplier routing
+  if (
+    profileRole === "SUPPLIER" ||
+    appRole === "SUPPLIER" ||
+    userMetaRole === "SUPPLIER"
+  ) {
     return redirect("/dashboard/supplier");
   }
   // Missing profile or role: send user to onboarding/profile setup instead of arbitrary redirect
-  console.warn("[sign-in] Missing or undefined role for user; redirecting to onboarding");
+  console.warn(
+    "[sign-in] Missing or undefined role for user; redirecting to onboarding"
+  );
   return redirect("/auth/onboarding");
 }

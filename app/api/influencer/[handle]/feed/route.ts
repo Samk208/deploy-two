@@ -78,16 +78,43 @@ export async function GET(
       );
     }
 
-    // 1) Resolve shop by handle → get influencer_id
-    const { data: shop, error: shopErr } = await supabase
-      .from("shops")
-      .select("id, handle, influencer_id, active")
-      .eq("handle", handle)
-      .maybeSingle();
+    // Local fallback: PostgREST with apikey-only (no Authorization) to avoid PGRST301
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+    const isLocal = /127\.0\.0\.1|localhost/.test(supabaseUrl);
+    const isSb = /^sb_/.test(serviceKey);
+    const useRestFallback = isLocal && isSb;
+    const rest = (path: string) =>
+      supabaseUrl.replace(/\/$/, "") + "/rest/v1" + path;
+    const restHeaders: Record<string, string> = { apikey: serviceKey };
 
-    if (shopErr) {
-      console.error("Shop lookup error:", shopErr);
+    // 1) Resolve shop by handle → get influencer_id
+    let shop: any | null = null;
+    if (useRestFallback) {
+      const url = new URL(
+        rest(
+          "/shops?select=" +
+            encodeURIComponent("id,handle,influencer_id,active") +
+            "&handle=eq." +
+            encodeURIComponent(handle)
+        )
+      );
+      const resp = await fetch(url.toString(), {
+        headers: restHeaders,
+        cache: "no-store",
+      });
+      const rows = resp.ok ? ((await resp.json()) as any[]) : [];
+      shop = Array.isArray(rows) ? (rows[0] ?? null) : null;
+    } else {
+      const { data, error: shopErr } = await supabase
+        .from("shops")
+        .select("id, handle, influencer_id, active")
+        .eq("handle", handle)
+        .maybeSingle();
+      if (shopErr) console.error("Shop lookup error:", shopErr);
+      shop = data as any;
     }
+
     if (!shop || shop.active === false) {
       return NextResponse.json<FeedResponse>(
         {
@@ -98,21 +125,50 @@ export async function GET(
       );
     }
 
-    // 2) Curated rows for this influencer (published + ordered)
-    const { data: curated, error: curErr } = await supabase
-      .from("influencer_shop_products")
-      .select("product_id, display_order, sale_price, custom_title, published")
-      .eq("influencer_id", shop.influencer_id)
-      .eq("published", true)
-      .order("display_order", { ascending: true, nullsFirst: true });
-
-    if (curErr) {
-      console.error("Curated list error:", curErr);
-      return NextResponse.json<FeedResponse>(
-        { ok: false, error: "Failed to fetch curated products" },
-        { status: 500 }
+    // 2) Curated rows for this influencer (published, order by created_at)
+    let curated: Array<{
+      product_id: string;
+      sale_price: number | null;
+      custom_title: string | null;
+      published: boolean;
+    }> = [];
+    if (useRestFallback) {
+      const sel = encodeURIComponent(
+        "product_id,sale_price,custom_title,published"
       );
+      const url = new URL(
+        rest(
+          "/influencer_shop_products?select=" +
+            sel +
+            "&influencer_id=eq." +
+            encodeURIComponent(String(shop.influencer_id)) +
+            "&published=eq.true&order=created_at.asc"
+        )
+      );
+      const resp = await fetch(url.toString(), {
+        headers: restHeaders,
+        cache: "no-store",
+      });
+      curated = resp.ok ? ((await resp.json()) as any[]) : [];
+    } else {
+      const { data, error: curErr } = await supabase
+        .from("influencer_shop_products")
+        .select(
+          "product_id, sale_price, custom_title, published"
+        )
+        .eq("influencer_id", shop.influencer_id)
+        .eq("published", true)
+        .order("created_at", { ascending: true, nullsFirst: true });
+      if (curErr) {
+        console.error("Curated list error:", curErr);
+        return NextResponse.json<FeedResponse>(
+          { ok: false, error: "Failed to fetch curated products" },
+          { status: 500 }
+        );
+      }
+      curated = (data as any[]) || [];
     }
+
     if (!curated || curated.length === 0) {
       return NextResponse.json<FeedResponse>(
         {
@@ -137,33 +193,69 @@ export async function GET(
     }
 
     // 3) Fetch product details; apply filters
-    let query = supabase
-      .from("products")
-      .select(
-        "id, title, price, images, brand, category, short_description, in_stock, stock_count, active, created_at"
-      )
-      .in("id", curatedOrder)
-      .eq("active", true)
-      .is("deleted_at", null);
-
-    if (inStockOnly) query = query.eq("in_stock", true).gt("stock_count", 0);
-    if (q) query = query.ilike("title", `%${q}%`);
-    if (category) query = query.eq("category", category);
-    if (typeof minPrice === "number") query = query.gte("price", minPrice);
-    if (typeof maxPrice === "number") query = query.lte("price", maxPrice);
-
-    if (sort === "price-asc") query = query.order("price", { ascending: true });
-    else if (sort === "price-desc")
-      query = query.order("price", { ascending: false });
-    else query = query.order("created_at", { ascending: false });
-
-    const { data: products, error: prodErr } = await query;
-    if (prodErr) {
-      console.error("Products fetch error:", prodErr);
-      return NextResponse.json<FeedResponse>(
-        { ok: false, error: "Failed to fetch products" },
-        { status: 500 }
+    let products: any[] = [];
+    if (useRestFallback) {
+      const sel = encodeURIComponent(
+        "id,title,price,images,brand,category,short_description,in_stock,stock_count,active,created_at"
       );
+      const base = new URL(rest("/products?select=" + sel));
+      const params = base.searchParams;
+      params.set(
+        "id",
+        `in.(${curatedOrder.map(encodeURIComponent).join(",")})`
+      );
+      params.set("active", "eq.true");
+      params.set("deleted_at", "is.null");
+      if (inStockOnly) {
+        params.set("in_stock", "eq.true");
+        params.set("stock_count", "gt.0");
+      }
+      if (q) params.set("title", `ilike.%25${encodeURIComponent(q)}%25`);
+      if (category)
+        params.set("category", `eq.${encodeURIComponent(category)}`);
+      if (typeof minPrice === "number") params.set("price", `gte.${minPrice}`);
+      if (typeof maxPrice === "number")
+        params.append("price", `lte.${maxPrice}`);
+      if (sort === "price-asc") params.set("order", "price.asc");
+      else if (sort === "price-desc") params.set("order", "price.desc");
+      else params.set("order", "created_at.desc");
+
+      const resp = await fetch(base.toString(), {
+        headers: restHeaders,
+        cache: "no-store",
+      });
+      products = resp.ok ? ((await resp.json()) as any[]) : [];
+    } else {
+      let query = supabase
+        .from("products")
+        .select(
+          "id, title, price, images, brand, category, short_description, in_stock, stock_count, active, created_at"
+        )
+        .in("id", curatedOrder)
+        .eq("active", true)
+        .is("deleted_at", null);
+
+      if (inStockOnly) query = query.eq("in_stock", true).gt("stock_count", 0);
+      if (q) query = query.ilike("title", `%${q}%`);
+      if (category) query = query.eq("category", category);
+      if (typeof minPrice === "number") query = query.gte("price", minPrice);
+      if (typeof maxPrice === "number") query = query.lte("price", maxPrice);
+
+      if (sort === "price-asc")
+        query = query.order("price", { ascending: true });
+      else if (sort === "price-desc")
+        query = query.order("price", { ascending: false });
+      else query = query.order("created_at", { ascending: false });
+
+      const { data, error: prodErr } = await query;
+      if (prodErr) {
+        console.error("Products fetch error:", prodErr);
+        return NextResponse.json<FeedResponse>(
+          { ok: false, error: "Failed to fetch products" },
+          { status: 500 }
+        );
+      }
+      products = (data as any[]) || [];
     }
 
     const productById = new Map<string, any>(

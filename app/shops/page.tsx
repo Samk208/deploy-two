@@ -1,5 +1,6 @@
 "use client";
 
+import { TranslatedText } from "@/components/global/TranslatedText";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -57,14 +58,16 @@ function mapApiShopToShop(apiShop: any): Shop | null {
     (typeof apiShop?.id === "string" && apiShop.id.trim()) ||
     (typeof apiShop?.id === "number" && String(apiShop.id)) ||
     "";
-  const handleVal = typeof apiShop?.handle === "string" ? apiShop.handle.trim() : "";
+  const handleVal =
+    typeof apiShop?.handle === "string" ? apiShop.handle.trim() : "";
   const nameVal = typeof apiShop?.name === "string" ? apiShop.name.trim() : "";
   if (!idVal || !handleVal || !nameVal) return null;
 
   // Preserve social links if provided as discrete fields or nested object
-  const apiSocial = (apiShop?.socialLinks && typeof apiShop.socialLinks === "object")
-    ? apiShop.socialLinks
-    : {};
+  const apiSocial =
+    apiShop?.socialLinks && typeof apiShop.socialLinks === "object"
+      ? apiShop.socialLinks
+      : {};
   const socialLinks: Shop["socialLinks"] = {
     instagram:
       (typeof apiShop?.instagram === "string" && apiShop.instagram) ||
@@ -86,7 +89,8 @@ function mapApiShopToShop(apiShop: any): Shop | null {
     name: nameVal,
     bio: typeof apiShop?.description === "string" ? apiShop.description : "",
     avatar:
-      (typeof apiShop?.influencer_avatar === "string" && apiShop.influencer_avatar) ||
+      (typeof apiShop?.influencer_avatar === "string" &&
+        apiShop.influencer_avatar) ||
       "/brand-manager-avatar.png",
     banner:
       (typeof apiShop?.banner === "string" && apiShop.banner) ||
@@ -99,7 +103,9 @@ function mapApiShopToShop(apiShop: any): Shop | null {
       Array.isArray(apiShop?.categories) && apiShop.categories.length > 0
         ? String(apiShop.categories[0])
         : "General",
-    rating: Number.isFinite(Number(apiShop?.rating)) ? Number(apiShop?.rating) : 0,
+    rating: Number.isFinite(Number(apiShop?.rating))
+      ? Number(apiShop?.rating)
+      : 0,
     totalProducts: Number.isFinite(Number(apiShop?.product_count))
       ? Number(apiShop.product_count)
       : 0,
@@ -131,17 +137,23 @@ function SkeletonGrid() {
         ))}
       </div>
     </main>
-  )
+  );
 }
 
 function EmptyState() {
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
       <Search className="h-12 w-12 mx-auto text-gray-400" />
-      <h3 className="mt-4 text-lg font-medium text-gray-900">No shops found</h3>
-      <p className="text-gray-600">Once creators publish products, shops will appear here.</p>
+      <h3 className="mt-4 text-lg font-medium text-gray-900">
+        <TranslatedText>No shops found</TranslatedText>
+      </h3>
+      <p className="text-gray-600">
+        <TranslatedText>
+          Once creators publish products, shops will appear here.
+        </TranslatedText>
+      </p>
     </main>
-  )
+  );
 }
 
 const categories = [
@@ -335,7 +347,9 @@ export default function ShopsPage() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true }; 
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Filter and sort shops
@@ -389,33 +403,49 @@ export default function ShopsPage() {
     }
   }, [shops, searchQuery, selectedCategory, sortBy]);
 
-  if (shops === null || loading) return (
-    <div className="min-h-screen bg-gray-50">
-      <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl font-bold mb-4">Discover Amazing Shops</h1>
-            <p className="text-xl text-indigo-100 mb-8">Explore curated collections from your favorite influencers and creators</p>
+  if (shops === null || loading)
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center max-w-3xl mx-auto">
+              <h1 className="text-4xl font-bold mb-4">
+                <TranslatedText>Discover Amazing Shops</TranslatedText>
+              </h1>
+              <p className="text-xl text-indigo-100 mb-8">
+                <TranslatedText>
+                  Explore curated collections from your favorite influencers and
+                  creators
+                </TranslatedText>
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
-      <SkeletonGrid />
-    </div>
-  );
+        </section>
+        <SkeletonGrid />
+      </div>
+    );
 
-  if (Array.isArray(shops) && shops.length === 0) return (
-    <div className="min-h-screen bg-gray-50">
-      <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl font-bold mb-4">Discover Amazing Shops</h1>
-            <p className="text-xl text-indigo-100 mb-8">Explore curated collections from your favorite influencers and creators</p>
+  if (Array.isArray(shops) && shops.length === 0)
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center max-w-3xl mx-auto">
+              <h1 className="text-4xl font-bold mb-4">
+                <TranslatedText>Discover Amazing Shops</TranslatedText>
+              </h1>
+              <p className="text-xl text-indigo-100 mb-8">
+                <TranslatedText>
+                  Explore curated collections from your favorite influencers and
+                  creators
+                </TranslatedText>
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
-      <EmptyState />
-    </div>
-  );
+        </section>
+        <EmptyState />
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -423,10 +453,14 @@ export default function ShopsPage() {
       <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl font-bold mb-4">Discover Amazing Shops</h1>
+            <h1 className="text-4xl font-bold mb-4">
+              <TranslatedText>Discover Amazing Shops</TranslatedText>
+            </h1>
             <p className="text-xl text-indigo-100 mb-8">
-              Explore curated collections from your favorite influencers and
-              creators
+              <TranslatedText>
+                Explore curated collections from your favorite influencers and
+                creators
+              </TranslatedText>
             </p>
             <div className="relative max-w-md mx-auto">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -460,7 +494,7 @@ export default function ShopsPage() {
                       : ""
                   }
                 >
-                  {category}
+                  <TranslatedText>{category}</TranslatedText>
                 </Button>
               ))}
             </div>
@@ -473,7 +507,7 @@ export default function ShopsPage() {
                 <SelectContent>
                   {sortOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      <TranslatedText>{option.label}</TranslatedText>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -501,8 +535,7 @@ export default function ShopsPage() {
           </div>
 
           <div className="mt-4 text-sm text-gray-600">
-            {filteredShops.length} shop{filteredShops.length !== 1 ? "s" : ""}{" "}
-            found
+            <TranslatedText>{`${filteredShops.length} shop${filteredShops.length !== 1 ? "s" : ""} found`}</TranslatedText>
           </div>
         </div>
       </section>
@@ -530,10 +563,12 @@ export default function ShopsPage() {
               <Search className="h-12 w-12 mx-auto" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No shops found
+              <TranslatedText>No shops found</TranslatedText>
             </h3>
             <p className="text-gray-600">
-              Try adjusting your search or category filters
+              <TranslatedText>
+                Try adjusting your search or category filters
+              </TranslatedText>
             </p>
           </div>
         )}
