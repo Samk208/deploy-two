@@ -132,3 +132,6 @@ env.example
 # Ignore most root markdown docs (keep README)
 /*.md
 !/README.md
+service account Json/
+*.credentials.json
+*.service-account.json
