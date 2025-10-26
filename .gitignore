@@ -134,3 +134,6 @@ env.example
 service account Json/
 *.credentials.json
 *.service-account.json
+
+# build caches (must never be committed)
+.netlify
