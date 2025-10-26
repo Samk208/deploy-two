@@ -138,3 +138,8 @@ service account Json/
 # build caches (must never be committed)
 .netlify/
 .next/
+
+# Build caches
+.netlify/
+.next/
+
