@@ -136,4 +136,5 @@ service account Json/
 *.service-account.json
 
 # build caches (must never be committed)
-.netlify
+.netlify/
+.next/
