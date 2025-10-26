@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "scripts": {
+    "scan:secrets": "pwsh ./scripts/scan-secrets.ps1 -BuildDir .next",
     "prepare": "husky",
     "pre-e2e": "node scripts/prepare-e2e-report.mjs",
     "check:env": "cross-env DOTENV_CONFIG_PATH=.env.local node -r dotenv/config scripts/check-env.mjs",

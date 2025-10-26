@@ -8,6 +8,7 @@ import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 type Sort = "new" | "price-asc" | "price-desc";
 
@@ -198,8 +199,8 @@ export async function GET(req: Request) {
       const images = cleanedArray.length
         ? cleanedArray
         : typeof p.primary_image === "string" && p.primary_image.trim() !== ""
-        ? [p.primary_image]
-        : ["/placeholder.jpg"];
+          ? [p.primary_image]
+          : ["/placeholder.jpg"];
       return {
         id: p.id,
         title: p.title,

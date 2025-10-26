@@ -67,10 +67,11 @@ export async function middleware(req: NextRequest) {
   // pathname already declared above
   const method = req.method.toUpperCase();
   const isWrite = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+  // Read only public flags in middleware to avoid inlining server-only secrets into edge bundles
   const coreFrozen =
-    (process.env.CORE_FREEZE ?? "false").toLowerCase() === "true";
+    (process.env.NEXT_PUBLIC_CORE_FREEZE ?? "false").toLowerCase() === "true";
   const shopsFrozen =
-    (process.env.SHOPS_FREEZE ?? "false").toLowerCase() === "true";
+    (process.env.NEXT_PUBLIC_SHOPS_FREEZE ?? "false").toLowerCase() === "true";
 
   if (process.env.NODE_ENV !== "production") {
     console.log("[MW]", { coreFrozen, shopsFrozen, method, path: pathname });

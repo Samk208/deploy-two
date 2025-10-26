@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 
 type Target = "en" | "ko" | "zh-CN" | "zh-TW";
 
+export const runtime = "nodejs";
+
 export async function POST(req: Request) {
   // Version tag so we know this exact code path is running
   if (process.env.NODE_ENV !== "production")

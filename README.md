@@ -50,6 +50,7 @@ Important:
 - See `docs/integration-plan.md` for the phased integration PRD, runbook, and disaster recovery steps.
 
 ### Freeze verification (local)
+
 1. Start the dev server: `pnpm dev`
 2. Confirm freeze flags: open <http://localhost:3000/api/debug/freezes> and verify all values are `false` while running unfrozen checks.
 3. Execute the smoke scripts:
@@ -61,3 +62,24 @@ Important:
    ```
 
 Expected (unfrozen): GET requests return 200 (or any non-423), and POST/PATCH/DELETE return non-423 codes while freezes are disabled.
+
+## CI/Netlify Hygiene
+
+- Remove committed caches and prevent future commits:
+
+```bash
+git rm -r --cached .netlify || true
+git rm -r --cached .next || true
+printf "\n# Build caches\n.netlify/\n.next/\n" >> .gitignore
+git add .gitignore
+git commit -m "chore(ci): ignore .netlify/.next caches"
+```
+
+- Clear Netlify build cache and redeploy from the Netlify UI.
+
+- Scan compiled output for secret strings (PowerShell):
+
+```powershell
+pnpm build
+pwsh ./scripts/scan-secrets.ps1 -BuildDir ".next"
+```
