@@ -129,7 +129,6 @@ tsconfig.tsbuildinfo
 .env.example
 env.example
 # === End deploy excludes ===
-# Ignore most root markdown docs (keep README)
 /*.md
 !/README.md
 service account Json/

@@ -51,7 +51,7 @@
     "smoke:netlify": "tsx scripts/smoke-netlify.ts"
   },
   "dependencies": {
-    "@hello-pangea/dnd": "latest",
+    "@hello-pangea/dnd": "17.0.0",
     "@hookform/resolvers": "latest",
     "@playwright/test": "^1.55.0",
     "@radix-ui/react-accordion": "^1.2.2",

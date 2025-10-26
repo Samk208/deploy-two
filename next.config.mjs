@@ -1,5 +1,22 @@
 /** @type {import('next').NextConfig} */
+// Fixed invalid import alias: removed 'dnd-pkg' alias; use '@hello-pangea/dnd' directly
 // Derive Supabase project hostname from env to avoid using unsupported wildcards
+import { createRequire } from 'module'
+import path from 'path'
+const require = createRequire(import.meta.url)
+let DND_DIR
+let DND_ENTRY
+try {
+  // Resolve to the package root dir
+  DND_DIR = path.dirname(require.resolve('@hello-pangea/dnd/package.json'))
+  // Resolve to the main entry file used by webpack; fall back to ESM entry if needed
+  try {
+    DND_ENTRY = require.resolve('@hello-pangea/dnd')
+  } catch {
+    // Package may not ship compiled dist under pnpm; fall back to TS source entry
+    DND_ENTRY = path.join(DND_DIR, 'src', 'index.ts')
+  }
+} catch {}
 const SUPABASE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
   : undefined;
@@ -9,6 +26,19 @@ const nextConfig = {
   compiler: {
     removeConsole:
       process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
+  // Ensure pnpm-linked ESM packages are properly resolved/transpiled
+  transpilePackages: ["@hello-pangea/dnd"],
+  webpack: (config) => {
+    if (DND_DIR) {
+      config.resolve = config.resolve || {}
+      config.resolve.alias = config.resolve.alias || {}
+      // Map the concrete entry (prefer TS source) to package name to avoid pnpm/junction issues
+      if (DND_ENTRY) {
+        config.resolve.alias['@hello-pangea/dnd$'] = DND_ENTRY
+      }
+    }
+    return config
   },
   eslint: {
     ignoreDuringBuilds: false,

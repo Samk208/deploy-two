@@ -1,4 +1,5 @@
 "use client";
+// Fixed invalid import 'dnd-pkg' → replaced with '@hello-pangea/dnd'
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import type {
+  DraggableProvided,
+  DroppableProvided,
+  DropResult,
+} from "@hello-pangea/dnd";
 import {
   BarChart3,
   DollarSign,
@@ -26,10 +31,23 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import type { ChangeEvent } from "react";
-import { toast } from "sonner";
+import dynamic from "next/dynamic";
 import Image from "next/image";
+import type { ChangeEvent } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+const DragDropContext = dynamic(
+  () => import("@hello-pangea/dnd").then((m) => m.DragDropContext),
+  { ssr: false }
+);
+const Droppable = dynamic(
+  () => import("@hello-pangea/dnd").then((m) => m.Droppable),
+  { ssr: false }
+);
+const Draggable = dynamic(
+  () => import("@hello-pangea/dnd").then((m) => m.Draggable),
+  { ssr: false }
+);
 
 interface AvailableProduct {
   id: string;
@@ -199,10 +217,7 @@ export default function MyShopBuilder() {
   };
 
   // Handle drag and drop reordering
-  const handleDragEnd = async (result: {
-    destination?: { index: number } | null;
-    source: { index: number };
-  }) => {
+  const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
 
     const prev = Array.from(shopProducts);
@@ -353,9 +368,13 @@ export default function MyShopBuilder() {
               <CardContent className="p-4">
                 <div className="text-2xl font-bold text-orange-600">
                   {(() => {
-                    const total = shopProducts.reduce((sum, p) => sum + (p.salePrice || 0), 0)
-                    const avg = shopProducts.length > 0 ? total / shopProducts.length : 0
-                    return Math.round(avg)
+                    const total = shopProducts.reduce(
+                      (sum, p) => sum + (p.salePrice || 0),
+                      0
+                    );
+                    const avg =
+                      shopProducts.length > 0 ? total / shopProducts.length : 0;
+                    return Math.round(avg);
                   })()}
                 </div>
                 <p className="text-sm text-gray-600">Avg. Price</p>
@@ -548,7 +567,7 @@ export default function MyShopBuilder() {
           <div className="flex-1 overflow-y-auto p-4">
             <DragDropContext onDragEnd={handleDragEnd}>
               <Droppable droppableId="shop-products">
-                {(provided) => (
+                {(provided: DroppableProvided) => (
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
@@ -560,7 +579,7 @@ export default function MyShopBuilder() {
                         draggableId={product.id}
                         index={index}
                       >
-                        {(provided) => (
+                        {(provided: DraggableProvided) => (
                           <Card
                             ref={provided.innerRef}
                             {...provided.draggableProps}
