@@ -42,7 +42,7 @@ export async function translateBatch({
   target: SupportedTarget;
 }): Promise<string[]> {
   console.log("[translateBatch] Called with:", { texts, source, target });
-  
+
   if (!Array.isArray(texts) || texts.length === 0) {
     console.log("[translateBatch] Empty texts array, returning []");
     return [];
@@ -63,72 +63,107 @@ export async function translateBatch({
     return texts.slice();
   }
 
-  // Build auth token using service account if provided; otherwise fall back to API key
+  // Credential detection
+  const API_KEY = process.env.GOOGLE_TRANSLATE_API_KEY;
   const serviceAccount = decodeServiceAccount();
   console.log("[translateBatch] Service account loaded:", !!serviceAccount);
-  
-  const projectId = getEnv("GOOGLE_PROJECT_ID");
-  const location = getEnv("GOOGLE_LOCATION", "global");
-  console.log("[translateBatch] Project:", projectId, "Location:", location);
 
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  let url = `https://translation.googleapis.com/v3/projects/${projectId}/locations/${location}:translateText`;
+  // -------- Preferred path: v2 (Basic) using API key --------
+  if (!serviceAccount && API_KEY) {
+    try {
+      console.info("[translateBatch] Using v2 + API key");
+      const url =
+        "https://translation.googleapis.com/language/translate/v2?key=" +
+        encodeURIComponent(API_KEY);
+      const bodyV2: any = {
+        q: texts,
+        target,
+        format: "text",
+      };
+      if (source) bodyV2.source = source;
 
-  if (serviceAccount) {
-    // Use OAuth2 JWT for service account via google-auth-library (lazy import to avoid bundle)
-    const { GoogleAuth } = await import("google-auth-library");
-    const auth = new GoogleAuth({
-      credentials: serviceAccount,
-      scopes: ["https://www.googleapis.com/auth/cloud-translation"],
-    });
-    const client = await auth.getClient();
-    const token = await client.getAccessToken();
-    headers.Authorization = `Bearer ${token.token ?? token}`;
-  } else if (process.env.GOOGLE_TRANSLATE_API_KEY) {
-    console.log("[translateBatch] Using API key");
-    url += `?key=${process.env.GOOGLE_TRANSLATE_API_KEY}`;
-  } else {
-    // No credentials configured: return originals (safe no-op)
-    console.log("[translateBatch] ERROR: No credentials configured!");
-    return texts.slice();
-  }
-
-  const body = {
-    sourceLanguageCode: source,
-    targetLanguageCode: target,
-    contents: texts,
-    mimeType: "text/plain",
-  } as const;
-
-  try {
-    console.log("[translateBatch] Calling Google API...", url);
-    const res = await fetch(url, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(body),
-    });
-    
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.log("[translateBatch] ERROR: API returned", res.status, errorText);
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyV2),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("[translateBatch] v2 error", res.status, errText);
+        return texts.slice();
+      }
+      const json: any = await res.json();
+      const out = (json?.data?.translations ?? []).map(
+        (t: any, i: number) => t?.translatedText ?? texts[i] ?? ""
+      );
+      console.log("[translateBatch] SUCCESS! Translated (v2)");
+      return out;
+    } catch (error) {
+      console.log("[translateBatch] EXCEPTION (v2):", error);
       return texts.slice();
     }
-    const data = (await res.json()) as {
-      translations: Array<{ translatedText: string }>;
-    };
-    if (!data.translations || data.translations.length !== texts.length) {
-      const out = [...texts];
-      (data.translations || []).forEach(
-        (t, i) => (out[i] = t.translatedText ?? texts[i])
-      );
-      return out;
-    }
-    const result = data.translations.map((t) => t.translatedText);
-    console.log("[translateBatch] SUCCESS! Translated:", texts, "→", result);
-    return result;
-  } catch (error) {
-    // network/auth error -> return originals
-    console.log("[translateBatch] EXCEPTION:", error);
-    return texts.slice();
   }
+
+  // -------- Fallback path: v3 (Advanced) using service account --------
+  if (serviceAccount) {
+    const projectId = getEnv("GOOGLE_PROJECT_ID");
+    const location = getEnv("GOOGLE_LOCATION", "global");
+    console.log("[translateBatch] Project:", projectId, "Location:", location);
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    let url = `https://translation.googleapis.com/v3/projects/${projectId}/locations/${location}:translateText`;
+
+    try {
+      console.info("[translateBatch] Using v3 + service account");
+      // Use OAuth2 JWT for service account via google-auth-library (lazy import to avoid bundle)
+      const { GoogleAuth } = await import("google-auth-library");
+      const auth = new GoogleAuth({
+        credentials: serviceAccount,
+        scopes: ["https://www.googleapis.com/auth/cloud-translation"],
+      });
+      const client = await auth.getClient();
+      const token = await client.getAccessToken();
+      headers.Authorization = `Bearer ${token.token ?? token}`;
+
+      const bodyV3 = {
+        sourceLanguageCode: source,
+        targetLanguageCode: target,
+        contents: texts,
+        mimeType: "text/plain",
+      } as const;
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(bodyV3),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("[translateBatch] v3 error", res.status, errText);
+        return texts.slice();
+      }
+      const data = (await res.json()) as {
+        translations: Array<{ translatedText: string }>;
+      };
+      if (!data.translations || data.translations.length !== texts.length) {
+        const out = [...texts];
+        (data.translations || []).forEach(
+          (t, i) => (out[i] = t.translatedText ?? texts[i])
+        );
+        return out;
+      }
+      const result = data.translations.map((t) => t.translatedText);
+      console.log("[translateBatch] SUCCESS! Translated (v3)");
+      return result;
+    } catch (error) {
+      console.log("[translateBatch] EXCEPTION (v3):", error);
+      return texts.slice();
+    }
+  }
+
+  // No credentials configured: return originals (safe no-op)
+  console.log("[translateBatch] ERROR: No credentials configured!");
+  return texts.slice();
+
+  // Unreachable, kept for type completeness
 }
