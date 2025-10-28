@@ -21,6 +21,7 @@ const SUPABASE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
   : undefined;
 const IS_DEV = process.env.NODE_ENV === 'development'
+const IS_NETLIFY = !!process.env.NETLIFY
 
 const nextConfig = {
   compiler: {
@@ -47,6 +48,10 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   images: {
+    // Netlify sometimes struggles with Next's image optimizer in certain setups.
+    // Disable optimization on Netlify by default; can be overridden with env.
+    // To re-enable later, set NEXT_IMAGE_UNOPTIMIZED="false" in your env.
+    unoptimized: IS_NETLIFY || process.env.NEXT_IMAGE_UNOPTIMIZED === 'true',
     // Allow optimized remote images from common sources used in the project
     remotePatterns: [
       {
