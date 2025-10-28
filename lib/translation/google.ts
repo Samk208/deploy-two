@@ -110,8 +110,10 @@ export async function translateBatch({
     const location = getEnv("GOOGLE_LOCATION", "global");
     console.log("[translateBatch] Project:", projectId, "Location:", location);
 
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    let url = `https://translation.googleapis.com/v3/projects/${projectId}/locations/${location}:translateText`;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    const url = `https://translation.googleapis.com/v3/projects/${projectId}/locations/${location}:translateText`;
 
     try {
       console.info("[translateBatch] Using v3 + service account");
