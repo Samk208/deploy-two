@@ -42,8 +42,12 @@ export async function signIn(formData: FormData) {
   ).toUpperCase();
   const profileRole = String(profile?.role || "").toUpperCase();
 
-  // Admin override: treat as admin even if profile says 'customer'
-  if (appRole === "ADMIN" || userMetaRole === "ADMIN") {
+  // Admin override: honor admin from ANY source (app metadata, user metadata, or profiles.role)
+  if (
+    appRole === "ADMIN" ||
+    userMetaRole === "ADMIN" ||
+    profileRole === "ADMIN"
+  ) {
     return redirect("/admin/dashboard");
   }
 
